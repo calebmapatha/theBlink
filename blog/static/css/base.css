@@ -1,0 +1,83 @@
+body{
+    background-color: white;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    zoom: 90%;
+}
+body, html{
+    overflow-x: hidden;
+}
+/*Navigation*/
+nav a{
+    color: black!important;
+}
+.navbar{
+    background: transparent;
+    border: 0!important;
+}
+.navbar li a{
+    color: white!important;
+}
+.navbar .account, .navbar .search{
+    color: white!important;
+}
+.navbar.scrolled{
+    background-color: rgba(0, 0, 0, 1);
+    transition: 0.7s linear;
+    border:0!important;
+}
+.navbar.scrolled a, .navbar.scrolled i{
+    color: #ffffff!important;
+}
+.navbar-brand{
+    font-weight: bold;
+    font-size: 1.9em!important;
+    letter-spacing: -2px;
+    color: #fff!important;
+}
+.nav-link{
+    font-size: 1em;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.dropdown{
+    transition: .2s ease-in-out;
+}
+.navbar-light .navbar-nav .nav-link{
+    color: black;
+}
+.navbar-collapse{
+    transition: .5s ease-in-out;
+}
+
+
+/*Banner*/
+#banner{
+    padding-top: 9.5%;
+    margin-bottom:0;
+    width:100%;
+    height:610px!important;
+    background: url("../media/deji-akinyele-ARm28szwP0o-unsplash.jpg") no-repeat 50% 35%;
+    background-size:cover;
+}
+.landing .landing-buttons a{
+    transition: 1s ease;
+}
+.landing .landing-buttons a.btn-lg:hover{
+    background: rgba(1,1,1,0.6)!important;
+}
+#banner .landing-headings{
+        font-weight: bold;
+        color: aliceblue;
+        font-size: 4rem;
+    }
+.profile img{
+    margin-top: 3rem!important;
+    width:250px;
+    height:250px;
+}
+#posts div.container-fluid{
+        padding-left: 3rem!important;
+        padding-right: 3rem!important;
+    }

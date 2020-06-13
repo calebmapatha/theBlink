@@ -1,0 +1,64 @@
+section#login_register-form{
+    padding-top: 0;
+}
+section#login_register-form h1{
+    padding-top: 8%;
+}
+section#login_register-form .socialaccount_providers li, .btn{
+    text-align: center;
+    border:1px solid #000;
+    padding: 3%;
+    width: 70%;
+    margin: auto auto 2%;
+}
+section#login_register-form .socialaccount_providers li a, .btn{
+    font-weight: bold;
+    font-size: 1.1em;
+}
+section .btn{
+    margin-top: 5%;
+    width: 100%!important;
+    background: black;
+    color:white;
+    border-radius: 0;
+}
+section#login_register-form label, section#login_register-form #id_remember {
+    display: none;
+}
+section#login_register-form a{
+    text-decoration: underline!important;
+}
+section#login_register-form .form-control {
+    border-radius: 0;
+    height: auto;
+    padding:.9em;
+}
+
+section#login_register-form .socialaccount_providers li:first-child {
+        background-color: dodgerblue;
+}
+section#login_register-form .socialaccount_providers li:last-child{
+        background-color: darkred;
+}
+section#login_register-form .socialaccount_providers li a{
+        color: white!important;
+}
+/*Mobile devices*/
+@media only screen and (max-width: 767px) {
+    section#login_register-form {
+        padding: 5% 15px;
+    }
+    section#login_register-form .socialaccount_providers li, .btn{
+        width:100%;
+    }
+}
+@media only screen and (min-width: 768px) {
+    section#login_register-form{
+        padding-right: 25%;
+        padding-left: 25%;
+    }
+    section#login_register-form .socialaccount_providers li, .btn{
+        padding: 1%;
+        cursor:pointer;
+    }
+}

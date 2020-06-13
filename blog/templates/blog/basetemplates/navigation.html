@@ -1,0 +1,43 @@
+<!--- navigation ------>
+  <nav class="navbar navbar-light fixed-top navbar-expand-md border">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'blog:index'%}"><div class="brand-name">theBlink.</div></a>
+      <button class="navbar-toggler navbar-toggler" type="button" data-toggle="collapse"
+                data-target="#navbarCollapse" aria-controls="navbarCollapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+      </button>
+
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav m-auto">
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'blog:index'%}">Home</a></li>
+          {% for nav_link in nav_link %}
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'blog:topicView' nav_link.slug %}">{{ nav_link }}</a>
+          </li>
+
+          {% endfor %}
+      </ul>
+            {% if user.is_authenticated %}
+       <ul class="navbar-nav mr-0">
+           <li class="nav-item dropdown">
+               <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
+                  data-toggle="dropdown"  aria-expanded="false">{{user.username}}</a>
+               <div class="dropdown-menu mt-2 rounded-0" aria-labelledby="navbarDropdownMenuLink">
+                    <a class="dropdown-item btn btn-dark" href="{% url 'account_logout' %}?next={% url 'blog:index'%}">Logout</a>
+                </div>
+                </div>
+           </li>
+           {% else %}
+             <div class="dropdown-divider"></div>
+             <div class="btn-group">
+             <span onclick="openSearch()" class="nav-link"><i class="material-icons search">search</i></span>
+             <a class="nav-link" href="{% url 'account_login' %}"><i class="material-icons account">account_circle</i></a>
+             </div>
+            {% endif %}
+       </ul>
+
+        </div>
+    </div>
+  </nav>

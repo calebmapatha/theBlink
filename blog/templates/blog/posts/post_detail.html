@@ -1,0 +1,72 @@
+{% extends 'blog/basetemplates/base.html' %}
+{% load static %}
+{% load bootstrap4 %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-9 pb-5">
+                <div class="banner-detail-article">
+                    <img src="{% static 'media/13.jpg' %}" width="100%" height="500px">
+                </div>
+            </div>
+            <div class="col-md-8">
+                <hr/>
+                <h2 class="mt-2">{{ post.title }} {{post.image}}</h2>
+                <br/>
+                <a href="#">{{ post.category }}</a>
+                <br/>
+                    <h5 class="text-muted" style="color: #9babb7!important;font-size: 1.2rem!important;">
+                        {{ post.created_on |date:'M d, Y'}} <br/> Written by {{ post.author.first_name }}
+                        {{ post.author.last_name  }}
+                    </h5>
+                <div style="font-size: 1.1rem;">
+                        <p class="mt-2"> {{ post.content|safe |linebreaks}} </p>
+                </div>
+            </div>
+        </div> <!-----row------>
+    <!----Comment section----->
+        {% if not comments.count == 0 %}
+        {# rendering comments #}
+         <div class="col-md-8 p-0 border-top">
+             <h2 class="display-4 mb-5  pt-4" style="font-size: 3rem;">Comments</h2>
+             <ul class="list-unstyled">
+                 {% for comment in comments %}
+                 <li class="media shadow-effect p-4 border-bottom">
+                     <img width="64px" height="64px" class="rounded-circle mr-3 mt-3"
+                          src="https://avatars.dicebear.com/v2/avataaars/{{ comment.name }}.svg" class="mr-3" alt="comment">
+                     <div class="media-body">
+                         <h5 class="mt-3 mb-1">{{ comment.name }}
+                             <br/>
+                             <span class="text-muted" style="font-size: medium!important;">
+                             {{ comment.created_on |date:'d M, Y' }}</span></h5>
+                         {{ comment.body | linebreaks }}
+                         <button class="btn btn-dark mb-4 mr-5">Reply</button>
+                     </div>
+                 </li>
+                 {% endfor %}
+             </ul>
+         </div>
+        {% endif %}
+            <!---end Comment section------>
+        <div class="row">
+        {# comment form #}
+        <div class="col-md-8 mb-4 mt-3">
+            {% if new_comment %}
+                <div class="alert-success" role="alert">
+                    Your Comment is awaiting moderation
+                </div>
+                {% else %}
+                <h3 class="display-4 pb-3 pt-4" style="font-size: 3rem">Leave a comment</h3>
+                <form method="post"  class="form mt-1">
+                    {% csrf_token %}
+                    {% bootstrap_form comment_form %}
+                {% buttons %}
+                    <button type="submit" class="btn btn-primary btn-lg">submit</button>
+                {% endbuttons %}
+                </form>
+            {% endif %}
+        </div>
+
+    </div>
+    </div><!-----Container-------->
+{% endblock %}

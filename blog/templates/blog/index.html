@@ -1,0 +1,14 @@
+{% extends 'blog/basetemplates/base.html' %}
+{% load static %}
+
+{# load header #}
+{% block page_header %}{% include 'blog/posts/homepage_header.html' %} {% endblock %}
+{% block content %}
+ <section id="posts">
+  <!-------Blogposts---------->
+{% block blogposts %}{% include 'blog/posts/blogposts.html' %}{% endblock %}
+ </section>
+    <hr/>
+ {% block video_content %}{% include 'blog/posts/video_content.html' %}{% endblock video_content %}
+    {% block footer %}{% include 'blog/basetemplates/footer.html' %}{% endblock footer %}
+{% endblock content %}

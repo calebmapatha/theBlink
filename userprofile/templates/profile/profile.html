@@ -1,0 +1,74 @@
+{% extends 'blog/basetemplates/base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container">
+        <div class="row pt-5">
+            <div class="profile col-md-3">
+                    <img src="{% static 'media/1 (2).jpg' %}" class="rounded-circle"
+                         alt="...">
+                    <div class="mt-5 text-center flex-center">
+
+          <!-- Facebook -->
+          <a class="fb-ic">
+            <i class="fab fa-facebook-f fa-lg white-text mr-4"> </i>
+          </a>
+          <!-- Twitter -->
+          <a class="tw-ic">
+            <i class="fab fa-twitter fa-lg white-text mr-4"> </i>
+          </a>
+          <!--Linkedin -->
+          <a class="li-ic">
+            <i class="fab fa-linkedin-in fa-lg white-text mr-4"> </i>
+          </a>
+          <!--Instagram-->
+          <a class="ins-ic">
+            <i class="fab fa-instagram fa-lg white-text mr-4"> </i>
+          </a>
+        </div>
+            </div>
+
+            <div class="col-md-9 profile border-bottom pb-4">
+                <div class="media">
+                        <div class="profile-media media-body mt-5">
+                            <h1 class="mt-0">{{ user.first_name |title }} {{ user.last_name|title }}</h1>
+                            <h5>Bio</h5>
+                            {{ user_details.bio }}
+                            <p>Cras sit amet nibh libero, in gravida nulla.
+                            Nulla vel metus scelerisque ante sollicitudin.
+                            Cras purus odio, vestibulum in vulputate at, tempus viverra turpis.
+                            Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.
+                            </p>
+
+                            <div class="container">
+                                <div class="row mt-1 pt-3 mb-1">
+
+                                    <div class="col-4">
+                                        <h5>{{ blogposts.count }}</h5>
+                                        <h5>Posts</h5>
+                                    </div>
+
+                                    <div class="col-4">
+                                        <h5>0</h5>
+                                    <h5>Following</h5>
+                                    </div>
+
+                                    <div class="col-4">
+                                        <h5>0</h5>
+                                    <h5>Followers</h5>
+                                    </div>
+
+                                </div>
+
+                                <div class="row">
+                                    <div class=" py-4 px-1 col-12">
+                                        <button class="btn btn-primary btn-lg">Follow</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

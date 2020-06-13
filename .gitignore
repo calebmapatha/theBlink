@@ -1,0 +1,6 @@
+ve/
+__pycache__/
+*.sqlite3
+123.txt
+urls.txt
+blink_blogging/settings_conf/development.py

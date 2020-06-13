@@ -1,0 +1,113 @@
+{% load static%}
+{% load filter_tags %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <h1 class=" mt-1 text-center" style="color: red; font-weight: bold">#RECENT ARTICLES</h1>
+        </div>
+       </div>
+    <div class="row">
+        {% for blogPost in blogPosts %}
+            <div class="col-md-3 mb-4 no-gutters">
+                <!-- Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="btn-group">
+                            <img width="50px" height="50px" class="rounded-circle mr-3"
+                                 src="{% static 'media/1 (2).jpg' %}" class="mr-2" alt="comment">
+                                    <span>
+                                         <p class="pt-1 pb-0 mb-0" style="font-weight:bold; font-size: medium!important;">Written by <span style="color:red;
+                                          cursor:pointer"><a href="{% url 'userprofile:userprofile' blogPost.author %}">
+                                             {{ blogPost.author.first_name | title }} {{ blogPost.author.last_name | title }}
+                                         </a></span></p>
+                                            <p class=" mb-0 pb-0 text-muted">
+                                                {{ blogPost.created_on |date:'j M y | h:m'}}</p>
+                                    </span>
+                            </div>
+                        </div>
+                        <!--Card image-->
+                        <div class="view">
+                        <img class="card-img-top rounded-0" src="{% static 'media/16.jpg' %}"
+                         alt="Card image cap">
+                        <a href="#!">
+                        <div class="mask rgba-white-slight"></div>
+                        </a>
+                        </div>
+
+                        <!--Card content-->
+                        <div class="card-body border-bottom">
+                        <!--Title-->
+                                <h4 class="card-title" style="font-size: 1.2rem;font-weight: bold"><a href="{% url 'blog:postDetails' blogPost.slug %}">
+                                    {{blogPost.title | title}}</a></h4>
+                            <h5 class="card-subtitle mb-1" style="color: red">
+                                {% for topic in blogPost.topic.all %}
+                                    {{ topic }}
+                                {% endfor %}
+                            </h5>
+                            <!--Text-->
+                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the
+                            card's content.</p>
+
+                            {% with blogPost.tags|split:" " as tags  %}
+                                {% for tag in tags %}
+                                    <span class="font-weight-bold p-1"><a href="#">#{{ tag|title }}</a></span>
+                                {% endfor %}
+                            {% endwith %}
+
+                            </div>
+                            <div class="card-footer btn-group border-top-0 bg-white border-light">
+                                <div class="container px-5">
+                                    <div class="row">
+                                        <div class="col-3">
+                                        <a href="#">
+                                        <i class="material-icons md-24">comment</i>
+                                        </a>
+                                        </div>
+
+                                        <div class="font-weight-bold pl-0 col-1">
+                                        0
+                                        </div>
+
+
+                                        <div class="pr-0 col-3">
+                                        <a href="#">
+                                        <i class="material-icons md-24">remove_red_eye</i>
+                                        </a>
+                                        </div>
+
+{#                                        likes#}
+                                        <div class="font-weight-bold pl-0 col-1">
+                                        {{ blogPost.likes.count }}
+                                        </div>
+{#                                        likes#}
+
+                                        <div class="pr-0 col-3">
+                                        <a href="{% url 'blog:likePost' blogPost.id %}" id="like{{ blogPost.id }}"
+                                           class="heart mt-0" data-catid="{{ blogPost.id }}">
+                                            {% if user in blogPost.likes.all %}
+                                                <i class="material-icons  md-24" style="color: red">favorite</i>
+                                                {% else %}
+                                                    <i class="material-icons  md-24" style="color: red">favorite_border</i>
+                                            {% endif %}
+
+                                        </a>
+                                        </div>
+
+                                        <div class="font-weight-bold pl-0 col-1">
+                                        {{ blogPost.likes.count }}
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+            </div>
+    <!-- Card -->
+            </div>
+        {% endfor %}
+{#            </div>#}
+    </div>
+
+    <div class="row">
+        <a class="see-more btn text-right btn-md btn-outline-dark" href="#">See More >></a>
+        </div>
+</div>

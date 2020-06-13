@@ -1,0 +1,1 @@
+web: gunicorn blink_blogging.wsgi --log-file -

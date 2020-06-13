@@ -1,0 +1,20 @@
+{% extends 'blog/basetemplates/base.html' %}
+{% load bootstrap4 %}
+{% block content %}
+    <section id="form_create">
+    <div class="container-fluid">
+        <div class="col-md-8">
+        <form method="post" action="{% url 'newBlogpost' %}" enctype="multipart/form-data" class="form">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+
+            {% buttons %}
+            <button class="btn btn-primary">
+                Submit
+            </button>
+            {% endbuttons %}
+        </form>
+            </div>
+    </div>
+    </section>
+{% endblock content %}
