@@ -4,14 +4,14 @@ from django.conf.urls import re_path
 from blink_blogging.settings import DEVELOPMENT_MODE_ENABLED
 
 if DEVELOPMENT_MODE_ENABLED is False:
-
+    from blink_blogging.settings_conf.production import ADMIN_URL
     urlpatterns = [
         path(ADMIN_URL, admin.site.urls),
     ]
 elif DEVELOPMENT_MODE_ENABLED:
     ADMIN_URL_ = 'admin/'
     urlpatterns = [
-        path(ADMIN_URL, admin.site.urls),
+        path(ADMIN_URL_, admin.site.urls),
     ]
 
 
