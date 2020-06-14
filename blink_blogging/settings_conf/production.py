@@ -1,6 +1,6 @@
 import os
 
-DEBUG = False
+DEBUG = True
 ADMIN_URL = os.environ['ADMIN_URL']
 SITE_ID = 4
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
