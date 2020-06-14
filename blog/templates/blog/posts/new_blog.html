@@ -4,7 +4,9 @@
     <section id="form_create">
     <div class="container-fluid">
         <div class="col-md-8">
-        <form method="post" action="{% url 'newBlogpost' %}" enctype="multipart/form-data" class="form">
+            <h1 class="text-center">WRITE AN ARTICLE</h1>
+             <h6 class="text-center lead">{{user.first_name}} {{user.last_name}}</h6>
+        <form method="post" action="{% url 'blog:newBlogPost' %}" enctype="multipart/form-data" class="form">
             {% csrf_token %}
             {% bootstrap_form form %}
 

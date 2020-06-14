@@ -55,6 +55,7 @@ def new_blog_post(request):
             new_blogpost = form.save(commit=False)
             new_blogpost.author = request.user
             new_blogpost.save()
+            return redirect('blog:index')
     else:
         form = CreateBlogForm
 
@@ -64,7 +65,7 @@ def new_blog_post(request):
     template_name = "blog/posts/new_blog.html"
     return render(request, template_name, context)
 
-
+@login_required
 def likePost(request, pk):
     # post_id = request.GET.get('post_id')
     likedpost = get_object_or_404(BlogPost, pk=pk)
