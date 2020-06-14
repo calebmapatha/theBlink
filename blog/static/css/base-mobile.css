@@ -23,19 +23,22 @@
     /*.scrolled a, .scrolled .dropdown-menu .nav-link a{*/
     /*    color: #ffffff!important;*/
     /*}*/
+    #posts .see-more{
+        margin-right: auto;
+    }
     .navbar-brand{
         color: black!important;
     }
-    .dropdown-menu a,.navbar-light .navbar-nav .nav-link{
+    .dropdown-menu a,.navbar-light .navbar-nav .nav-link, #navbarCollapse .nav-link i {
         color:black!important;
     }
     .navbar{
         background: white;
     }
     div#navbarCollapse.navbar-collapse.collapse.show{
-        text-align: center;
-        height: 100vh;
-        transition: 1s ease-in-out;
+        /*text-align: center;*/
+        /*height: 100vh;*/
+        /*transition: 1s ease-in-out;*/
     }
     .nav > li.dropdown.open {
         position: static;
