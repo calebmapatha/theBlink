@@ -6,6 +6,7 @@ $(document).ready(function () {
                 $nav.toggleClass('scrolled', $(this).scrollTop() > $nav.height());
                 $nav.toggleClass('navbar-dark', $(this).scrollTop() > $nav.height());
         });
+        $('html').style.zoom = "90%";
     }
 
 });

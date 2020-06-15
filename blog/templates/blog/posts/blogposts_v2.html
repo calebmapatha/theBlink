@@ -1,0 +1,340 @@
+{% load static%}
+{% load filter_tags %}
+    <div class="container-fluid">
+
+        <div class="row p-2 mb-1">
+            <div class="col-md-12 mb-3">
+                <h1 class="post-header mt-1 text-center" style="color: red; font-weight: bold">RECENT ARTICLES</h1>
+            </div>
+
+           <!-- <div class="col-md-12 border"> -->
+            {% for blogPost in blogPosts %}
+                    <div class="col-md-3 mb-4 no-gutters">
+                        <div class="card shadow"> <!--style="width: 18rem;-->
+                            
+                                <img class="card-img-top rounded-0" src="{% static 'media/13.jpg' %}"
+                                 alt="Card image cap" />
+                                
+                                 <div class="dark-img-overlay">
+                                <div class="card-img-overlay text-white">
+                                    
+
+                                    <h1 class="card-text pt-3">{{forloop.counter}}</h1>
+
+                                </div>
+                                 </div>
+    
+                            
+
+                            <div class="card-body">
+                            <!--CARD TITLE-->
+                            <h4 class="card-title" style="font-size: 1.2rem;font-weight: bold"><a href="{% url 'blog:postDetails' blogPost.slug %}">
+                                {{blogPost.title | title}}</a></h4>
+    
+                
+                                <h5 class="card-subtitle mb-1" style="color: red">
+                                    {% for topic in blogPost.topic.all %}
+                                        {{ topic }}
+                                    {% endfor %}
+                                </h5>
+                                <!--end of title-->
+
+                                <!--abstract-->
+                                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                            
+                                <!--tags-->
+                                {% with blogPost.tags|split:" " as tags  %}
+                                {% for tag in tags %}
+                                <span class="font-weight-bold p-1"><a href="#">#{{ tag|title }}</a></span>
+                                {% endfor %}
+                                {% endwith %}
+                                <!--endtags-->
+                            </div>
+
+                            <!--CARD FOOTER-->
+                            <div class="card-footer btn-group border-top bg-white border-light">
+                                <div class="container px-4">
+                                    <div class="row">
+
+                                        <!--commments icon-->
+                                        <div class="col-3">
+                                            <a href="#">
+                                                <i class="material-icons md-24">comment</i>
+                                            </a>
+                                        </div>
+                                        <!--no. of comments-->
+                                        <div class="font-weight-bold pl-0 col-1">
+                                            <!--value will be added-->
+                                            0
+                                        </div>
+
+                                        <!--views icon-->
+                                        <div class="pr-0 col-3">
+                                            <a href="#">
+                                                <i class="material-icons md-24">remove_red_eye</i>
+                                            </a>
+                                        </div>
+
+                                        <!--no. of views-->
+                                        <div class="font-weight-bold pl-0 col-1">
+                                            <!--value to be added-->
+                                            {{ blogPost.likes.count }}
+                                        </div>
+
+                                        <!--likes icon-->
+                                        <div class="pr-0 col-3">
+                                            <a href="{% url 'blog:likePost' blogPost.id %}" id="like{{ blogPost.id }}" class="heart mt-0" 
+                                            data-catid="{{ blogPost.id }}">
+                                                {% if user in blogPost.likes.all %}
+                                                    <i class="material-icons  md-24" style="color: red">favorite</i>
+                                                {% else %}
+                                                    <i class="material-icons  md-24" style="color: red">favorite_border</i>
+                                                {% endif %}
+                                            </a>
+                                        </div>
+
+                                        <!--no of likes-->
+                                        <div class="font-weight-bold pl-0 col-1">
+                                        {{ blogPost.likes.count }}
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            {% endfor %}
+            <!-- </div>  end col-md-8 -->
+        </div><!-- endrow -->
+
+        <!---see more button-->
+        <div class="row mb-3">
+            <a class="see-more btn btn-md btn-outline-dark" href="#">See More >></a>
+            </div>
+
+
+
+       
+            <div class="row p-2 mb-1">
+                <div class="col-md-12 mb-3">
+                    <h1 class="post-header mt-1 text-center" style="color: red; font-weight: bold">LEGAL ARTICLES</h1>
+                </div>
+    
+               <!-- <div class="col-md-12 border"> -->
+                {% for blogPost in blogPosts %}
+                        <div class="col-md-3 mb-4 no-gutters">
+                            <div class="card shadow"> <!--style="width: 18rem;-->
+                                
+                                    <img class="card-img-top rounded-0" src="{% static 'media/16.jpg' %}"
+                                     alt="Card image cap" />
+                                    
+                                     <div class="dark-img-overlay">
+                                    <div class="card-img-overlay text-white">
+                                        
+    
+                                        <h1 class="card-text pt-3">{{forloop.counter}}</h1>
+    
+                                    </div>
+                                     </div>
+        
+                                
+    
+                                <div class="card-body">
+                                <!--CARD TITLE-->
+                                <h4 class="card-title" style="font-size: 1.2rem;font-weight: bold"><a href="{% url 'blog:postDetails' blogPost.slug %}">
+                                    {{blogPost.title | title}}</a></h4>
+        
+                    
+                                    <h5 class="card-subtitle mb-1" style="color: red">
+                                        {% for topic in blogPost.topic.all %}
+                                            {{ topic }}
+                                        {% endfor %}
+                                    </h5>
+                                    <!--end of title-->
+    
+                                    <!--abstract-->
+                                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                                
+                                    <!--tags-->
+                                    {% with blogPost.tags|split:" " as tags  %}
+                                    {% for tag in tags %}
+                                    <span class="font-weight-bold p-1"><a href="#">#{{ tag|title }}</a></span>
+                                    {% endfor %}
+                                    {% endwith %}
+                                    <!--endtags-->
+                                </div>
+    
+                                <!--CARD FOOTER-->
+                                <div class="card-footer btn-group border-top bg-white border-light">
+                                    <div class="container px-4">
+                                        <div class="row">
+    
+                                            <!--commments icon-->
+                                            <div class="col-3">
+                                                <a href="#">
+                                                    <i class="material-icons md-24">comment</i>
+                                                </a>
+                                            </div>
+                                            <!--no. of comments-->
+                                            <div class="font-weight-bold pl-0 col-1">
+                                                <!--value will be added-->
+                                                0
+                                            </div>
+    
+                                            <!--views icon-->
+                                            <div class="pr-0 col-3">
+                                                <a href="#">
+                                                    <i class="material-icons md-24">remove_red_eye</i>
+                                                </a>
+                                            </div>
+    
+                                            <!--no. of views-->
+                                            <div class="font-weight-bold pl-0 col-1">
+                                                <!--value to be added-->
+                                                {{ blogPost.likes.count }}
+                                            </div>
+    
+                                            <!--likes icon-->
+                                            <div class="pr-0 col-3">
+                                                <a href="{% url 'blog:likePost' blogPost.id %}" id="like{{ blogPost.id }}" class="heart mt-0" 
+                                                data-catid="{{ blogPost.id }}">
+                                                    {% if user in blogPost.likes.all %}
+                                                        <i class="material-icons  md-24" style="color: red">favorite</i>
+                                                    {% else %}
+                                                        <i class="material-icons  md-24" style="color: red">favorite_border</i>
+                                                    {% endif %}
+                                                </a>
+                                            </div>
+    
+                                            <!--no of likes-->
+                                            <div class="font-weight-bold pl-0 col-1">
+                                            {{ blogPost.likes.count }}
+                                            </div>
+    
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                {% endfor %}
+                <!-- </div>  end col-md-8 -->
+            </div><!-- endrow -->
+    
+            <!---see more button-->
+            <div class="row mb-3">
+                <a class="see-more btn btn-md btn-outline-dark" href="#">See More >></a>
+                </div>
+
+
+             
+                <div class="row p-2 mb-1">
+                    <div class="col-md-12 mb-3">
+                        <h1 class="post-header mt-1 text-center" style="color: red; font-weight: bold">STARTUPS</h1>
+                    </div>
+        
+                   <!-- <div class="col-md-12 border"> -->
+                    {% for blogPost in blogPosts %}
+                            <div class="col-md-3 mb-4 no-gutters">
+                                <div class="card shadow"> <!--style="width: 18rem;-->
+                                    
+                                        <img class="card-img-top rounded-0" src="{% static 'media/13.jpg' %}"
+                                         alt="Card image cap" />
+                                        
+                                         <div class="dark-img-overlay">
+                                        <div class="card-img-overlay text-white">
+                                            
+        
+                                            <h1 class="card-text pt-3">{{forloop.counter}}</h1>
+        
+                                        </div>
+                                         </div>
+            
+                                    
+        
+                                    <div class="card-body">
+                                    <!--CARD TITLE-->
+                                    <h4 class="card-title" style="font-size: 1.2rem;font-weight: bold"><a href="{% url 'blog:postDetails' blogPost.slug %}">
+                                        {{blogPost.title | title}}</a></h4>
+            
+                        
+                                        <h5 class="card-subtitle mb-1" style="color: red">
+                                            {% for topic in blogPost.topic.all %}
+                                                {{ topic }}
+                                            {% endfor %}
+                                        </h5>
+                                        <!--end of title-->
+        
+                                        <!--abstract-->
+                                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                                    
+                                        <!--tags-->
+                                        {% with blogPost.tags|split:" " as tags  %}
+                                        {% for tag in tags %}
+                                        <span class="font-weight-bold p-1"><a href="#">#{{ tag|title }}</a></span>
+                                        {% endfor %}
+                                        {% endwith %}
+                                        <!--endtags-->
+                                    </div>
+        
+                                    <!--CARD FOOTER-->
+                                    <div class="card-footer btn-group border-top bg-white border-light">
+                                        <div class="container px-4">
+                                            <div class="row">
+        
+                                                <!--commments icon-->
+                                                <div class="col-3">
+                                                    <a href="#">
+                                                        <i class="material-icons md-24">comment</i>
+                                                    </a>
+                                                </div>
+                                                <!--no. of comments-->
+                                                <div class="font-weight-bold pl-0 col-1">
+                                                    <!--value will be added-->
+                                                    0
+                                                </div>
+        
+                                                <!--views icon-->
+                                                <div class="pr-0 col-3">
+                                                    <a href="#">
+                                                        <i class="material-icons md-24">remove_red_eye</i>
+                                                    </a>
+                                                </div>
+        
+                                                <!--no. of views-->
+                                                <div class="font-weight-bold pl-0 col-1">
+                                                    <!--value to be added-->
+                                                    {{ blogPost.likes.count }}
+                                                </div>
+        
+                                                <!--likes icon-->
+                                                <div class="pr-0 col-3">
+                                                    <a href="{% url 'blog:likePost' blogPost.id %}" id="like{{ blogPost.id }}" class="heart mt-0" 
+                                                    data-catid="{{ blogPost.id }}">
+                                                        {% if user in blogPost.likes.all %}
+                                                            <i class="material-icons  md-24" style="color: red">favorite</i>
+                                                        {% else %}
+                                                            <i class="material-icons  md-24" style="color: red">favorite_border</i>
+                                                        {% endif %}
+                                                    </a>
+                                                </div>
+        
+                                                <!--no of likes-->
+                                                <div class="font-weight-bold pl-0 col-1">
+                                                {{ blogPost.likes.count }}
+                                                </div>
+        
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    {% endfor %}
+                    <!-- </div>  end col-md-8 -->
+                </div><!-- endrow -->
+        
+                <!---see more button-->
+                <div class="row mb-3">
+                    <a class="see-more btn btn-md btn-outline-dark" href="#">See More >></a>
+                    </div>
+
+    </div><!--end container-fluid-->

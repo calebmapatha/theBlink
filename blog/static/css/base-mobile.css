@@ -175,7 +175,9 @@
         margin-bottom: 5%;
     }
 #posts .see-more{
-        margin-left: 89%;
+        margin: auto;
+        float: right;
+        margin-left:87%;
     }
 /*#posts .heart{*/
 /*    padding-left: 23%;*/
