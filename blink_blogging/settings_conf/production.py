@@ -5,7 +5,7 @@ ALLOWED_HOSTS = [
     'http://theblink.co.za/',
     'https://theblink.herokuapp.com/',
 ]
-ADMIN_URL = os.environ['ADMIN_URL']
+ADMIN_URL = os.environ["ADMIN_URL"]
 SITE_ID = 4
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
