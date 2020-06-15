@@ -27,8 +27,6 @@ else:
     except ImportError:
         pass
 
-ALLOWED_HOSTS: List[Any] = []
-
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
