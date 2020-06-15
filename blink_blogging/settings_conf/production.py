@@ -2,7 +2,7 @@ import os
 
 DEBUG = False
 ALLOWED_HOSTS = [
-    'http://theblink.co.za',
+    'http://theblink.co.za/',
     'https://theblink.herokuapp.com/',
 ]
 ADMIN_URL = os.environ['ADMIN_URL']
