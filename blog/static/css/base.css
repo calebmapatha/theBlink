@@ -83,29 +83,6 @@ nav a{
         padding-right: 3rem!important;
     }
 
-h1.post-header{
-    overflow: hidden;
-}
-/* vertically centered line in the heading  */
-h1.post-header::before,
-h1.post-header::after{
-    background-color: red;
-    content: "";
-    display: inline-block;
-    height: 2px;
-    position: relative;
-    vertical-align: middle;
-    width: 50%;
-}
-h1.post-header::before{
-    right:0.5em;
-    margin-left: -50%;
-}
-h1.post-header::after{
-    left:0.5em;
-    margin-right: -50%;
-}
-
 .dark-img-overlay {
     background: linear-gradient(
                          rgba(20,20,20, .5), 

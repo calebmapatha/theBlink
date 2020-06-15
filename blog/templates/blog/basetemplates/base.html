@@ -17,8 +17,32 @@
     <link rel="stylesheet" href="{% static 'css/icons-animation.css' %}" />
     <link rel="stylesheet" href="{% static 'css/base-mobile.css' %}" />
     <link rel="stylesheet" href="{% static 'css/forms.css' %}"/>
-    {#    <script src="https://kit.fontawesome.com/06e23a77b6.js" crossorigin="anonymous"></script>#}
-{#    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>#}
+    <!-- {#    <script src="https://kit.fontawesome.com/06e23a77b6.js" crossorigin="anonymous"></script>#} -->
+<!-- {#    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>#} -->
+<style>
+    .post-header{
+    overflow: hidden;
+}
+/* vertically centered line in the heading  */
+.post-header::before,
+.post-header::after{
+    background-color: red;
+    content: "";
+    display: inline-block;
+    height: 2px;
+    position: relative;
+    vertical-align: middle;
+    width: 50%;
+}
+.post-header::before{
+    right:0.5em;
+    margin-left: -50%;
+}
+.post-header::after{
+    left:0.5em;
+    margin-right: -50%;
+}
+</style>
 </head>
 <body>
 <!-----content---------->
