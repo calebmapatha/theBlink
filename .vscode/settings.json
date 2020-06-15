@@ -1,3 +1,5 @@
 {
-    "python.pythonPath": "ve\\Scripts\\python.exe"
+    "python.pythonPath": "ve\\Scripts\\python.exe",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true
 }
