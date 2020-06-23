@@ -1,8 +1,8 @@
 {% load static%}
 {% load filter_tags %}
-    <div class="container-fluid">
+    <div class="container">
 
-        <div class="row p-2 mb-1">
+        <div class="row p-2 mb-1s">
             <div class="col-md-12 mb-3">
                 <h1 class="post-header mt-1 text-center" style="color: red; font-weight: bold">RECENT ARTICLES</h1>
             </div>
@@ -10,7 +10,7 @@
            <!-- <div class="col-md-12 border"> -->
             {% for blogPost in blogPosts %}
                     <div class="col-md-3 mb-4 no-gutters">
-                        <div class="card shadow"> <!--style="width: 18rem;-->
+                        <div class="card"> <!--style="width: 18rem;-->
                             
                                 <img class="card-img-top rounded-0" src="{% static 'media/13.jpg' %}"
                                  alt="Card image cap" />
@@ -117,13 +117,13 @@
        
             <div class="row p-2 mb-1">
                 <div class="col-md-12 mb-3">
-                    <h1 class="post-header mt-1 text-center" style="color: red; font-weight: bold">LEGAL ARTICLES</h1>
+                    <h1 class="post-header mt-1 text-center" style="color: red; font-weight: bold">LEGAL INSIGHTS</h1>
                 </div>
     
                <!-- <div class="col-md-12 border"> -->
                 {% for blogPost in blogPosts %}
                         <div class="col-md-3 mb-4 no-gutters">
-                            <div class="card shadow"> <!--style="width: 18rem;-->
+                            <div class="card"> <!--style="width: 18rem;-->
                                 
                                     <img class="card-img-top rounded-0" src="{% static 'media/16.jpg' %}"
                                      alt="Card image cap" />
@@ -235,7 +235,7 @@
                    <!-- <div class="col-md-12 border"> -->
                     {% for blogPost in blogPosts %}
                             <div class="col-md-3 mb-4 no-gutters">
-                                <div class="card shadow"> <!--style="width: 18rem;-->
+                                <div class="card"> <!--style="width: 18rem;-->
                                     
                                         <img class="card-img-top rounded-0" src="{% static 'media/13.jpg' %}"
                                          alt="Card image cap" />

@@ -171,6 +171,14 @@
         margin-left: 220px!important;
     }
 }
+@media (min-width:767px){
+    #banner .landing-headings{
+        padding-top: 1%!important;
+        margin-top: 0!important;
+        margin-bottom: 5%;
+        line-height: 1em;
+    }
+}
 #posts{
         margin-bottom: 5%;
     }
