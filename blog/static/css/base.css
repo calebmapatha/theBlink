@@ -7,6 +7,9 @@ body{
 body, html{
     overflow-x: hidden;
 }
+.card-title:hover a{
+    text-decoration: underline;
+}
 /*Navigation*/
 nav a{
     color: black!important;
