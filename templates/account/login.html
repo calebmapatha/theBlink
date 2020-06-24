@@ -1,5 +1,5 @@
 {% extends "blog/basetemplates/base.html" %}
-
+{% load static %}
 {% load i18n %}
 {% load account socialaccount %}
 
@@ -57,3 +57,6 @@
     </script>
     {% endblock javascript %}
 {% endblock content %}
+{% block Script %}
+<script src="{% static 'js/navSettings.js'%}"></script>
+{% endblock Script %}

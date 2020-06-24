@@ -1,5 +1,5 @@
 {% extends "blog/basetemplates/base.html" %}
-
+{% load static %}
 {% load i18n %}
 {% load bootstrap4 %}
 {% block head_title %}{% trans "Signup" %}{% endblock %}
@@ -29,3 +29,6 @@ working
 </div>
 </div>
 {% endblock %}
+{% block Script %}
+<script src="{% static 'js/navSettings.js'%}"></script>
+{% endblock Script %}
