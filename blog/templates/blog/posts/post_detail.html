@@ -10,18 +10,18 @@
       <div class="col-lg-8">
 
         <!-- Title -->
-        <h1 class="mt-4">Post Title</h1>
+        <h1 class="mt-4 text-center font-weight-bold" style="font-size: larger;">{{ blogPost.title }}</h1>
 
         <!-- Author -->
-        <p class="lead">
+        <p class="lead text-center">
           by
-          <a href="#">Start Bootstrap</a>
+          <a href="#">{{ blogPost.author.first_name }} {{ blogPost.author.last_name }}</a>
         </p>
 
-        <hr>
+        <!-- <hr> -->
 
         <!-- Date/Time -->
-        <p>Posted on January 1, 2019 at 12:00 PM</p>
+        <p class="text-center">Posted on {{ blogPost.updated_on }}</p>
 
         <hr>
 
@@ -167,7 +167,6 @@
   </div>
   <!-- /.container -->
 {% endblock content%}
-
 {% block Script %}
 <script src="{% static 'js/navSettings.js'%}"></script>
 {% endblock Script %}

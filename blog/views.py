@@ -44,7 +44,7 @@ def post_detail(request, pk, slug):
         comment_form = CommentForm()
 
     context = {
-        'post': post,
+        'blogPost': post,
         'comments': comments,
         'new_comment': new_comment,
         'comment_form': comment_form,
