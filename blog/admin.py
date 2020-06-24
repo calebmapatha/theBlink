@@ -8,7 +8,7 @@ class PostAdmin(admin.ModelAdmin):
     list_display = ('title', 'slug', 'status', 'created_on',)
     list_filter = ('status', 'created_on', 'topic')
     search_fields = ['title', 'body']
-    prepopulated_fields = {'slug': ('title',)}
+    # prepopulated_fields = {'slug': ('title',)}
     actions = ['publish_post']
 
     def publish_post(self, request, queryset):

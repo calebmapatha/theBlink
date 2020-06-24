@@ -54,9 +54,8 @@
     </header>
 
     {% block content %}{% endblock content %}
- <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-{% block Script %}
-    <script src="{% static 'js/main.js' %}"></script>
-{% endblock Script %}
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    {% block Script %}
+    {% endblock Script %}
 </body>
 </html>

@@ -2,71 +2,172 @@
 {% load static %}
 {% load bootstrap4 %}
 {% block content %}
-    <div class="container">
-        <div class="row">
-            <div class="col-md-9 pb-5">
-                <div class="banner-detail-article">
-                    <img src="{% static 'media/13.jpg' %}" width="100%" height="500px">
-                </div>
-            </div>
-            <div class="col-md-8">
-                <hr/>
-                <h2 class="mt-2">{{ post.title }} {{post.image}}</h2>
-                <br/>
-                <a href="#">{{ post.category }}</a>
-                <br/>
-                    <h5 class="text-muted" style="color: #9babb7!important;font-size: 1.2rem!important;">
-                        {{ post.created_on |date:'M d, Y'}} <br/> Written by {{ post.author.first_name }}
-                        {{ post.author.last_name  }}
-                    </h5>
-                <div style="font-size: 1.1rem;">
-                        <p class="mt-2"> {{ post.content|safe |linebreaks}} </p>
-                </div>
-            </div>
-        </div> <!-----row------>
-    <!----Comment section----->
-        {% if not comments.count == 0 %}
-        {# rendering comments #}
-         <div class="col-md-8 p-0 border-top">
-             <h2 class="display-4 mb-5  pt-4" style="font-size: 3rem;">Comments</h2>
-             <ul class="list-unstyled">
-                 {% for comment in comments %}
-                 <li class="media shadow-effect p-4 border-bottom">
-                     <img width="64px" height="64px" class="rounded-circle mr-3 mt-3"
-                          src="https://avatars.dicebear.com/v2/avataaars/{{ comment.name }}.svg" class="mr-3" alt="comment">
-                     <div class="media-body">
-                         <h5 class="mt-3 mb-1">{{ comment.name }}
-                             <br/>
-                             <span class="text-muted" style="font-size: medium!important;">
-                             {{ comment.created_on |date:'d M, Y' }}</span></h5>
-                         {{ comment.body | linebreaks }}
-                         <button class="btn btn-dark mb-4 mr-5">Reply</button>
-                     </div>
-                 </li>
-                 {% endfor %}
-             </ul>
-         </div>
-        {% endif %}
-            <!---end Comment section------>
-        <div class="row">
-        {# comment form #}
-        <div class="col-md-8 mb-4 mt-3">
-            {% if new_comment %}
-                <div class="alert-success" role="alert">
-                    Your Comment is awaiting moderation
-                </div>
-                {% else %}
-                <h3 class="display-4 pb-3 pt-4" style="font-size: 3rem">Leave a comment</h3>
-                <form method="post"  class="form mt-1">
-                    {% csrf_token %}
-                    {% bootstrap_form comment_form %}
-                {% buttons %}
-                    <button type="submit" class="btn btn-primary btn-lg">submit</button>
-                {% endbuttons %}
-                </form>
-            {% endif %}
+<div class="container pt-5">
+
+    <div class="row">
+
+      <!-- Post Content Column -->
+      <div class="col-lg-8">
+
+        <!-- Title -->
+        <h1 class="mt-4">Post Title</h1>
+
+        <!-- Author -->
+        <p class="lead">
+          by
+          <a href="#">Start Bootstrap</a>
+        </p>
+
+        <hr>
+
+        <!-- Date/Time -->
+        <p>Posted on January 1, 2019 at 12:00 PM</p>
+
+        <hr>
+
+        <!-- Preview Image -->
+        <img class="img-fluid rounded" src="http://placehold.it/900x300" alt="">
+
+        <hr>
+
+        <!-- Post Content -->
+        <p class="lead">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ducimus, vero, obcaecati, aut, error quam sapiente nemo saepe quibusdam sit excepturi nam quia corporis eligendi eos magni recusandae laborum minus inventore?</p>
+
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ut, tenetur natus doloremque laborum quos iste ipsum rerum obcaecati impedit odit illo dolorum ab tempora nihil dicta earum fugiat. Temporibus, voluptatibus.</p>
+
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eos, doloribus, dolorem iusto blanditiis unde eius illum consequuntur neque dicta incidunt ullam ea hic porro optio ratione repellat perspiciatis. Enim, iure!</p>
+
+        <blockquote class="blockquote">
+          <p class="mb-0">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.</p>
+          <footer class="blockquote-footer">Someone famous in
+            <cite title="Source Title">Source Title</cite>
+          </footer>
+        </blockquote>
+
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Error, nostrum, aliquid, animi, ut quas placeat totam sunt tempora commodi nihil ullam alias modi dicta saepe minima ab quo voluptatem obcaecati?</p>
+
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Harum, dolor quis. Sunt, ut, explicabo, aliquam tenetur ratione tempore quidem voluptates cupiditate voluptas illo saepe quaerat numquam recusandae? Qui, necessitatibus, est!</p>
+
+        <hr>
+
+        <!-- Comments Form -->
+        <div class="card my-4">
+          <h5 class="card-header">Leave a Comment:</h5>
+          <div class="card-body">
+            <form>
+              <div class="form-group">
+                <textarea class="form-control" rows="3"></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+          </div>
         </div>
 
+        <!-- Single Comment -->
+        <div class="media mb-4">
+          <img class="d-flex mr-3 rounded-circle" src="http://placehold.it/50x50" alt="">
+          <div class="media-body">
+            <h5 class="mt-0">Commenter Name</h5>
+            Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque ante sollicitudin. Cras purus odio, vestibulum in vulputate at, tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.
+          </div>
+        </div>
+
+        <!-- Comment with nested comments -->
+        <div class="media mb-4">
+          <img class="d-flex mr-3 rounded-circle" src="http://placehold.it/50x50" alt="">
+          <div class="media-body">
+            <h5 class="mt-0">Commenter Name</h5>
+            Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque ante sollicitudin. Cras purus odio, vestibulum in vulputate at, tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.
+
+            <div class="media mt-4">
+              <img class="d-flex mr-3 rounded-circle" src="http://placehold.it/50x50" alt="">
+              <div class="media-body">
+                <h5 class="mt-0">Commenter Name</h5>
+                Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque ante sollicitudin. Cras purus odio, vestibulum in vulputate at, tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.
+              </div>
+            </div>
+
+            <div class="media mt-4">
+              <img class="d-flex mr-3 rounded-circle" src="http://placehold.it/50x50" alt="">
+              <div class="media-body">
+                <h5 class="mt-0">Commenter Name</h5>
+                Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque ante sollicitudin. Cras purus odio, vestibulum in vulputate at, tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sidebar Widgets Column -->
+      <div class="col-md-4">
+
+        <!-- Search Widget -->
+        <div class="card my-4">
+          <h5 class="card-header">Search</h5>
+          <div class="card-body">
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="Search for...">
+              <span class="input-group-btn">
+                <button class="btn btn-secondary" type="button">Go!</button>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Categories Widget -->
+        <div class="card my-4">
+          <h5 class="card-header">Categories</h5>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-lg-6">
+                <ul class="list-unstyled mb-0">
+                  <li>
+                    <a href="#">Web Design</a>
+                  </li>
+                  <li>
+                    <a href="#">HTML</a>
+                  </li>
+                  <li>
+                    <a href="#">Freebies</a>
+                  </li>
+                </ul>
+              </div>
+              <div class="col-lg-6">
+                <ul class="list-unstyled mb-0">
+                  <li>
+                    <a href="#">JavaScript</a>
+                  </li>
+                  <li>
+                    <a href="#">CSS</a>
+                  </li>
+                  <li>
+                    <a href="#">Tutorials</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Side Widget -->
+        <div class="card my-4">
+          <h5 class="card-header">Side Widget</h5>
+          <div class="card-body">
+            You can put anything you want inside of these side widgets. They are easy to use, and feature the new Bootstrap 4 card containers!
+          </div>
+        </div>
+
+      </div>
+
     </div>
-    </div><!-----Container-------->
-{% endblock %}
+    <!-- /.row -->
+
+  </div>
+  <!-- /.container -->
+{% endblock content%}
+
+{% block Script %}
+<script src="{% static 'js/navSettings.js'%}"></script>
+{% endblock Script %}

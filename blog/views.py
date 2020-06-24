@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -8,6 +9,10 @@ from .models import BlogPost, Like, Navigation_topic
 from .forms import CommentForm, CreateBlogForm
 from django.contrib.postgres.search import SearchVector
 from django.views.generic import ListView
+try:
+    from django.utils import simplejson as json
+except ImportError:
+    import json
 
 
 # Create your views here.
@@ -22,9 +27,9 @@ def index(request):
     return render(request, template_name, context)
 
 
-def post_detail(request, slug):
+def post_detail(request, pk, slug):
     template_name = 'blog/posts/post_detail.html'
-    post = get_object_or_404(BlogPost, slug=slug)
+    post = get_object_or_404(BlogPost, pk=pk, slug=slug)
     comments = post.comments.filter(active=True)
 
     # Rendering a form to make a new comment
@@ -82,3 +87,26 @@ def likePost(request, pk):
 
 def topic_view(request, slug):
     pass
+
+
+@login_required
+@require_POST
+def like(request):
+    if request.method == 'POST':
+        user = request.user
+        slug = request.POST.get('slug', None)
+        company = get_object_or_404(BlogPost, slug=slug)
+
+        if company.likes.filter(id=user.id).exists():
+            # user has already liked this company
+            # remove like/user
+            company.likes.remove(user)
+            message = 'You disliked this'
+        else:
+            # add a new like for a company
+            company.likes.add(user)
+            message = 'You liked this'
+
+    ctx = {'likes_count': company.total_likes, 'message': message}
+    # use mimetype instead of content_type if django < 5
+    return HttpResponse(json.dumps(ctx), content_type='application/json')

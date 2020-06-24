@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.template.defaultfilters import slugify
+from django.urls import reverse
 
 LINK_STATUS = (
     (0, "inactive"),
@@ -43,8 +45,8 @@ STATUS = (
 
 class BlogPost(models.Model):
     title = models.CharField(max_length=200, unique=True)
-    slug = models.SlugField(max_length=200, unique=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE, editable=False, related_name='blog_post')
+    slug = models.SlugField(max_length=200, unique=True, editable=False)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_post')
     updated_on = models.DateTimeField(auto_now=True)
     content = models.TextField()
     # FileContent = models.FileField(upload_to="BlogPost", blank=True, help_text="Alternatively, you can upload a .docx file.")
@@ -54,6 +56,22 @@ class BlogPost(models.Model):
     tags = models.CharField(max_length=200, blank=True, help_text="Sepate tags with spaces.")
     status = models.IntegerField(choices=STATUS, editable=False, default=0)
     image = models.ImageField(upload_to="blog_post/headers/", help_text="Upload a banner image.", blank=True)
+
+    @property
+    def total_likes(self):
+        # likes for the posts 
+        return self.likes.count()
+    
+    def get_absolute_url(self):
+        kwargs = {
+            'pk':self.id,
+            'slug':self.slug,
+        }
+        return reverse('blog:detail', kwargs=kwargs)
+
+    def save(self, *args,**kwargs):
+        self.slug = slugify(self.title)
+        super(BlogPost, self).save(*args, **kwargs)
 
 
     class Meta:

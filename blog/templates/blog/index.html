@@ -12,3 +12,6 @@
  {% block video_content %}{% include 'blog/posts/video_content.html' %}{% endblock video_content %}
     {% block footer %}{% include 'blog/basetemplates/footer.html' %}{% endblock footer %}
 {% endblock content %}
+{% block Script %}
+    <script src="{% static 'js/main.js' %}"></script>
+{% endblock Script %}
