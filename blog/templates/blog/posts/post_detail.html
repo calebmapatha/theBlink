@@ -7,7 +7,7 @@
     <div class="row">
 
       <!-- Post Content Column -->
-      <div class="col-lg-8">
+      <div class="col-lg-11">
 
         <!-- Title -->
         <h1 class="mt-4 text-center font-weight-bold" style="font-size: larger;">{{ blogPost.title }}</h1>
@@ -21,12 +21,13 @@
         <!-- <hr> -->
 
         <!-- Date/Time -->
-        <p class="text-center">Posted on {{ blogPost.updated_on }}</p>
+        <p class="text-center">Updated on {{ blogPost.updated_on }}</p>
 
         <hr>
 
         <!-- Preview Image -->
-        <img class="img-fluid rounded" src="http://placehold.it/900x300" alt="">
+        <!-- <img class="img-fluid rounded" src="http://placehold.it/900x300" alt=""> -->
+        <img class="img-fluid" src="{% static 'media/17.jpg' %}" width="100%" height="300px" alt="">
 
         <hr>
 
@@ -51,8 +52,9 @@
         <hr>
 
         <!-- Comments Form -->
+        {% if user.is_authenticated %}
         <div class="card my-4">
-          <h5 class="card-header">Leave a Comment:</h5>
+          <h5 class="card-header bg-white">Leave a Comment:</h5>
           <div class="card-body">
             <form>
               <div class="form-group">
@@ -97,14 +99,16 @@
 
           </div>
         </div>
+        {% endif %}
 
       </div>
 
+      <div class="display-none" style="display: none;">
       <!-- Sidebar Widgets Column -->
       <div class="col-md-4">
 
         <!-- Search Widget -->
-        <div class="card my-4">
+        <div class="card my-4 border-0">
           <h5 class="card-header">Search</h5>
           <div class="card-body">
             <div class="input-group">
@@ -159,6 +163,7 @@
           </div>
         </div>
 
+      </div>
       </div>
 
     </div>

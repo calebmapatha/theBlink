@@ -1,4 +1,4 @@
-#posts a:hover{
+#posts a:hover, #video_content a{
     text-decoration: underline!important;
 }
 /* Rules for sizing the icon. */

@@ -8,8 +8,9 @@
   <!-------Blogposts---------->
 {% block blogposts %}{% include 'blog/posts/blogposts_v2.html' %}{% endblock %}
  </section>
-    <hr/>
- {% block video_content %}{% include 'blog/posts/video_content.html' %}{% endblock video_content %}
+ <section id="video_content">
+ {% block video_content %}{% include 'blog/posts/interviews.html' %}{% endblock video_content %}
+</section>
     {% block footer %}{% include 'blog/basetemplates/footer.html' %}{% endblock footer %}
 {% endblock content %}
 {% block Script %}
