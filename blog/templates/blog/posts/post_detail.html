@@ -3,14 +3,17 @@
 {% load bootstrap4 %}
 {% block content %}
 <div class="container pt-5">
-
     <div class="row">
-
+      
       <!-- Post Content Column -->
       <div class="col-lg-11">
-
+        <h4 class="card-subtitle mb-1" style="color: red">
+          {% for topic in blogPost.topic.all %}
+              {{ topic }}
+          {% endfor %}
+      </h4>
         <!-- Title -->
-        <h1 class="mt-4 text-center font-weight-bold" style="font-size: larger;">{{ blogPost.title }}</h1>
+        <h1 class="mt-1 font-weight-bold" style="font-size: larger;">{{ blogPost.title }}</h1>
 
         <!-- Author -->
         <p class="lead text-center">
@@ -21,7 +24,7 @@
         <!-- <hr> -->
 
         <!-- Date/Time -->
-        <p class="text-center">Updated on {{ blogPost.updated_on }}</p>
+        <p class="text-center">Updated on {{ blogPost.updated_on}}</p>
 
         <hr>
 
