@@ -10,9 +10,9 @@
            <!-- <div class="col-md-12 border"> -->
             {% for blogPost in blogPosts %}
                     <div class="col-md-3 mb-4 no-gutters">
-                        <div class="card"> <!--style="width: 18rem;-->
+                        <div class="card border-0 shadow"> <!--style="width: 18rem;-->
                             
-                                <img class="card-img-top rounded-0" src="{% static 'media/13.jpg' %}"
+                                <img class="card-img-top rounded-0" src="{% static 'media/16.jpg' %}"
                                  alt="Card image cap" />
                                 
                     
@@ -31,7 +31,7 @@
                                             </h5>
 
                             <!--CARD TITLE-->
-                            <h4 class="card-title mb-1" style="font-size: 1.4rem;"><a href="{{ blogPost.get_absolute_url }}">
+                            <h4 class="card-title mb-1" style="font-size: 1.5rem;font-weight: 700;"><a href="{{ blogPost.get_absolute_url }}">
                                 {{blogPost.title | title}}</a></h4>
                                 <p class="card-text text-muted">by {{blogPost.author.first_name}} {{blogPost.author.last_name}} </p>
 
