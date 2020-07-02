@@ -3,8 +3,8 @@
 {% load bootstrap4 %}
 {% block content %}
 <div class="container pt-5">
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
+  <!-- <nav aria-label="breadcrumb">
+    <ol class="breadcrumb bg-white pl-0">
       <li class="breadcrumb-item"><a href="#">Home</a></li>
       <li class="breadcrumb-item"><a href="#">
           {% for topic in blogPost.topic.all %}
@@ -13,29 +13,29 @@
       </a></li>
       <li class="breadcrumb-item active" aria-current="page">Article</li>
     </ol>
-  </nav>
+  </nav> -->
     <div class="row">
       
       <!-- Post Content Column -->
       <div class="col-lg-11">
-        <h4 class="card-subtitle mb-1" style="color: red">
+        <h4 class="card-subtitle text-left mb-1" style="color: red">
           {% for topic in blogPost.topic.all %}
               {{ topic }}
           {% endfor %}
-      </h4>
+        </h4>
         <!-- Title -->
-        <h1 class="mt-1 font-weight-bold" style="font-size: larger;">{{ blogPost.title }}</h1>
-
+        <h1 class="mt-1 font-weight-bold text-left" style="font-size: larger;">{{ blogPost.title }}</h1>
+        
         <!-- Author -->
-        <p class="lead text-center">
-          by
-          <a href="#">{{ blogPost.author.first_name }} {{ blogPost.author.last_name }}</a>
+        <p class="text-left mb-0 text-muted">
+          Written by
+          <a class="text-muted" style="text-decoration: underline!important;" href="{% url 'userprofile:profile' blogPost.author.username %}">{{ blogPost.author.first_name }} {{ blogPost.author.last_name }}</a> |
+        
+        <!-- Date/Time -->
+        {{ blogPost.updated_on|date:"M d, Y"}}
         </p>
 
         <!-- <hr> -->
-
-        <!-- Date/Time -->
-        <p class="text-center">Updated on {{ blogPost.updated_on|date:"M d, Y"}}</p>
 
         <hr>
 

@@ -33,7 +33,7 @@
                             <!--CARD TITLE-->
                             <h4 class="card-title mb-1" style="font-size: 1.5rem;font-weight: 700;"><a href="{{ blogPost.get_absolute_url }}">
                                 {{blogPost.title | title}}</a></h4>
-                                <p class="card-text text-muted">by {{blogPost.author.first_name}} {{blogPost.author.last_name}} </p>
+                                <a href="{% url 'userprofile:profile' blogPost.author.username %}"class="card-text text-muted">Written by {{blogPost.author.first_name}} {{blogPost.author.last_name}} </a>
 
     
                                 
