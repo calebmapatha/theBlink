@@ -3,6 +3,17 @@
 {% load bootstrap4 %}
 {% block content %}
 <div class="container pt-5">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#">Home</a></li>
+      <li class="breadcrumb-item"><a href="#">
+          {% for topic in blogPost.topic.all %}
+              {{ topic }}
+          {% endfor %}
+      </a></li>
+      <li class="breadcrumb-item active" aria-current="page">Article</li>
+    </ol>
+  </nav>
     <div class="row">
       
       <!-- Post Content Column -->
