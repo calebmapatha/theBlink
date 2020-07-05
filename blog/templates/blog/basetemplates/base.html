@@ -50,11 +50,9 @@
 <body>
 <!-----content---------->
     {% block navigation %}{% include 'blog/basetemplates/navigation.html' %}{% endblock navigation %}
-    <!-----header---------->
-    <header class="mb-5" role="banner">
+    
         {% block page_header %}{% endblock page_header %}
     </header>
-
     {% block content %}{% endblock content %}
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     {% block Script %}

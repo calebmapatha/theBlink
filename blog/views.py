@@ -30,6 +30,7 @@ def index(request):
 def post_detail(request, pk, slug):
     template_name = 'blog/posts/post_detail.html'
     post = get_object_or_404(BlogPost, pk=pk, slug=slug)
+    nav_link = Navigation_topic.objects.filter(link_status=1).order_by('-title')
     comments = post.comments.filter(active=True)
 
     # Rendering a form to make a new comment
@@ -48,6 +49,7 @@ def post_detail(request, pk, slug):
         'comments': comments,
         'new_comment': new_comment,
         'comment_form': comment_form,
+        'nav_link': nav_link,
     }
     return render(request, template_name, context)
 
@@ -86,7 +88,14 @@ def likePost(request, pk):
 
 
 def topic_view(request, slug):
-    pass
+    template_name = "blog/topic.html"
+    nav_link = Navigation_topic.objects.filter(link_status=1).order_by('-title')
+    context = {
+    'nav_link': nav_link,
+    'slug':slug,
+    }
+
+    return render(request, template_name, context)     
 
 
 @login_required

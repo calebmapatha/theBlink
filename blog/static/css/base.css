@@ -12,9 +12,9 @@ font-family: 'Roboto', sans-serif;
 /* font-family: 'Roboto Condensed', sans-seri */
 }
 
-body, html{
+/* body, html{
     overflow-x: hidden;
-}
+} */
 .card-title:hover a{
     text-decoration: underline;
 }
