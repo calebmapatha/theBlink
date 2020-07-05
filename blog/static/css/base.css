@@ -1,9 +1,17 @@
 body{
     background-color: white;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+    /* font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
     sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-    zoom: 90%;
+    zoom: 90%; */
+    font-family: 'Open Sans', sans-serif!important;
 }
+
+h1,h2,h3,h4,h5,h6{
+/* font-family: 'Frank Ruhl Libre', serif; */
+font-family: 'Roboto', sans-serif;
+/* font-family: 'Roboto Condensed', sans-seri */
+}
+
 body, html{
     overflow-x: hidden;
 }
@@ -37,6 +45,8 @@ nav a{
     font-size: 1.9em!important;
     letter-spacing: -2px;
     color: #fff!important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 .nav-link{
     font-size: 1em;

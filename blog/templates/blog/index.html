@@ -4,13 +4,16 @@
 {# load header #}
 {% block page_header %}{% include 'blog/posts/homepage_header.html' %} {% endblock %}
 {% block content %}
- <section id="posts">
+ 
   <!-------Blogposts---------->
 {% block blogposts %}{% include 'blog/posts/blogposts_v2.html' %}{% endblock %}
- </section>
+
  {% block video_content %}{% include 'blog/posts/interviews.html' %}{% endblock video_content %}
-    {% block footer %}{% include 'blog/basetemplates/footer.html' %}{% endblock footer %}
-{% endblock content %}
-{% block Script %}
+
+ {% block footer %}{% include 'blog/basetemplates/footer.html' %}{% endblock footer %}
+
+ {% endblock content %}
+
+ {% block Script %}
     <script src="{% static 'js/main.js' %}"></script>
 {% endblock Script %}

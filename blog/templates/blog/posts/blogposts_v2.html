@@ -1,10 +1,11 @@
 {% load static%}
 {% load filter_tags %}
+<section id="posts">
     <div class="container">
 
-        <div class="row p-2 mb-1s">
+        <div class="row p-2 mb-1">
             <div class="col-md-12 mb-3">
-                <h1 class="post-header mt-1 text-center" style="color: red; font-weight: bold">RECENT ARTICLES</h1>
+                <h1 class="4post-header mt-4 text-left" style="color: black; font-weight: 800">RECENT ARTICLES</h1>
             </div>
 
            <!-- <div class="col-md-12 border"> -->
@@ -33,8 +34,7 @@
                             <!--CARD TITLE-->
                             <h4 class="card-title mb-1" style="font-size: 1.5rem;font-weight: 700;"><a href="{{ blogPost.get_absolute_url }}">
                                 {{blogPost.title | title}}</a></h4>
-                                <a href="{% url 'userprofile:profile' blogPost.author.username %}"class="card-text text-muted">Written by {{blogPost.author.first_name}} {{blogPost.author.last_name}} </a>
-
+                                <h6 class="mt-1"><a href="{% url 'userprofile:profile' blogPost.author.username %}"class="card-text text-muted">By {{blogPost.author.first_name}} {{blogPost.author.last_name}} </a></h6>
     
                                 
                                 <!--end of title-->
@@ -115,6 +115,7 @@
             <a class="see-more btn btn-md btn-outline-dark" href="#">See More >></a>
             </div> -->
     </div><!--end container-fluid-->
+</section>
 {% block javascript %}
     <script>
         $('#like').click(function(){
