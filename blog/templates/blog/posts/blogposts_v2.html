@@ -13,18 +13,17 @@
             {% for blogPost in blogPosts %}
                     <div class="col-md-3 mb-4 no-gutters">
                         <div class="card border-0 shadow"> <!--style="width: 18rem;-->
-                            
-                                <img class="card-img-top rounded-0" src="{% static 'media/16.jpg' %}"
-                                 alt="Card image cap" />
-                                
-                    
+                            <div class="img" style="width: 100%;max-height: 255px;">
+                                <img class="card-img-top rounded-0" 
+                                {% if blogPost.image %}
+                                    src="{{ blogPost.image.url }}" alt="Card image cap" style="width:100%;max-height:240px;object-fit: cover;"/>
+                                {% else %} 
+                                    src="https://via.placeholder.com/240" alt="Card image cap" />
+                                {% endif %}
                                 <div class="card-img-overlay text-white absolute" style="height: 20px;">
                                     <h1 class="card-text pt-3 font-weight-bold">{{forloop.counter}}</h1>
                                 </div>
-                
-    
-                            
-
+                            </div>
                             <div class="card-body">
                                             <h5 class="card-subtitle mb-1" style="color: red">
                                                 {% for topic in blogPost.topic.all %}
@@ -53,7 +52,7 @@
                             </div>
 
                             <!--CARD FOOTER-->
-                            <div class="card-footer btn-group border-top bg-white border-light">
+                            <div class="card-footer py-2 btn-group border-top bg-white border-light">
                                 <div class="container px-4">
                                     <div class="row">
 

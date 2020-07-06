@@ -55,7 +55,7 @@ class BlogPost(models.Model):
     topic = models.ManyToManyField(Navigation_topic, help_text="Choose a topic/s under which article falls under.")
     tags = models.CharField(max_length=200, blank=True, help_text="Sepate tags with spaces.")
     status = models.IntegerField(choices=STATUS, editable=False, default=0)
-    image = models.ImageField(upload_to="blog_post/headers/", help_text="Upload a banner image.", blank=True)
+    image = models.ImageField(upload_to="headerImg/%Y/%m/%d/", help_text="Upload a banner image.", blank=True)
 
     @property
     def total_likes(self):

@@ -17,7 +17,7 @@ except ImportError:
 
 # Create your views here.
 def index(request):
-    blogPosts = BlogPost.objects.filter(status=1).order_by('-created_on')[:4]
+    blogPosts = BlogPost.objects.filter(status=1).order_by('-created_on')[:8]
     nav_link = Navigation_topic.objects.filter(link_status=1).order_by('-title')
     template_name = 'blog/index.html'
     context = {
