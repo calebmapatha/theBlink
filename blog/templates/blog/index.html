@@ -1,12 +1,10 @@
 {% extends 'blog/basetemplates/base.html' %}
 {% load static %}
 
-{# load header #}
-{% block page_header %}{% include 'blog/posts/homepage_header.html' %} {% endblock %}
 {% block content %}
  
   <!-------Blogposts---------->
-{% block blogposts %}{% include 'blog/posts/blogposts_v2.html' %}{% endblock %}
+{% block blogposts %}{% include 'blog/posts/blogposts.html' %}{% endblock %}
 
  {% block video_content %}{% include 'blog/posts/interviews.html' %}{% endblock video_content %}
 

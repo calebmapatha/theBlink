@@ -17,12 +17,14 @@ except ImportError:
 
 # Create your views here.
 def index(request):
-    blogPosts = BlogPost.objects.filter(status=1).order_by('-created_on')[:8]
-    nav_link = Navigation_topic.objects.filter(link_status=1).order_by('-title')
+    blogPosts = BlogPost.objects.filter(status=1).order_by('-created_on')[:6]
+    sideBar = BlogPost.objects.filter(status=1).order_by('-created_on')[:4]
+    nav_links = Navigation_topic.objects.filter(link_status=1)
     template_name = 'blog/index.html'
     context = {
         'blogPosts': blogPosts,
-        'nav_link': nav_link,
+        'nav_links': nav_links,
+        'sideBar':sideBar,
     }
     return render(request, template_name, context)
 

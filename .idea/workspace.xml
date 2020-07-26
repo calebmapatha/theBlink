@@ -175,6 +175,7 @@
       <workItem from="1593322020162" duration="73000" />
       <workItem from="1593712620631" duration="961000" />
       <workItem from="1593714898094" duration="1200000" />
+      <workItem from="1594993479434" duration="74000" />
     </task>
     <task id="LOCAL-00001" summary="update">
       <created>1587927686848</created>
@@ -225,10 +226,10 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="617" y="0" key="CommitChangelistDialog2/0.0.1366.728@0.0.1366.728" timestamp="1587941559633" />
-    <state x="463" y="120" key="FileChooserDialogImpl" timestamp="1590527565935">
+    <state x="463" y="120" key="FileChooserDialogImpl" timestamp="1594993508576">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state x="463" y="120" key="FileChooserDialogImpl/0.0.1366.728@0.0.1366.728" timestamp="1590527565935" />
+    <state x="463" y="120" key="FileChooserDialogImpl/0.0.1366.728@0.0.1366.728" timestamp="1594993508576" />
     <state width="1323" height="179" key="GridCell.Tab.0.bottom" timestamp="1587414281141">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
@@ -249,10 +250,10 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="184" y="7" key="SettingsEditor/0.0.1366.728@0.0.1366.728" timestamp="1590551052495" />
-    <state x="379" y="189" key="com.intellij.ide.util.TipDialog" timestamp="1593720293854">
+    <state x="379" y="189" key="com.intellij.ide.util.TipDialog" timestamp="1594993485412">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state x="379" y="189" key="com.intellij.ide.util.TipDialog/0.0.1366.728@0.0.1366.728" timestamp="1593720293854" />
+    <state x="379" y="189" key="com.intellij.ide.util.TipDialog/0.0.1366.728@0.0.1366.728" timestamp="1594993485412" />
     <state x="-7" y="0" width="697" height="735" key="dock-window-1" timestamp="1592084962807">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
