@@ -24,7 +24,7 @@
     /*    color: #ffffff!important;*/
     /*}*/
     .dropDownMenu{
-        display: none;
+        display: inline-flex;
       }
     #posts .see-more{
         margin-right: auto;

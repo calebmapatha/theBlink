@@ -1,11 +1,12 @@
-<nav class="navbar navbar-light bg-white border-bottom mb-4 px-1 ">
+{% load account socialaccount %}
+<nav class="navbar navbar-light bg-white border-bottom px-1 ">
   <button class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
     <a href="{% url 'blog:index' %}" class="navbar-brand">theBlink</a>
 <!-- 
   <div class="d-flex align-items-center"> -->
-    <a class="material-icons md-36 p-2">
+    <a href="accounts/login" class="material-icons md-36 p-2">
       account_circle
     </a>
 </nav>
