@@ -23,6 +23,9 @@
     /*.scrolled a, .scrolled .dropdown-menu .nav-link a{*/
     /*    color: #ffffff!important;*/
     /*}*/
+    .dropDownMenu{
+        display: none;
+      }
     #posts .see-more{
         margin-right: auto;
     }

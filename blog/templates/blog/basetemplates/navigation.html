@@ -3,18 +3,14 @@
     <span class="navbar-toggler-icon"></span>
   </button>
     <a href="{% url 'blog:index' %}" class="navbar-brand">theBlink</a>
-
-  <div class="d-flex align-items-center">
-    <a class="material-icons p-2">
-      search
-    </a>
-    <a class="material-icons p-2">
+<!-- 
+  <div class="d-flex align-items-center"> -->
+    <a class="material-icons md-36 p-2">
       account_circle
     </a>
-  </div>
 </nav>
 
-<nav class="nav border-top border-bottom justify-content-center w-100 bg-white font-weight-bold" style="white-space: nowrap;">
+<nav class="nav border-top border-bottom justify-content-center w-100 bg-white font-weight-bold dropDownMenu" style="white-space: nowrap;">
 <!-- <div class="collapse navbar-collapse" id="navbarNav"> -->
     {% if user.is_authenticated %}
     <li class="nav-item d-inline-block">
