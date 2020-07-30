@@ -27,6 +27,9 @@ else:
     except ImportError:
         pass
 
+GOOGLE_ANALYTICS_GTAG_PROPERTY_ID = 'UA-174025868-1'
+GOOGLE_ANALYTICS_DISPLAY_ADVERTISING = True
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -45,6 +48,7 @@ INSTALLED_APPS = [
     # third-party apps
     'bootstrap4',
     'tinymce',
+    'analytical',
 
     # allauth
     'allauth',

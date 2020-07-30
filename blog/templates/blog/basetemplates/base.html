@@ -1,8 +1,20 @@
+{% load google_analytics_gtag %}
 {% load bootstrap4 %}
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-174025868-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-174025868-1');
+    </script>
+     {% google_analytics_gtag %}
+     
     <meta charset="UTF-8">
     <title>Blink.</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
