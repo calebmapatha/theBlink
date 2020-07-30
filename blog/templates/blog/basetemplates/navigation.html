@@ -1,19 +1,30 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-white">
-  <div class="d-flex justify-content-start">
-    <button class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-   </button>
-    <a href="#" class="navbar-brand pl-5">theBlink</a>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav font-weight-bold">
+<nav class="navbar navbar-light bg-white">
+  <button class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+    <a href="{% url 'blog:index' %}" class="navbar-brand">theBlink</a>
 
-        {% for nav_link in nav_links %}
-        <li class="nav-item active">
-          <a class="nav-link" href="#">{{nav_link|title}}</span></a>
-        </li>
-        {% endfor %}
-      </ul>
-    </div> 
-    </div>
+  <div class="d-flex align-items-center">
+    <a class="material-icons p-2">
+      search
+    </a>
+    <a class="material-icons p-2">
+      account_circle
+    </a>
   </div>
+</nav>
+
+<nav class="nav border-top border-bottom justify-content-center w-100 bg-white font-weight-bold" style="white-space: nowrap;">
+<!-- <div class="collapse navbar-collapse" id="navbarNav"> -->
+    {% if user.is_authenticated %}
+    <li class="nav-item d-inline-block">
+      <a class="nav-link" href="{% url 'blog:newBlogPost' %}">New Post</span></a>
+    </li>
+    {% endif %}
+    {% for nav_link in nav_links %}
+    <li class="nav-item d-inline-block">
+      <a class="nav-link" href="{% url 'blog:topics' nav_link.slug %}">{{nav_link|title}}</span></a>
+    </li>
+    {% endfor %}
+<!-- </div> -->
 </nav>

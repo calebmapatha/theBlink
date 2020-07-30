@@ -1,7 +1,8 @@
 {% load static%}
 {% load filter_tags %}
   <!-- Page Content -->
-  <div class="container-fluid mt-5 mb-5 px-5 pr-0 ml-2">
+  <!-- <div class="container-fluid mt-5 mb-5 px-5 pr-0 ml-2"> -->
+  <div class="container-fluid">
 
     <!-- <div class="row">
         <div class="jumbotron p-4 p-md-5 text-white rounded bg-dark">
@@ -26,7 +27,7 @@
                 </div>
             </div> -->
 
-                <div class="row bg-white no-gutters">
+                <div class="row bg-white">
                     {% for blogPost in blogPosts %}
                     <div class="col-md-4">
                         <div class="card border-top" > <!--style="width: 18rem;-->
@@ -64,7 +65,7 @@
 
         </div>
 <!-- Side bar -->
-        <div class="col-md-3 ml-4">
+        <div class="col-md-3 mt-3">
             {% include 'blog/basetemplates/sidebar.html' %}
         </div>
     

@@ -14,16 +14,18 @@ try:
 except ImportError:
     import json
 
+def navigationList():
+    nav_links = Navigation_topic.objects.filter(link_status=1)
+    return nav_links
 
 # Create your views here.
 def index(request):
     blogPosts = BlogPost.objects.filter(status=1).order_by('-created_on')[:6]
     sideBar = BlogPost.objects.filter(status=1).order_by('-created_on')[:4]
-    nav_links = Navigation_topic.objects.filter(link_status=1)
     template_name = 'blog/index.html'
     context = {
         'blogPosts': blogPosts,
-        'nav_links': nav_links,
+        'nav_links': navigationList(),
         'sideBar':sideBar,
     }
     return render(request, template_name, context)
@@ -32,7 +34,6 @@ def index(request):
 def post_detail(request, pk, slug):
     template_name = 'blog/posts/post_detail.html'
     post = get_object_or_404(BlogPost, pk=pk, slug=slug)
-    nav_link = Navigation_topic.objects.filter(link_status=1).order_by('-title')
     comments = post.comments.filter(active=True)
 
     # Rendering a form to make a new comment
@@ -51,7 +52,7 @@ def post_detail(request, pk, slug):
         'comments': comments,
         'new_comment': new_comment,
         'comment_form': comment_form,
-        'nav_link': nav_link,
+        'nav_links': navigationList(),
     }
     return render(request, template_name, context)
 
@@ -69,7 +70,8 @@ def new_blog_post(request):
         form = CreateBlogForm
 
     context = {
-        'form': form
+        'form': form,
+        'nav_links': navigationList(),
     }
     template_name = "blog/posts/new_blog.html"
     return render(request, template_name, context)
@@ -91,9 +93,8 @@ def likePost(request, pk):
 
 def topic_view(request, slug):
     template_name = "blog/topic.html"
-    nav_link = Navigation_topic.objects.filter(link_status=1).order_by('-title')
     context = {
-    'nav_link': nav_link,
+    'nav_links': navigationList(),
     'slug':slug,
     }
 
