@@ -25,6 +25,15 @@
     /*}*/
     .dropDownMenu{
         display: inline-flex;
+        margin-top: 5%;
+      }
+
+      .dropDownMenu .nav-link{
+        background-color: black;
+        border-radius: 36em;
+        color: white!important;
+        margin-left: 5%;
+        margin-bottom: 5%;
       }
     #posts .see-more{
         margin-right: auto;
