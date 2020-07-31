@@ -1,14 +1,14 @@
 /* CSS Rules for navigation */
-@import 'stylesheets/navigation.css';
+@import url("stylesheets/navigation.805c94bf4138.css");
 
 /* CSS Rules for icons and anchors */
-@import 'stylesheets/icons.css';
+@import url("stylesheets/icons.670ba1f63197.css");
 
 /* CSS Rules for Forms  */
-@import 'stylesheets/forms.css';
+@import url("stylesheets/forms.b7c6e39a004f.css");
 
 /* CSS Rules for components */
-@import 'stylesheets/components.css';
+@import url("stylesheets/components.254a233caf90.css");
 
 
 /* body{
