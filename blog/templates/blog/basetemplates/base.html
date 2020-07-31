@@ -10,66 +10,36 @@
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-
         gtag('config', 'UA-174025868-1');
     </script>
      {% google_analytics_gtag %}
-     
+
     <meta charset="UTF-8">
-    <title>Blink.</title>
+    <title>{% block pageTitle %}{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="blogging platform">
-    <meta name="author" content="Caleb Mapatha">
+    <meta name="description" content="Get insights on various topics">
+    <meta name="author" content="TheBlinkdot">
+    
     {% bootstrap_css  %}
     {% bootstrap_javascript jquery='full' %}
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
-    <!-- <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet"/> -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/base.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/icons-animation.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/base-mobile.css' %}" />
-    <link rel="stylesheet" href="{% static 'css/forms.css' %}"/>
-    <!-- <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Roboto&display=swap" rel="stylesheet">  -->
-    <!-- <link href="https://fonts.googleapis.com/css2?family=Arvo&family=Open+Sans&display=swap" rel="stylesheet">  -->
-    <!-- {#    <script src="https://kit.fontawesome.com/06e23a77b6.js" crossorigin="anonymous"></script>#} -->
-<!-- {#    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>#} -->
-<style>
+    
+    <link href="{% static 'css/thirdparty/bootstrap.min.css' %}" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link href="{% static 'css/base.css' %}" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Roboto&display=swap" rel="stylesheet"> 
 
-.post-header{
-    overflow: hidden;
-}
-/* vertically centered line in the heading  */
-.post-header::before,
-.post-header::after{
-    background-color: red;
-    content: "";
-    display: inline-block;
-    height: 2px;
-    position: relative;
-    vertical-align: middle;
-    width: 50%;
-}
-.post-header::before{
-    right:0.5em;
-    margin-left: -50%;
-}
-.post-header::after{
-    left:0.5em;
-    margin-right: -50%;
-}
-body, html{
-    overflow-x: auto;
-}
-</style>
 </head>
 <body class="bg-light">
-<!-----content---------->
+    <!-- Header -->
+    {% block page_header %}{% endblock page_header %}
+
+    <!-- Navigation -->
     {% block navigation %}{% include 'blog/basetemplates/navigation.html' %}{% endblock navigation %}
-    
-        {% block page_header %}{% endblock page_header %}
-    </header>
+
+    <!-- Body/Content -->
     {% block content %}{% endblock content %}
-    {% block Script %}
-    {% endblock Script %}
+    
+    <!-- Scripts -->
+    {% block Script %}{% endblock Script %}
 </body>
 </html>

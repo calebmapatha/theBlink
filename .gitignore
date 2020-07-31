@@ -5,3 +5,5 @@ __pycache__/
 urls.txt
 blink_blogging/settings_conf/development.py
 media
+blog/static/css/thirdparty
+blog/static/js/thirdparty

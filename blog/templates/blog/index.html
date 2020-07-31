@@ -1,9 +1,10 @@
 {% extends 'blog/basetemplates/base.html' %}
 {% load static %}
 
+{% block pageTitle %} TheBlink {% endblock %}
 {% block content %}
- 
-  <!-------Blogposts---------->
+
+  <!-- -----Blogposts-------- -->
 {% block blogposts %}{% include 'blog/posts/blogposts.html' %}{% endblock %}
 
 

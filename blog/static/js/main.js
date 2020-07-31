@@ -8,6 +8,11 @@ $(document).ready(function () {
         });
         $('html').style.zoom = "90%";
     }
+
+    const openNav = () =>{
+        // const sideMenu = $(".sideMenu");
+        console.log("clicked!")
+    }
 });
 function openSearch(){
     document.getElementById("myOverlay").style.display ="block";
