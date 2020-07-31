@@ -11,10 +11,24 @@
 @import 'stylesheets/components.css';
 
 
-body{
+/* body{
     background-color: white;
     font-family: 'Open Sans', sans-serif!important;
 }
+
+h1, h2, h3, h4, h5, h6{
+    font-family: 'Roboto', sans-serif;
+} */
+
+body {
+    font-family: 'Cardo', serif;
+   }
+   
+   h1, h2, h3, h4, h5, h6 {
+    font-family: 'Oswald', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+   }
 
 body, html{
     overflow-x: auto;
@@ -30,8 +44,4 @@ footer{
 
 .bg-dark{
     background-color: black!important;
-}
-
-h1, h2, h3, h4, h5, h6{
-    font-family: 'Roboto', sans-serif;
 }
