@@ -14,19 +14,30 @@ try:
 except ImportError:
     import json
 
+
+
 def navigationList():
+    """
+    List of topics to be included in the navigation as determined in the admin
+    """
     nav_links = Navigation_topic.objects.filter(link_status=1)
     return nav_links
 
+
+def getPublishedposts(order='created_on', noItems=4, **filters):
+    """
+    Get a list of Published posts
+    """
+    blogPosts = BlogPost.objects.filter(**filters).order_by(order)[:noItems]
+    return blogPosts
+
+
 # Create your views here.
 def index(request):
-    blogPosts = BlogPost.objects.filter(status=1).order_by('-created_on')[:6]
-    sideBar = BlogPost.objects.filter(status=1).order_by('-created_on')[:4]
     template_name = 'blog/index.html'
     context = {
-        'blogPosts': blogPosts,
+        'blogPosts': getPublishedposts('-created_on', 4, status=1),
         'nav_links': navigationList(),
-        'sideBar':sideBar,
     }
     return render(request, template_name, context)
 
@@ -76,6 +87,18 @@ def new_blog_post(request):
     template_name = "blog/posts/new_blog.html"
     return render(request, template_name, context)
 
+
+def topic_view(request, pk, slug):
+    template_name = "blog/posts/blogposts.html"
+    context = {
+    'nav_links': navigationList(),
+    'slug':slug,
+    'blogPosts': getPublishedposts('-created_on', 4, topic=pk),
+    'sideBar': getPublishedposts()
+    }
+    return render(request, template_name, context)     
+
+
 @login_required
 def likePost(request, pk):
     # post_id = request.GET.get('post_id')
@@ -89,16 +112,6 @@ def likePost(request, pk):
         return redirect('blog:index')
     else:
         return redirect('account_login')
-
-
-def topic_view(request, slug):
-    template_name = "blog/topic.html"
-    context = {
-    'nav_links': navigationList(),
-    'slug':slug,
-    }
-
-    return render(request, template_name, context)     
 
 
 @login_required

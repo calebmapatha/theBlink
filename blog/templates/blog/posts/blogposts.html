@@ -1,20 +1,20 @@
+{% extends 'blog/basetemplates/base.html' %}
 {% load static%}
 {% load filter_tags %}
-  <div class="container-fluid">
-    <div class="row">
-        
-        <div class="col-md-8">
 
+{% block content %}
+  <div class="container">
+    <div class="row">        
+        <div class="col-md-9">
             <div class="container px-0">
-                <div class="row">
-                <div class="col-md-12 mb-3">
-                    <h1 class="mt-5 text-center border-botttom mb-1" style="font-weight: 900;font-size: 2.1em;">
-                        RECENT POSTS
-                    </h1>
-                </div>
-            </div>
 
-                <div class="row bg-white">
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <h1 class="mt-4 text-left" style="color: black; font-weight: 800">{{slug| title}}</h1>
+                    </div>
+                </div>
+
+                <div class="row">
                     {% for blogPost in blogPosts %}
                     <div class="col-md-4">
                         <div class="card shadow rounded-0 border-top" > <!--style="width: 18rem;-->
@@ -30,29 +30,25 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                            <h5 class="card-subtitle mb-1 text-danger">
-                                                {% for topic in blogPost.topic.all %}
-                                                    {{ topic|title }}
-                                                {% endfor %}
-                                            </h5>
-
-                            <!--CARD TITLE-->
+                                    <h5 class="card-subtitle mb-1 text-danger">
+                                        {% for topic in blogPost.topic.all %}
+                                            {{ topic|title }}
+                                        {% endfor %}
+                                    </h5>
                             <h4 class="card-title rounded-0 mb-1" style="font-size: 1.5rem;font-weight: 700;"><a href="{{ blogPost.get_absolute_url }}">
                                 {{blogPost.title | title}}</a></h4>
                                 <h6 class="mt-1"><a href="{{ blogPost.get_absolute_url }}"class="card-text text-muted font-italic" style="text-decoration: underline!important;">Continue reading >></a></h6>        
-                          </div>
-
-                            <!--CARD FOOTER-->
-                            
+                          </div>                            
                         </div>
                     </div>
                     {% endfor %}
                 </div>
+
             </div>
 
         </div>
-<!-- Side bar -->
-        <div class="col-md-3 mt-3">
+
+        <div class="col-md-3 mt-5 px-2">
             {% include 'blog/basetemplates/sidebar.html' %}
         </div>
     
@@ -60,3 +56,4 @@
     </div> <!-- /.row -->
 
 </div><!-- /.container -->
+{% endblock %}

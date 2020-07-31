@@ -27,7 +27,7 @@
                             <div class="card-body">
                                             <h5 class="card-subtitle mb-1" style="color: red">
                                                 {% for topic in blogPost.topic.all %}
-                                                    {{ topic }}
+                                                    {{ topic|title }}
                                                 {% endfor %}
                                             </h5>
 

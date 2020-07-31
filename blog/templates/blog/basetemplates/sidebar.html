@@ -1,6 +1,6 @@
-<div class="container bg-white">
-    <div class="row">
-        <div class="col-md-12 p-2 pt-3 pl-2 ml-2 mb-1 border-bottom">
+<div class="container mt-5 bg-white">
+    <div class="row mt-5">
+        <div class="col-md-12 p-2 pt-3 pl-2 ml-2 mb-1">
             <h4 class="font-weight-bold">Most Read</h4>
         </div>
     </div>
@@ -9,14 +9,14 @@
         <div class="col-md-12 px-0">
             <div class="card border-0 d-flex align-items-start">
                 <h1 class="card-text pt-4 pl-3 position-absolute font-weight-light">{{forloop.counter}}.</h1>
-                <div class="card-body ml-3 pl-5 py-3 border-bottom">
+                <div class="card-body ml-3 pl-5 py-3 border-top">
                     <h6 class="card-subtitle text-danger font-weight-bold">
                         {% for topic in sideBar.topic.all %}
                                         {{ topic|title }}
                                     {% endfor %}
                     </h6>
                     <h5 class="card-title font-weight-bolder mb-0">{{sideBar.title}}</h5>
-                    <h6 class="mt-1"><a href="#"class="card-text text-muted font-italic" style="text-decoration: underline!important;">Reading >></a></h6>
+                    <h6 class="mt-1"><a href="#"class="card-text text-muted font-italic" style="text-decoration: underline!important;">Read >></a></h6>
                 </div>
             </div>
         </div>
