@@ -2,10 +2,13 @@
     CARDS
 */
 
-/* .card{
+.card{
     border:0;
-} */
+}
 
+.card-title:hover{
+    text-decoration: underline;
+}
 @media only screen and (max-width: 767px) {
     .profile img{
         width:200px;

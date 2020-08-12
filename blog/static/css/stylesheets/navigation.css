@@ -2,10 +2,10 @@
         Css for the navigation bar and its respective components for both small and larger screens
 */
 
-div.scrollmenu {
-    background-color: #333;
+.scrollmenu {
     overflow: auto;
     white-space: nowrap;
+    text-align: center;
   }
   
   div.scrollmenu a {
@@ -80,5 +80,7 @@ div.scrollmenu {
         margin-left: 5%;
         margin-bottom: 5%;
         font-size: 0.8em;
+        padding-left: 0;
       }
+
 }

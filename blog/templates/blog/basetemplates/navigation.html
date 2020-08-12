@@ -8,7 +8,7 @@
     </a>
 </nav>
 
-<nav class="scrollmenu">
+<nav class="scrollmenu border-bottom">
     {% if user.is_authenticated %}
     <li class="nav-item d-inline-block">
       <a class="nav-link" href="{% url 'blog:newBlogPost' %}">New Post</span></a>
@@ -21,7 +21,7 @@
     {% endfor %}
 </nav>
 
-<nav class="nav bg-white sideMenu">
+<!-- <nav class="nav bg-white sideMenu">
   <ul>
       <li class="nav-item">
         <a class="nav-link" href="{% url 'blog:newBlogPost' %}">New Post</span></a>
@@ -36,5 +36,5 @@
         <a class="nav-link" href="">About Us</span></a>
       </li>
     </ul>
-</nav>
+</nav> -->
 

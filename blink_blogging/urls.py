@@ -8,7 +8,7 @@ if DEVELOPMENT_MODE_ENABLED is False:
     from blink_blogging.settings_conf.production import ADMIN_URL
     urlpatterns = [
         path(ADMIN_URL, admin.site.urls),
-    ]
+    ] + static(MEDIA_URL, document_root=MEDIA_ROOT)
 
 elif DEVELOPMENT_MODE_ENABLED:
     ADMIN_URL_ = 'admin/'

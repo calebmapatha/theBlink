@@ -17,7 +17,7 @@
                 <div class="row">
                     {% for blogPost in blogPosts %}
                     <div class="col-md-4">
-                        <div class="card shadow rounded-0 border-top" > <!--style="width: 18rem;-->
+                        <div class="card shadow rounded-0 mt-2 border-top" > <!--style="width: 18rem;-->
                             <div class="img" style="width: 100%;max-height: 255px;">
                                 <img class="card-img-top rounded-0" 
                                 {% if blogPost.image %}
@@ -30,7 +30,7 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                    <h5 class="card-subtitle mb-1 text-danger">
+                                    <h5 class="card-subtitle mb-1 text-danger font-weight-light">
                                         {% for topic in blogPost.topic.all %}
                                             {{ topic|title }}
                                         {% endfor %}

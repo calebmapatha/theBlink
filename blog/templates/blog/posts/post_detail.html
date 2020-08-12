@@ -3,34 +3,35 @@
 {% load bootstrap4 %}
 {% block content %}
 <div class="container">
-  <!-- <nav aria-label="breadcrumb">
+  <nav class="mt-5 d-none" aria-label="breadcrumb">
     <ol class="breadcrumb bg-white pl-0">
-      <li class="breadcrumb-item"><a href="#">Home</a></li>
+      <li class="breadcrumb-item"><a href="/">Home</a></li>
       <li class="breadcrumb-item"><a href="#">
           {% for topic in blogPost.topic.all %}
-              {{ topic }}
+              {{ topic|title }}
           {% endfor %}
       </a></li>
-      <li class="breadcrumb-item active" aria-current="page">Article</li>
+      <li class="breadcrumb-item active" aria-current="page">{{blogPost.title|title}}</li>
     </ol>
-  </nav> -->
-    <div class="row">
+  </nav>
+  
+  <div class="row mt-5">
       
       <!-- Post Content Column -->
-      <div class="col-lg-8 mt-4">
-        <h4 class="card-subtitle text-left mb-1" style="color: red">
+      <div class="col-lg-9 mt-1 m-auto">
+        <h5 class="card-subtitle text-left mb-1 text-danger">
           {% for topic in blogPost.topic.all %}
               {{ topic }}
           {% endfor %}
-        </h4>
+        </h5>
         <!-- Title -->
-        <h1 class="mt-1 font-weight-bold text-left" style="font-size: larger;">{{ blogPost.title }}</h1>
+        <h1 class="mt-1 font-weight-bold text-left">{{ blogPost.title }}</h1>
         
         <!-- Author -->
         <p class="text-left mb-0 text-muted">
           Written by
           <a class="text-muted" style="text-decoration: underline!important;" href="{% url 'userprofile:profile' blogPost.author.username %}">{{ blogPost.author.first_name }} {{ blogPost.author.last_name }}</a> |
-        
+        Updated On
         <!-- Date/Time -->
         {{ blogPost.updated_on|date:"M d, Y"}}
         </p>
@@ -46,23 +47,20 @@
         <hr>
 
         <!-- Post Content -->
-        <p class="lead">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ducimus, vero, obcaecati, aut, error quam sapiente nemo saepe quibusdam sit excepturi nam quia corporis eligendi eos magni recusandae laborum minus inventore?</p>
+        <div style="font-size: medium;">
+        <p>
+          Lorem ipsum dolor sit, amet consectetur adipisicing elit. Distinctio expedita maiores perspiciatis, sapiente suscipit voluptas dolorem omnis ipsam doloremque praesentium mollitia obcaecati repellat nobis pariatur. Blanditiis aperiam itaque, aspernatur fuga magni sint soluta vero, perferendis aut maxime commodi nesciunt sunt ut saepe vel aliquid voluptate similique, possimus omnis. Explicabo excepturi earum omnis. Blanditiis est ab, quasi odio deserunt corporis ipsum ad, libero deleniti tenetur vero nostrum! Nesciunt accusantium perspiciatis rerum, impedit quam recusandae. Harum placeat cupiditate amet. At iusto, nisi temporibus dolores maiores ipsa quibusdam vitae dolore accusamus adipisci rem labore quasi aperiam suscipit ea dolor nobis assumenda modi molestias!
+        </p>
 
-        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ut, tenetur natus doloremque laborum quos iste ipsum rerum obcaecati impedit odit illo dolorum ab tempora nihil dicta earum fugiat. Temporibus, voluptatibus.</p>
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Dignissimos soluta aliquam, ea ipsa dolor illum sequi, rem omnis reiciendis enim ex ipsum vel, quasi nam quaerat. Qui possimus assumenda maxime, dolorum veritatis et ullam vero in quas iste aliquid tempore adipisci minus, architecto, dolores ducimus ea voluptatibus recusandae doloremque ipsum inventore corporis quae. Sequi rerum, provident nostrum accusamus quasi distinctio, error nesciunt iste velit in recusandae quis, maxime sapiente quod voluptatibus quaerat aut commodi porro iusto laudantium dolorum quo. Praesentium eveniet perferendis esse natus delectus minima sequi. Quia obcaecati accusamus vitae modi eos molestiae ex possimus fuga ducimus eaque cum deserunt quis doloremque minima corporis, id earum, architecto nemo assumenda culpa. Velit debitis hic saepe tempore nesciunt fugiat. Quasi, quia voluptas, consequatur laudantium cum delectus laboriosam ullam distinctio fugit optio, eum quos quisquam officia reprehenderit. Illum temporibus magnam earum magni, quos sed quasi provident quisquam tempore itaque ab pariatur id quis quas perferendis quaerat exercitationem minima aperiam ut nemo, cupiditate aliquid? Consectetur nam assumenda nulla quasi est reiciendis dicta, necessitatibus nihil quisquam tenetur earum fuga quam. Veniam animi nisi aperiam officiis, totam eligendi maxime assumenda nihil? Voluptas necessitatibus architecto suscipit modi, aut vel incidunt assumenda facere ipsam deleniti, amet ex!
+        </p>
 
-        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eos, doloribus, dolorem iusto blanditiis unde eius illum consequuntur neque dicta incidunt ullam ea hic porro optio ratione repellat perspiciatis. Enim, iure!</p>
-
-        <blockquote class="blockquote">
-          <p class="mb-0">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.</p>
-          <footer class="blockquote-footer">Someone famous in
-            <cite title="Source Title">Source Title</cite>
-          </footer>
-        </blockquote>
-
-        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Error, nostrum, aliquid, animi, ut quas placeat totam sunt tempora commodi nihil ullam alias modi dicta saepe minima ab quo voluptatem obcaecati?</p>
-
-        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Harum, dolor quis. Sunt, ut, explicabo, aliquam tenetur ratione tempore quidem voluptates cupiditate voluptas illo saepe quaerat numquam recusandae? Qui, necessitatibus, est!</p>
-
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Mollitia, facere inventore. Fugiat alias quam natus ducimus qui quasi, adipisci quibusdam corporis fuga ab! Amet exercitationem at ex error laudantium animi eligendi minima maiores dolor distinctio architecto reprehenderit tempora fuga libero omnis dolorum dicta similique fugiat praesentium dolores, quos repellat! Quidem, rem sequi. Deleniti distinctio debitis explicabo facilis atque optio et dignissimos obcaecati, amet accusamus. Assumenda, rem? Minima laboriosam reprehenderit sapiente provident nihil, quasi vitae, praesentium dolor soluta molestiae repellat voluptates, nostrum numquam rerum impedit accusamus consequatur esse quidem corporis dolores fugit autem? Excepturi repellendus odit nesciunt deleniti quod hic maxime quidem dolor dolore adipisci eius delectus ducimus similique sunt ex atque nostrum sed voluptas eaque, quia ad pariatur blanditiis recusandae voluptates. Ab exercitationem neque quod at error nesciunt aliquam ea perferendis molestias sequi, inventore harum veniam? Aliquid veniam deleniti, quidem reiciendis a consequatur, eos obcaecati assumenda nulla, ipsam tempora dolorem?
+        </p>
+      </div>
+        <!-- End Post-->
         <hr>
 
         <!-- Comments Form -->
