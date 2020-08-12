@@ -12,13 +12,13 @@
            <!-- <div class="col-md-12 border"> -->
             {% for blogPost in blogPosts %}
                     <div class="col-md-3 mb-4 no-gutters">
-                        <div class="card shadow border-0"> <!--style="width: 18rem;-->
+                        <div class="card"> <!--style="width: 18rem;-->
                             <div class="img" style="width: 100%;max-height: 255px;">
                                 <img class="card-img-top rounded-0" 
                                 {% if blogPost.image %}
-                                    src="{{ blogPost.image.url }}" alt="Card image cap" style="width:100%;max-height:240px;object-fit: cover;"/>
+                                    src="{{ blogPost.image.url }}" alt="Card image cap" style="width:100%;max-height:240px;object-fit: cover;min-width:240px ;"/>
                                 {% else %} 
-                                    src="https://picsum.photos/seed/{{blogPost.id}}/240/300" alt="Card image cap" style="width:100%;max-height:240px;object-fit: cover;" />
+                                    src="https://picsum.photos/seed/{{blogPost.id}}/240/300?grayscale" alt="Card image cap" style="width:100%;max-height:240px;object-fit: cover;" />
                                 {% endif %}
                                 <div class="card-img-overlay text-white absolute" style="height: 20px;">
                                     <h1 class="card-text pt-3 font-weight-bold">{{forloop.counter}}</h1>
