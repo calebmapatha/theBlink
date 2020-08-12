@@ -15,7 +15,7 @@ import os
 from typing import List, Any
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DEVELOPMENT_MODE_ENABLED = False
+DEVELOPMENT_MODE_ENABLED = True
 if DEVELOPMENT_MODE_ENABLED:
     try:
         from blink_blogging.settings_conf.development import *
