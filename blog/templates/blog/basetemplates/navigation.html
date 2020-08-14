@@ -9,11 +9,9 @@
 </nav>
 
 <nav class="scrollmenu border-bottom">
-    {% if user.is_authenticated %}
     <li class="nav-item d-inline-block">
-      <a class="nav-link" href="{% url 'blog:newBlogPost' %}">New Post</span></a>
+      <a class="nav-link" href="{% url 'blog:newBlogPost' %}">Write a post</span></a>
     </li>
-    {% endif %}
     {% for nav_link in nav_links %}
     <li class="nav-item d-inline-block">
       <a class="nav-link" href="{% url 'blog:topics' nav_link.slug nav_link.id %}">{{nav_link|title}}</span></a>
