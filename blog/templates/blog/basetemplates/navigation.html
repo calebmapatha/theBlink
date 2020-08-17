@@ -1,6 +1,11 @@
 <nav class="navbar navbar-light bg-white border-bottom px-1 ">
-  <button onclick="openNav" class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
+  
+  <button class="hamburger hamburger--collapse" type="button" onclick="menuOpen();">
+    <span class="hamburger-box">
+      <span class="hamburger-inner"></span>
+    </span>
+  </button>
+
   </button>
     <a href="{% url 'blog:index' %}" class="navbar-brand">theBlink</a>
     <a href="{% url 'account_login' %}" class="material-icons md-36 p-2">
@@ -19,6 +24,17 @@
     {% endfor %}
 </nav>
 
+
+{% block Script %}
+ <script>
+      const hamburger = document.querySelector(".hamburger");
+      hamburger.addEventListener("click", () => {
+        hamburger.classList.toggle("is-active");
+      })
+      menuIcon.classList.toggle("is-active")
+ </script>
+{% endblock Script %}
+
 <!-- <nav class="nav bg-white sideMenu">
   <ul>
       <li class="nav-item">
@@ -35,4 +51,6 @@
       </li>
     </ul>
 </nav> -->
+
+
 
