@@ -13,7 +13,9 @@
 /* CSS Rules for components */
 @import 'stylesheets/components.css';
 
-
+* {
+    outline: none;
+}
 /* body{
     background-color: white;
     font-family: 'Open Sans', sans-serif!important;
@@ -40,6 +42,9 @@ body {
 
 section{
     height: 100vh;
+}
+.lockScroll{
+    overflow:hidden;
 }
 footer{
     clear: both;
