@@ -1,3 +1,6 @@
+/* CSS Rules for hamburger menu animation */
+@import 'hamburgers.min.css';
+
 /* CSS Rules for navigation */
 @import 'stylesheets/navigation.css';
 
@@ -20,6 +23,9 @@ h1, h2, h3, h4, h5, h6{
     font-family: 'Roboto', sans-serif;
 } */
 
+button:focus{
+    outline:none!important;
+}
 body {
     font-family: 'Open Sans', sans-serif;
     height: 100%;

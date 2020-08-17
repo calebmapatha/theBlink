@@ -40,11 +40,6 @@
     position:absolute;
     z-index: 1200;
     padding-top: 10%;
-    transform: translateX(-100%);
-    transition: 1s linear;
-}
-.showSideMenu{
-    transform: translateX(0%)!important;
 }
 
 
