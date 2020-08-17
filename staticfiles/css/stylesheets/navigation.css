@@ -1,0 +1,81 @@
+/* 
+        Css for the navigation bar and its respective components for both small and larger screens
+*/
+
+.scrollmenu {
+    overflow: auto;
+    white-space: nowrap;
+    text-align: center;
+  }
+  
+  div.scrollmenu a {
+    display: inline-block;
+    color: white;
+    text-align: center;
+    padding: 14px;
+    text-decoration: none;
+  }
+  
+  div.scrollmenu a:hover {
+    background-color: #777;
+  }
+
+/* logo */
+.navbar-brand{
+    font-weight: bold;
+    font-size: 2em!important;
+    letter-spacing: -2px;
+    color: #000!important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+
+/* side Menu for the website */
+.sideMenu{
+    width:50%;
+    min-height: 100vh;
+    left:0;
+    top:0;
+    position:absolute;
+    z-index: 1200;
+    padding-top: 10%;
+}
+
+
+/* Desktop, Laptop and Ipads Style */
+@media only screen and (min-width: 768px){
+
+    /* the submenu that holds the topics */
+    .subMenu{
+        background-color:white;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+}
+
+
+/* S, XS Mobile devices  */
+@media only screen and (max-width: 767px) {
+
+    .navbar-brand{
+        color: black!important;
+    }
+
+    .subMenu{
+        display: inline-flex;
+        margin-top: 5%;
+        background-color:transparent;
+    }
+
+    .subMenu .nav-link{
+        background-color: black;
+        border-radius: 36em;
+        color: white!important;
+        margin-left: 5%;
+        margin-bottom: 5%;
+        font-size: 0.8em;
+        padding-left: 0;
+      }
+
+}
