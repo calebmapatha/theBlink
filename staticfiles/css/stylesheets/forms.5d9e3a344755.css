@@ -56,11 +56,11 @@ section#login_register-form .form-control {
 }
 
 section#login_register-form .twitter::before{
-    content: url('icons/twitter.svg');
+    content: url("icons/twitter.0729c42ac6c8.svg");
 }
 
 section#login_register-form .google::before{
-    content: url('icons/google.svg');
+    content: url("icons/google.1ba97428b0f6.svg");
 }
 
 section#login_register-form .twitter::before, 
