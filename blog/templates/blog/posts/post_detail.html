@@ -43,12 +43,7 @@
         <!-- Preview Image -->
         <!-- <img class="img-fluid rounded" src="http://placehold.it/900x300" alt=""> -->
         <img class="img-fluid" 
-
-        {% if blogPost.image %}
-            src="{{ blogPost.image.url }}" alt="Card image cap" width="100%" style="max-height:400px;object-fit: cover;" alt="" />
-        {% else %} 
-            src="https://picsum.photos/seed/{{blogPost.id}}/240/300" style="max-height:400px;object-fit: cover;" alt="" />
-        {% endif %}
+            src="{% static 'media/17.jpg' %}" width="100%" style="max-height:400px;object-fit: cover;" alt="" />
             <!-- src="{% static 'media/17.jpg' %}" width="100%"  -->
 
          <br/> 
