@@ -9,10 +9,13 @@ class PostAdmin(admin.ModelAdmin):
     list_filter = ('status', 'created_on', 'topic')
     search_fields = ['title', 'body']
     # prepopulated_fields = {'slug': ('title',)}
-    actions = ['publish_post']
+    actions = ['publish_post','unpublish_post']
 
     def publish_post(self, request, queryset):
         queryset.update(status=True)
+
+    def unpublish_post(self, request, queryset):
+        queryset.update(status=False)
 
 
 @admin.register(Comment)

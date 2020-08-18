@@ -18,8 +18,8 @@
   <div class="row mt-4">
       
       <!-- Post Content Column -->
-      <div class="col-lg-9 mt-1 m-auto">
-        <h5 class="card-subtitle text-left mb-1 text-danger">
+      <div class="col-lg-9 mt-2 m-auto">
+        <h5 class="card-subtitle text-left mb-1 mt-2 text-danger">
           {% for topic in blogPost.topic.all %}
               {{ topic }}
           {% endfor %}
@@ -42,8 +42,17 @@
 
         <!-- Preview Image -->
         <!-- <img class="img-fluid rounded" src="http://placehold.it/900x300" alt=""> -->
-        <img class="img-fluid" src="{% static 'media/17.jpg' %}" width="100%" height="300px" alt="">
+        <img class="img-fluid" 
 
+        {% if blogPost.image %}
+            src="{{ blogPost.image.url }}" alt="Card image cap" width="100%" style="max-height:400px;object-fit: cover;" alt="" />
+        {% else %} 
+            src="https://picsum.photos/seed/{{blogPost.id}}/240/300" style="max-height:400px;object-fit: cover;" alt="" />
+        {% endif %}
+            <!-- src="{% static 'media/17.jpg' %}" width="100%"  -->
+
+         <br/> 
+        <span class="text-muted">Source: <a href="#" class="text-muted">123</a></span>
         <hr>
 
         <!-- Post Content -->

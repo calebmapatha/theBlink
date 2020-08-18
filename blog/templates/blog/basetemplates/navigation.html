@@ -1,6 +1,6 @@
 <nav class="navbar navbar-light bg-white border-bottom px-1 ">
   
-  <button class="hamburger hamburger--arrowturn" type="button" onclick="menuOpen();">
+  <button class="hamburger hamburger--arrowalt" type="button" onclick="menuOpen();">
     <span class="hamburger-box">
       <span class="hamburger-inner"></span>
     </span>
@@ -24,27 +24,21 @@
     {% endfor %}
 </nav>
 
-<did class="overlay"></did>
+<div class="overlay"></div>
 
-<nav class="nav bg-white sideMenu">
+<nav class="nav sideMenu">
   <div class="py-5 text-center">
       <li class="nav-item">
-        <a class="nav-link" href="{% url 'blog:newBlogPost' %}">New Post</span></a>
-      </li>
-      <li class="nav-item">
         <a class="nav-link" href="#">Subscribe</span></a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#">Manage Profile</span></a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="">About Us</span></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="">Privacy</span></a>
+        <a class="nav-link" href="">Contact</span></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="">Contact</span></a>
+        <a class="nav-link" href="">Privacy</span></a>
       </li>
     </div>
 </nav>
@@ -57,8 +51,9 @@
       hamburger.addEventListener("click", () => {
         hamburger.classList.toggle("is-active");
         sideMenu.classList.toggle("d-block");
-        document.body.classList.toggle("lockScroll")
-        overlay.classList.toggle("d-block");
+        sideMenu.classList.toggle("showMenuTransition");
+        document.body.classList.toggle("lockScroll");
+        overlay.classList.toggle("display-item");
       })
  </script>
 {% endblock Script %}
