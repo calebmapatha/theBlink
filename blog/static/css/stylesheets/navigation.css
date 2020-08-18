@@ -51,6 +51,7 @@
 }
 .showMenuTransition{
   transform: translate(0);
+  display: block;
 } 
 .hamburger{
   z-index: 3;
