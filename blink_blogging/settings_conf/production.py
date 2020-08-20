@@ -14,7 +14,8 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
 EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
 
-PAGE_URL = "http:theblink.co.za/post/{{pk}}-{{slug}}/"
+PAGE_URL = os.environ['PAGE_URL']
+
 # SECURE_SSL_REDIRECT = True
 # SESSION_COOKIE_SECURE = True
 # CSRF_COOKIE_SECURE = True
