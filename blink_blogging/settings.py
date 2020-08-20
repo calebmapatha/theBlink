@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'blog',
     'user',
     'userprofile',
+    'extras',
 
     # third-party apps
     'bootstrap4',

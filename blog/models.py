@@ -49,11 +49,12 @@ class BlogPost(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_post')
     updated_on = models.DateTimeField(auto_now=True)
     content = models.TextField()
-    # FileContent = models.FileField(upload_to="BlogPost", blank=True, help_text="Alternatively, you can upload a .docx file.")
+    # FileContent = models.FileField(upload_to="BlogPost", blank=True, help_text="Alternatively, you can upload a
+    # .docx file.")
     likes = models.ManyToManyField(User, editable=False, blank=True, related_name='post_likes')
     created_on = models.DateTimeField(auto_now_add=True)
     topic = models.ManyToManyField(Navigation_topic, help_text="Choose a topic/s under which article falls under.")
-    tags = models.CharField(max_length=200, blank=True, help_text="Sepate tags with spaces.")
+    tags = models.CharField(max_length=200, blank=True, help_text="Separate tags with spaces.")
     status = models.IntegerField(choices=STATUS, editable=False, default=0)
     image = models.ImageField(upload_to="headerImg/%Y/%m/%d/", help_text="Upload a banner image.", blank=True)
 

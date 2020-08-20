@@ -2,6 +2,9 @@
 {% load static %}
 
 {% block pageTitle %} TheBlink {% endblock %}
+
+{% block jumbotron %}{% include 'blog/posts/jumbotron.html' %}{% endblock jumbotron %}
+
 {% block content %}
 
   <!-- -----Blogposts-------- -->
@@ -12,6 +15,3 @@
 
  {% endblock content %}
 
- {% block Script %}
-    <script src="{% static 'js/main.js' %}"></script>
-{% endblock Script %}

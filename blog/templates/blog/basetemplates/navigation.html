@@ -29,32 +29,20 @@
 <nav class="nav sideMenu">
   <div class="py-5 text-center">
       <li class="nav-item">
-        <a class="nav-link" href="#">Subscribe</span></a>
+        <a class="nav-link" href="/">Home</span></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="">About Us</span></a>
+        <a class="nav-link" href="{% url 'extras:subscribe' %}">Subscribe</span></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="">Contact</span></a>
+        <a class="nav-link" href="{% url 'extras:aboutUs' %}">About Us</span></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="">Privacy</span></a>
+        <a class="nav-link" href="{% url 'extras:contactUs' %}">Contact Us</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url 'extras:privacy' %}">Privacy</span></a>
       </li>
     </div>
 </nav>
-
-{% block Script %}
- <script>
-      const hamburger = document.querySelector(".hamburger");
-      const sideMenu = document.querySelector('.sideMenu');
-      const overlay = document.querySelector('.overlay');
-      hamburger.addEventListener("click", () => {
-        hamburger.classList.toggle("is-active");
-        sideMenu.classList.toggle("d-block");
-        sideMenu.classList.toggle("showMenuTransition");
-        document.body.classList.toggle("lockScroll");
-        // overlay.classList.toggle("display-item");
-      })
- </script>
-{% endblock Script %}
 

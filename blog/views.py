@@ -93,7 +93,7 @@ def topic_view(request, pk, slug):
     context = {
     'nav_links': navigationList(),
     'slug':slug,
-    'blogPosts': getPublishedposts('-created_on', 4, topic=pk),
+    'blogPosts': getPublishedposts('-created_on', 4, topic=pk, status=1),
     'sideBar': getPublishedposts()
     }
     return render(request, template_name, context)     

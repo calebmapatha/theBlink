@@ -1,6 +1,11 @@
 {% extends 'blog/basetemplates/base.html' %}
 {% load static %}
 {% load bootstrap4 %}
+
+{% load filter_tags %}
+
+{% block pageTitle %}{{ blogPost.title|title }} {% endblock %}
+
 {% block content %}
 <div class="container">
   <nav class="mt-5 d-none" aria-label="breadcrumb">
@@ -18,7 +23,7 @@
   <div class="row mt-4">
       
       <!-- Post Content Column -->
-      <div class="col-lg-9 mt-2 m-auto">
+      <div class="col-md-10 mt-2 m-auto">
         <h5 class="card-subtitle text-left mb-1 mt-2 text-danger">
           {% for topic in blogPost.topic.all %}
               {{ topic }}
@@ -51,18 +56,30 @@
         <hr>
 
         <!-- Post Content -->
-        <div style="font-size: medium;">
+        <div class="entry-content">
         <p>
-          Lorem ipsum dolor sit, amet consectetur adipisicing elit. Distinctio expedita maiores perspiciatis, sapiente suscipit voluptas dolorem omnis ipsam doloremque praesentium mollitia obcaecati repellat nobis pariatur. Blanditiis aperiam itaque, aspernatur fuga magni sint soluta vero, perferendis aut maxime commodi nesciunt sunt ut saepe vel aliquid voluptate similique, possimus omnis. Explicabo excepturi earum omnis. Blanditiis est ab, quasi odio deserunt corporis ipsum ad, libero deleniti tenetur vero nostrum! Nesciunt accusantium perspiciatis rerum, impedit quam recusandae. Harum placeat cupiditate amet. At iusto, nisi temporibus dolores maiores ipsa quibusdam vitae dolore accusamus adipisci rem labore quasi aperiam suscipit ea dolor nobis assumenda modi molestias!
+          Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+            Distinctio expedita maiores perspiciatis, sapiente suscipit voluptas dolorem omnis ipsam doloremque praesentium mollitia obcaecati repellat nobis pariatur.
+
+            <p>Blanditiis aperiam itaque, aspernatur fuga magni sint soluta vero, perferendis aut maxime commodi nesciunt sunt ut saepe vel aliquid voluptate similique, possimus omnis.
         </p>
 
+          <h2>Lorem ipsum dolor sit amet consectetur adipisicing elit.</h2>
         <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Dignissimos soluta aliquam, ea ipsa dolor illum sequi, rem omnis reiciendis enim ex ipsum vel, quasi nam quaerat. Qui possimus assumenda maxime, dolorum veritatis et ullam vero in quas iste aliquid tempore adipisci minus, architecto, dolores ducimus ea voluptatibus recusandae doloremque ipsum inventore corporis quae. Sequi rerum, provident nostrum accusamus quasi distinctio, error nesciunt iste velit in recusandae quis, maxime sapiente quod voluptatibus quaerat aut commodi porro iusto laudantium dolorum quo. Praesentium eveniet perferendis esse natus delectus minima sequi. Quia obcaecati accusamus vitae modi eos molestiae ex possimus fuga ducimus eaque cum deserunt quis doloremque minima corporis, id earum, architecto nemo assumenda culpa. Velit debitis hic saepe tempore nesciunt fugiat. Quasi, quia voluptas, consequatur laudantium cum delectus laboriosam ullam distinctio fugit optio, eum quos quisquam officia reprehenderit. Illum temporibus magnam earum magni, quos sed quasi provident quisquam tempore itaque ab pariatur id quis quas perferendis quaerat exercitationem minima aperiam ut nemo, cupiditate aliquid? Consectetur nam assumenda nulla quasi est reiciendis dicta, necessitatibus nihil quisquam tenetur earum fuga quam. Veniam animi nisi aperiam officiis, totam eligendi maxime assumenda nihil? Voluptas necessitatibus architecto suscipit modi, aut vel incidunt assumenda facere ipsam deleniti, amet ex!
-        </p>
+            Dignissimos soluta aliquam, ea ipsa dolor illum sequi, rem omnis reiciendis enim ex ipsum vel, quasi nam quaerat.
+            Qui possimus assumenda maxime, dolorum veritatis et ullam vero in quas iste aliquid tempore adipisci minus, architecto, dolores ducimus ea voluptatibus recusandae doloremque ipsum inventore corporis quae.
+            <p>Sequi rerum, provident nostrum accusamus quasi distinctio, error nesciunt iste velit in recusandae quis, maxime sapiente quod voluptatibus quaerat aut commodi porro iusto laudantium dolorum quo.
+            </p>
 
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Mollitia, facere inventore. Fugiat alias quam natus ducimus qui quasi, adipisci quibusdam corporis fuga ab! Amet exercitationem at ex error laudantium animi eligendi minima maiores dolor distinctio architecto reprehenderit tempora fuga libero omnis dolorum dicta similique fugiat praesentium dolores, quos repellat! Quidem, rem sequi. Deleniti distinctio debitis explicabo facilis atque optio et dignissimos obcaecati, amet accusamus. Assumenda, rem? Minima laboriosam reprehenderit sapiente provident nihil, quasi vitae, praesentium dolor soluta molestiae repellat voluptates, nostrum numquam rerum impedit accusamus consequatur esse quidem corporis dolores fugit autem? Excepturi repellendus odit nesciunt deleniti quod hic maxime quidem dolor dolore adipisci eius delectus ducimus similique sunt ex atque nostrum sed voluptas eaque, quia ad pariatur blanditiis recusandae voluptates. Ab exercitationem neque quod at error nesciunt aliquam ea perferendis molestias sequi, inventore harum veniam? Aliquid veniam deleniti, quidem reiciendis a consequatur, eos obcaecati assumenda nulla, ipsam tempora dolorem?
-        </p>
+            <p>
+            Dignissimos soluta aliquam, ea ipsa dolor illum sequi, rem omnis reiciendis enim ex ipsum vel, quasi nam quaerat.
+            Qui possimus assumenda maxime, dolorum veritatis et ullam vero in quas iste aliquid tempore adipisci minus, architecto, dolores ducimus ea voluptatibus recusandae doloremque ipsum inventore corporis quae.
+            <p>Sequi rerum, provident nostrum accusamus quasi distinctio, error nesciunt iste velit in recusandae quis, maxime sapiente quod voluptatibus quaerat aut commodi porro iusto laudantium dolorum quo.
+            </p>
+
+            {% for tag in blogPost.tags.all %}
+              {{ tag|split:' ' }}
+            {% endfor %}
       </div>
         <!-- End Post-->
         <hr>

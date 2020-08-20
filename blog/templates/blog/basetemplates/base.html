@@ -38,10 +38,16 @@
     <!-- Navigation -->
     {% block navigation %}{% include 'blog/basetemplates/navigation.html' %}{% endblock navigation %}
 
+    <!-- jumbotron template --->
+    {% block jumbotron %}{% endblock jumbotron %}
+
     <!-- Body/Content -->
     {% block content %}{% endblock content %}
     
     <!-- Scripts -->
-    {% block Script %}{% endblock Script %}
+     {% block Script %}
+            <script src="{% static 'js/main.js' %}"></script>
+            <script src="{% static 'js/navSettings.js' %}"></script>
+    {% endblock Script %}
 </body>
 </html>

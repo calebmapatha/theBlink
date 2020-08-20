@@ -40,6 +40,22 @@ body {
     /* letter-spacing: 1px; */
    }
 
+p{
+    line-height: 1.35;
+    margin-bottom: 2rem;
+    font-size: 1.3rem;
+    vertical-align: baseline;
+}
+iframe {
+    width: 100%;
+    height: auto;
+    border:0;
+}
+/*.videos{*/
+/*    overflow: auto;*/
+/*    white-space: nowrap;*/
+/*    position: relative;*/
+/*}*/
 section{
     height: 100vh;
 }

@@ -2,18 +2,20 @@
 @import url("hamburgers.min.cf73c62961db.css");
 
 /* CSS Rules for navigation */
-@import url("stylesheets/navigation.d0384b4c2e16.css");
+@import url("stylesheets/navigation.4bcff627b1b5.css");
 
 /* CSS Rules for icons and anchors */
 @import url("stylesheets/icons.670ba1f63197.css");
 
 /* CSS Rules for Forms  */
-@import url("stylesheets/forms.b7c6e39a004f.css");
+@import url("stylesheets/forms.5d9e3a344755.css");
 
 /* CSS Rules for components */
-@import url("stylesheets/components.bf6ec4fe5307.css");
+@import url("stylesheets/components.8672580bfe6b.css");
 
-
+* {
+    outline: none;
+}
 /* body{
     background-color: white;
     font-family: 'Open Sans', sans-serif!important;
@@ -38,8 +40,27 @@ body {
     /* letter-spacing: 1px; */
    }
 
+p{
+    line-height: 1.35;
+    margin-bottom: 2rem;
+    font-size: 1.3rem;
+    vertical-align: baseline;
+}
+iframe {
+    width: 100%;
+    height: auto;
+    border:0;
+}
+/*.videos{*/
+/*    overflow: auto;*/
+/*    white-space: nowrap;*/
+/*    position: relative;*/
+/*}*/
 section{
     height: 100vh;
+}
+.lockScroll{
+    overflow:hidden;
 }
 footer{
     clear: both;

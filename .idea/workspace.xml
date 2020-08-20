@@ -62,7 +62,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/templates/account" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/blog/static/media" />
     <property name="list.type.of.created.stylesheet" value="CSS" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
@@ -73,19 +73,19 @@
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\User\Desktop\Blink\templates\account" />
-      <recent name="C:\Users\User\Desktop\Blink" />
-      <recent name="C:\Users\User\Desktop\Blink\blog\static\media" />
-      <recent name="C:\Users\User\Desktop\Blink\blog\static\css" />
-      <recent name="C:\Users\User\Desktop\Blink\blog\static\js" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\User\Desktop\Blink\blog\templates\blog\posts" />
       <recent name="C:\Users\User\Desktop\Blink\blog\templates\blog\basetemplates" />
       <recent name="C:\Users\User\Desktop\Blink\blink_blogging" />
       <recent name="C:\Users\User\Desktop\Blink" />
       <recent name="C:\Users\User\Desktop\Blink\blink_blogging\settings" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\User\Desktop\Blink\blog\static\media" />
+      <recent name="C:\Users\User\Desktop\Blink\templates\account" />
+      <recent name="C:\Users\User\Desktop\Blink" />
+      <recent name="C:\Users\User\Desktop\Blink\blog\static\css" />
+      <recent name="C:\Users\User\Desktop\Blink\blog\static\js" />
     </key>
   </component>
   <component name="RunManager">
@@ -176,6 +176,8 @@
       <workItem from="1593712620631" duration="961000" />
       <workItem from="1593714898094" duration="1200000" />
       <workItem from="1594993479434" duration="74000" />
+      <workItem from="1597910169950" duration="13314000" />
+      <workItem from="1597927880159" duration="1857000" />
     </task>
     <task id="LOCAL-00001" summary="update">
       <created>1587927686848</created>
@@ -206,14 +208,6 @@
     <option name="LAST_COMMIT_MESSAGE" value="update" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="275" y="23" key="#Inspections" timestamp="1587565664889">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="275" y="23" key="#Inspections/0.0.1366.728@0.0.1366.728" timestamp="1587565664889" />
-    <state x="274" y="7" width="1081" height="721" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1589129056011">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="274" y="7" width="1081" height="721" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1366.728@0.0.1366.728" timestamp="1589129056011" />
     <state x="789" y="171" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1591820908306">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
@@ -222,57 +216,40 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="413" y="112" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1366.728@0.0.1366.728" timestamp="1590088392105" />
-    <state x="617" y="0" key="CommitChangelistDialog2" timestamp="1587941559633">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="617" y="0" key="CommitChangelistDialog2/0.0.1366.728@0.0.1366.728" timestamp="1587941559633" />
     <state x="463" y="120" key="FileChooserDialogImpl" timestamp="1594993508576">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="463" y="120" key="FileChooserDialogImpl/0.0.1366.728@0.0.1366.728" timestamp="1594993508576" />
-    <state width="1323" height="179" key="GridCell.Tab.0.bottom" timestamp="1587414281141">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state width="1323" height="179" key="GridCell.Tab.0.bottom/0.0.1366.728@0.0.1366.728" timestamp="1587414281141" />
-    <state width="1323" height="179" key="GridCell.Tab.0.center" timestamp="1587414281141">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state width="1323" height="179" key="GridCell.Tab.0.center/0.0.1366.728@0.0.1366.728" timestamp="1587414281141" />
-    <state width="1323" height="179" key="GridCell.Tab.0.left" timestamp="1587414281141">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state width="1323" height="179" key="GridCell.Tab.0.left/0.0.1366.728@0.0.1366.728" timestamp="1587414281141" />
-    <state width="1323" height="179" key="GridCell.Tab.0.right" timestamp="1587414281141">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state width="1323" height="179" key="GridCell.Tab.0.right/0.0.1366.728@0.0.1366.728" timestamp="1587414281141" />
     <state x="184" y="7" key="SettingsEditor" timestamp="1590551052495">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="184" y="7" key="SettingsEditor/0.0.1366.728@0.0.1366.728" timestamp="1590551052495" />
-    <state x="379" y="189" key="com.intellij.ide.util.TipDialog" timestamp="1594993485412">
+    <state x="379" y="189" key="com.intellij.ide.util.TipDialog" timestamp="1597910169376">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
-    <state x="379" y="189" key="com.intellij.ide.util.TipDialog/0.0.1366.728@0.0.1366.728" timestamp="1594993485412" />
+    <state x="379" y="189" key="com.intellij.ide.util.TipDialog/0.0.1366.728@0.0.1366.728" timestamp="1597910169376" />
     <state x="-7" y="0" width="697" height="735" key="dock-window-1" timestamp="1592084962807">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="-7" y="0" width="697" height="735" key="dock-window-1/0.0.1366.728@0.0.1366.728" timestamp="1592084962807" />
-    <state x="0" y="0" width="737" height="728" key="find.popup" timestamp="1588381437739">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="0" y="0" width="737" height="728" key="find.popup/0.0.1366.728@0.0.1366.728" timestamp="1588381437739" />
     <state x="371" y="211" width="707" height="305" key="org.intellij.images.editor.actions.BackgroundImageDialog" timestamp="1589965803211">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="371" y="211" width="707" height="305" key="org.intellij.images.editor.actions.BackgroundImageDialog/0.0.1366.728@0.0.1366.728" timestamp="1589965803211" />
-    <state x="926" y="340" key="save.file.as.template.dialog" timestamp="1587272428811">
-      <screen x="0" y="0" width="1366" height="728" />
-    </state>
-    <state x="926" y="340" key="save.file.as.template.dialog/0.0.1366.728@0.0.1366.728" timestamp="1587272428811" />
     <state x="346" y="49" width="672" height="678" key="search.everywhere.popup" timestamp="1592059879494">
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="346" y="49" width="672" height="678" key="search.everywhere.popup/0.0.1366.728@0.0.1366.728" timestamp="1592059879494" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="django-line">
+          <url>file://$PROJECT_DIR$/blog/templates/blog/posts/blogposts_v2.html</url>
+          <line>43</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

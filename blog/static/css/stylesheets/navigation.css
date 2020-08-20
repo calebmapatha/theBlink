@@ -1,7 +1,9 @@
 /* 
         Css for the navigation bar and its respective components for both small and larger screens
 */
-
+.nav-link:hover{
+  color: #666666!important;
+}
 .scrollmenu {
     overflow: auto;
     white-space: nowrap;
@@ -35,7 +37,7 @@
 
 /* side Menu for the website */
 .sideMenu{
-    width:100%;
+    width:38%;
     min-height: 100vh;
     left:0;
     top:0;
@@ -47,7 +49,8 @@
     font-size:2em;
     background-color: rgba(255, 255, 255, 0.96);
     transition: 1s ease;
-    transform:translate(-100px)
+    transform:translate(-100px);
+    box-shadow: 2px 2px 2px 2px rgba(0,0,0,0.1);
 }
 .showMenuTransition{
   transform: translate(0);

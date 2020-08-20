@@ -20,5 +20,6 @@ urlpatterns += [
     re_path(r'^accounts/', include('allauth.urls')),
     path('profile/', include('userprofile.urls')),
     path('', include('blog.urls')),
+    path('extras/', include('extras.urls')),
 ]
 
