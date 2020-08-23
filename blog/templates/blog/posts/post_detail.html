@@ -95,5 +95,5 @@
 {% endblock content%}
 {% block Script %}
 <script src="{% static 'js/navSettings.js'%}"></script>
-{% include 'blog/Comments.html' with pk=blogPost.pk slug=blogPost.slug %}
+{% include 'blog/comments.html' with pk=blogPost.pk slug=blogPost.slug %}
 {% endblock Script %}
