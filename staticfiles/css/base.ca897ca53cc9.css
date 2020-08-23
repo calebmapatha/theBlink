@@ -1,17 +1,17 @@
 /* CSS Rules for hamburger menu animation */
-@import 'hamburgers.min.css';
+@import url("hamburgers.min.cf73c62961db.css");
 
 /* CSS Rules for navigation */
-@import 'stylesheets/navigation.css';
+@import url("stylesheets/navigation.4bcff627b1b5.css");
 
 /* CSS Rules for icons and anchors */
-@import 'stylesheets/icons.css';
+@import url("stylesheets/icons.670ba1f63197.css");
 
 /* CSS Rules for Forms  */
-@import 'stylesheets/forms.css';
+@import url("stylesheets/forms.5d9e3a344755.css");
 
 /* CSS Rules for components */
-@import 'stylesheets/components.css';
+@import url("stylesheets/components.e20e1f39e552.css");
 
 * {
     outline: none;
