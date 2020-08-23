@@ -1,7 +1,9 @@
+
+// MENU
 const hamburger = document.querySelector(".hamburger");
 const sideMenu = document.querySelector('.sideMenu');
 const overlay = document.querySelector('.overlay');
-
+ 
 hamburger.addEventListener("click", () => {
     hamburger.classList.toggle("is-active");
     sideMenu.classList.toggle("d-block");
@@ -9,3 +11,7 @@ hamburger.addEventListener("click", () => {
     document.body.classList.toggle("lockScroll");
     // overlay.classList.toggle("display-item");
 })
+
+// lazy loads elements with default selector as '.lozad'
+const observer = lozad(); 
+    observer.observe();

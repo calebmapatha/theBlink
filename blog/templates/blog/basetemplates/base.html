@@ -1,8 +1,8 @@
-{% load google_analytics_gtag %}
-{% load bootstrap4 %}
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
+    {% load google_analytics_gtag %}
+    {% load bootstrap4 %}
+    {% load static %}    
 <head>
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-174025868-1"></script>
@@ -21,13 +21,11 @@
     <meta name="author" content="TheBlinkdot">
     
     {% bootstrap_css  %}
-    {% bootstrap_javascript jquery='full' %}
     
-    <link href="{% static 'css/thirdparty/bootstrap.min.css' %}" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link href="{% static 'css/base.css' %}" rel="stylesheet" />
-    <!-- <link href="https://fonts.googleapis.com/css2?family=Merriweather&family=Oswald&display=swap" rel="stylesheet"> -->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Oswald&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lozad/dist/lozad.min.js"></script>
 
 
 </head>
@@ -47,8 +45,11 @@
     <!-- {% block footer %}{% include 'blog/basetemplates/footer.html' %}{% endblock footer %} -->
     <!-- Scripts -->
      {% block Script %}
-            <script src="{% static 'js/main.js' %}"></script>
             <script src="{% static 'js/navSettings.js' %}"></script>
+            <script>
+                const observer = lozad(); // lazy loads elements with default selector as '.lozad'
+                      observer.observe();
+            </script>     
     {% endblock Script %}
 </body>
 </html>
