@@ -9,6 +9,7 @@ from .models import BlogPost, Like, Navigation_topic
 from .forms import CommentForm, CreateBlogForm
 from django.contrib.postgres.search import SearchVector
 from django.views.generic import ListView
+
 try:
     from django.utils import simplejson as json
 except ImportError:
@@ -38,6 +39,7 @@ def index(request):
     context = {
         'blogPosts': getPublishedposts('-created_on', 4, status=1),
         'nav_links': navigationList(),
+        'site_key': settings.RECAPTCHA_SITE_KEY,
     }
     return render(request, template_name, context)
 
