@@ -45,24 +45,9 @@ def index(request):
 def post_detail(request, pk, slug):
     template_name = 'blog/posts/post_detail.html'
     post = get_object_or_404(BlogPost, pk=pk, slug=slug)
-    comments = post.comments.filter(active=True)
-
-    # Rendering a form to make a new comment
-    new_comment = None
-    if request.method == 'POST':
-        comment_form = CommentForm(data=request.POST)
-        if comment_form.is_valid():
-            new_comment = comment_form.save(commit=False)
-            new_comment.post = post
-            new_comment.save()
-    else:
-        comment_form = CommentForm()
 
     context = {
         'blogPost': post,
-        'comments': comments,
-        'new_comment': new_comment,
-        'comment_form': comment_form,
         'nav_links': navigationList(),
     }
     return render(request, template_name, context)
