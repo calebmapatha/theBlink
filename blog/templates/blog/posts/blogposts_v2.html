@@ -14,7 +14,7 @@
                     <div class="col-md-3 mb-4 no-gutters">
                         <div class="card"> <!--style="width: 18rem;-->
                             <div class="img" style="width: 100%;max-height: 255px;">
-                                <img class="card-img-top rounded-0" 
+                                <img class="card-img-top rounded-0" loading="lazy" 
                                 {% if blogPost.image %}
                                     src="{{ blogPost.image.url }}" alt="Card image cap" style="width:100%;max-height:240px;object-fit: cover;min-width:240px ;"/>
                                 {% else %} 
@@ -57,7 +57,7 @@
                     <div class="col-md-3 mb-4 no-gutters">
                         <div class="card"> <!--style="width: 18rem;-->
                             <div class="img" style="width: 100%;max-height: 255px;">
-                                <iframe width="560" height="315" 
+                                <iframe width="560" height="315" loading="lazy" 
                                 src="https://www.youtube.com/embed/tgbNymZ7vqY" 
                                 frameborder="0" 
                                 allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
