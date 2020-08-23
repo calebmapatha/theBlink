@@ -1,6 +1,6 @@
 import os
 
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = [
     'http://theblink.co.za/',
     'https://theblink.herokuapp.com/',
