@@ -6,7 +6,7 @@
         <div class="col-md-8 m-auto">
             <h2 class="text-center">WRITE AN ARTICLE</h2>
              <h6 class="text-center lead">{{user.first_name}} {{user.last_name}}</h6>
-        <form method="post" onsubmit="submitForm()" enctype="multipart/form-data" class="form">
+        <form id="formELem" onsubmit="event.preventDefault(); postData();" enctype="multipart/form-data" id="formELem" class="form">
             <!-- action="{% url 'blog:newBlogPost' %}" -->
             {% csrf_token %}
             {% bootstrap_form form %}
@@ -22,10 +22,14 @@
     </section>
 {% endblock content %}
 {% block Script %}
-    <script> 
-        const submitForm = event => {
-            event.preventDefault();
-            console.log("Hello");
-        }
-    </script>
-{% endblock %}
+<script>
+    let formData = new FormData(); 
+    const formElem = document.getElementById('formElem');
+    const postData = () => {
+        fetch("{% url 'blog:newBlogPost' %}", {
+            method: 'POST',
+            body: new FormData(formElem)
+        })
+    }
+</script>
+{% endblock Script %}
