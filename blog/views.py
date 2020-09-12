@@ -57,21 +57,22 @@ def post_detail(request, pk, slug):
 
 @login_required
 def new_blog_post(request):
-    if request.method == 'POST':
-        form = CreateBlogForm(request.POST, request.FILES)
-        if form.is_valid():
-            new_blogpost = form.save(commit=False)
-            new_blogpost.author = request.user
-            new_blogpost.save()
-            return redirect('blog:index')
-    else:
-        form = CreateBlogForm
+    if request.user.is_staff:
+        if request.method == 'POST':
+            form = CreateBlogForm(request.POST, request.FILES)
+            if form.is_valid():
+                new_blogpost = form.save(commit=False)
+                new_blogpost.author = request.user
+                new_blogpost.save()
+                return redirect('blog:index')
+        else:
+            form = CreateBlogForm
 
-    context = {
-        'form': form,
-        'nav_links': navigationList(),
-    }
-    template_name = "blog/posts/new_blog.html"
+        context = {
+            'form': form,
+            'nav_links': navigationList(),
+        }
+        template_name = "blog/posts/new_blog.html"
     return render(request, template_name, context)
 
 

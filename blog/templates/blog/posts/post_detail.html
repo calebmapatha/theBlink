@@ -35,7 +35,7 @@
         <!-- Author -->
         <p class="text-left mb-0 text-muted">
           Written by
-          <a class="text-muted" style="text-decoration: underline!important;" href="{% url 'userprofile:profile' blogPost.author.username %}">{{ blogPost.author.first_name }} {{ blogPost.author.last_name }}</a> |
+          <a class="text-muted" href="{% url 'userprofile:profile' blogPost.author.username %}">{{ blogPost.author.first_name }} {{ blogPost.author.last_name }}</a> |
         Updated On
         <!-- Date/Time -->
         {{ blogPost.updated_on|date:"M d, Y"}}
@@ -48,7 +48,7 @@
         <!-- Preview Image -->
         <!-- <img class="img-fluid rounded" src="http://placehold.it/900x300" alt=""> -->
         <img class="img-fluid lozad" 
-            data-src="{% static 'media/17.jpg' %}" width="100%" style="max-height:400px;object-fit: cover;" alt="" />
+            src="{% static 'media/17.jpg' %}" width="100%" style="max-height:400px;object-fit: cover;" alt="" />
             <!-- src="{% static 'media/17.jpg' %}" width="100%"  -->
 
          <br/> 
@@ -95,4 +95,8 @@
 {% block Script %}
 <script src="{% static 'js/navSettings.js'%}"></script>
 {% include 'blog/comments.html' with pk=blogPost.pk slug=blogPost.slug %}
+<script>
+  document.getElementById("carousel").style.display = "none";
+  document.getElementsByClassName("scrollmenu")[0].style.borderBottom = "1px solid rgba(0,0,0,0.1)";
+</script>
 {% endblock Script %}

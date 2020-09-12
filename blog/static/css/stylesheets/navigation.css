@@ -10,7 +10,9 @@
     text-align: center;
     position: relative;
     z-index: 1;
+    padding:8px;
   }
+
   
   div.scrollmenu a {
     display: inline-block;

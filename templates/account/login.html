@@ -61,4 +61,8 @@
 {% endblock content %}
 {% block Script %}
 <script src="{% static 'js/navSettings.js'%}"></script>
+<script>
+    document.getElementById("carousel").style.display = "none";
+    document.getElementsByClassName("scrollmenu")[0].style.borderBottom = "1px solid rgba(0,0,0,0.1)";
+  </script>
 {% endblock Script %}
