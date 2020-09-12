@@ -4,6 +4,6 @@ __pycache__/
 123.txt
 urls.txt
 blink_blogging/settings_conf/development.py
-media
+media/headerImg
 blog/static/css/thirdparty
 blog/static/js/thirdparty
