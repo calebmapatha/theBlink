@@ -14,11 +14,11 @@
                     <div class="col-md-3 mb-4 no-gutters">
                         <div class="card"> <!--style="width: 18rem;-->
                             <div class="img" style="width: 100%;max-height: 255px;">
-                                <img class="card-img-top rounded-0 lozad" data-placeholder-background="black" 
+                                <img class="card-img-top rounded-0" loading="lazy" 
                                 {% if blogPost.image %}
-                                    data-src="{{ blogPost.image.url }}" alt="Card image cap" style="width:100%;max-height:240px;object-fit: cover;min-width:240px ;"/>
+                                    src="{{ blogPost.image.url }}" alt="Card image cap" style="width:100%;max-height:240px;object-fit: cover;min-width:240px ;"/>
                                 {% else %} 
-                                    data-src="https://picsum.photos/seed/{{blogPost.id}}/240/300" alt="Card image cap" style="width:100%;max-height:240px;object-fit: cover;" />
+                                    src="https://picsum.photos/seed/{{blogPost.id}}/240/300" alt="Card image cap" style="width:100%;max-height:240px;object-fit: cover;" />
                                 {% endif %}
                                 <div class="card-img-overlay text-white absolute" style="height: 20px;">
                                     <h1 class="card-text pt-3 font-weight-bold">{{forloop.counter}}</h1>
@@ -58,11 +58,10 @@
                         <div class="card"> <!--style="width: 18rem;-->
                             <div class="img" style="width: 100%;max-height: 255px;">
                                 <iframe 
-                                    class="lozad" 
-                                    data-placeholder-background="black"
                                     width="560" 
+                                    loading="lazy"
                                     height="315" 
-                                    data-src="https://www.youtube.com/embed/tgbNymZ7vqY" 
+                                    src="https://www.youtube.com/embed/tgbNymZ7vqY" 
                                     frameborder="0" 
                                     allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
                                     allowfullscreen>

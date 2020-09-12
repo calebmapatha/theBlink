@@ -6,16 +6,6 @@
     {% load static %}    
 <head>
     <meta charset="utf-8">
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-174025868-1"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'UA-174025868-1');
-    </script>
-     {% google_analytics_gtag %}
-
     <title>{% block pageTitle %}{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="Get insights on various topics">
@@ -25,11 +15,35 @@
     
     
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-    <link rel="preload" href="{% static 'css/base.css' %}" as="style" />
+    
+    <link rel="preload" href="{% static 'css/base.css' %}" as="style"/>
+    <link rel="preload" href="{% static 'css/hamburgers.min.css' %}" as="style" />
+    <link rel="preload" href="{% static 'css/stylesheets/navigation.css' %}" as="style" />
+    <link rel="preload" href="{% static 'css/stylesheets/icons.css' %}" as="style"/>
+    <link rel="preload" href="{% static 'css/stylesheets/forms.css' %}" as="style"/>
+    <link rel="preload" href="{% static 'css/stylesheets/components.css' %}" as="style"/>
+
     <link rel="stylesheet" href="{% static 'css/base.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/hamburgers.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/stylesheets/navigation.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/stylesheets/icons.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/stylesheets/forms.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/stylesheets/components.css' %}" />
+
+
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Oswald&display=swap" rel="stylesheet">
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lozad/dist/lozad.min.js"></script>
-    <script data-ad-client="ca-pub-5763157339241904" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lozad/dist/lozad.min.js"></script> -->
+    <!-- <script data-ad-client="ca-pub-5763157339241904" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> -->
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-174025868-1"></script>
+    <script async>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-174025868-1');
+    </script>
+     {% google_analytics_gtag %}
 
 </head>
 <body class="bg-white">

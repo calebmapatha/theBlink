@@ -1,18 +1,3 @@
-/* CSS Rules for hamburger menu animation */
-@import 'hamburgers.min.css';
-
-/* CSS Rules for navigation */
-@import 'stylesheets/navigation.css';
-
-/* CSS Rules for icons and anchors */
-@import 'stylesheets/icons.css';
-
-/* CSS Rules for Forms  */
-@import 'stylesheets/forms.css';
-
-/* CSS Rules for components */
-@import 'stylesheets/components.css';
-
 * {
     outline: none;
 }
