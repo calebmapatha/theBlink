@@ -36,8 +36,10 @@ def getPublishedposts(order='created_on', noItems=4, **filters):
 # Create your views here.
 def index(request):
     template_name = 'blog/index.html'
+    sports = get_object_or_404(Navigation_topic, slug="sports")
     context = {
         'blogPosts': getPublishedposts('-created_on', 4, status=1),
+        'sportsPosts':getPublishedposts('-created_on', 4, status=1, topic=sports),
         'nav_links': navigationList(),
         'site_key': settings.RECAPTCHA_SITE_KEY,
     }

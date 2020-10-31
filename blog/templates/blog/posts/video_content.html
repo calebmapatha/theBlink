@@ -22,3 +22,48 @@
          </div>
      </div>
     </section>
+
+    <div class="row p-2 mb-1 bg-light no-gutters">
+        <div class="container videos pb-0 mb-0">
+                <div class="col-md-12 mb-3">
+                    <h1 class="4post-header mt-4 text-left" style="color: black; font-weight: 800">Videos</h1>
+                </div>
+    
+                <div class="row">
+                {% for blogPost in blogPosts %}
+                        <div class="col-md-3 mb-4 no-gutters">
+                            <div class="card"> <!--style="width: 18rem;-->
+                                <div class="img" style="width: 100%;max-height: 255px;">
+                                    <iframe 
+                                        width="560" 
+                                        loading="lazy"
+                                        height="315" 
+                                        src="https://www.youtube.com/embed/tgbNymZ7vqY" 
+                                        frameborder="0" 
+                                        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
+                                        allowfullscreen>
+                                </iframe>
+                                </div>
+                                <div class="card-body">
+                                                <h5 class="card-subtitle mb-1" style="color: red">
+                                                    {% for topic in blogPost.topic.all %}
+                                                        {{ topic|title }}
+                                                    {% endfor %}
+                                                </h5>
+    
+                                <!--CARD TITLE-->
+                                <h4 class="card-title mb-1" style="font-size: 1.5rem;font-weight: 700;"><a href="{{ blogPost.get_absolute_url }}">
+                                    {{blogPost.title | title}}</a></h4>
+                                    <h6 class="mt-1"><a href="{% url 'userprofile:profile' blogPost.author.username %}"class="card-text text-muted">By {{blogPost.author.first_name}} {{blogPost.author.last_name}} </a></h6>
+                              </div>
+    
+                                <!--CARD FOOTER-->
+    
+                            </div>
+                        </div>
+                {% endfor %}
+                </div>
+    
+        </div>
+    
+        </div>
