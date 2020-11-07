@@ -21,5 +21,6 @@ urlpatterns += [
     path('profile/', include('userprofile.urls')),
     path('', include('blog.urls')),
     path('extras/', include('extras.urls')),
+    path('tinymce/', include('tinymce.urls')),
 ]
 

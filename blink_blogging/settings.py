@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     # third-party apps
     'bootstrap4',
     'analytical',
+    'tinymce',
 
     # allauth
     'allauth',
@@ -156,6 +157,11 @@ SOCIALACCOUNT_PROVIDERS = {
             'access_type': 'offline',
         }
     }
+}
+
+
+TINYMCE_DEFAULT_CONFIG = {
+    "plugins": "image,codesample,wordcount",    
 }
 
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"

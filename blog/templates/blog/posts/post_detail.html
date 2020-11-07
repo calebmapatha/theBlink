@@ -57,25 +57,11 @@
 
         <!-- Post Content -->
         <div class="entry-content">
-        <p>
-          Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-            Distinctio expedita maiores perspiciatis, sapiente suscipit voluptas dolorem omnis ipsam doloremque praesentium mollitia obcaecati repellat nobis pariatur.
+          {% autoescape off %}
 
-            <p>Blanditiis aperiam itaque, aspernatur fuga magni sint soluta vero, perferendis aut maxime commodi nesciunt sunt ut saepe vel aliquid voluptate similique, possimus omnis.
-        </p>
-
-          <h2>Lorem ipsum dolor sit amet consectetur adipisicing elit.</h2>
-        <p>
-            Dignissimos soluta aliquam, ea ipsa dolor illum sequi, rem omnis reiciendis enim ex ipsum vel, quasi nam quaerat.
-            Qui possimus assumenda maxime, dolorum veritatis et ullam vero in quas iste aliquid tempore adipisci minus, architecto, dolores ducimus ea voluptatibus recusandae doloremque ipsum inventore corporis quae.
-            <p>Sequi rerum, provident nostrum accusamus quasi distinctio, error nesciunt iste velit in recusandae quis, maxime sapiente quod voluptatibus quaerat aut commodi porro iusto laudantium dolorum quo.
-            </p>
-
-            <p>
-            Dignissimos soluta aliquam, ea ipsa dolor illum sequi, rem omnis reiciendis enim ex ipsum vel, quasi nam quaerat.
-            Qui possimus assumenda maxime, dolorum veritatis et ullam vero in quas iste aliquid tempore adipisci minus, architecto, dolores ducimus ea voluptatibus recusandae doloremque ipsum inventore corporis quae.
-            <p>Sequi rerum, provident nostrum accusamus quasi distinctio, error nesciunt iste velit in recusandae quis, maxime sapiente quod voluptatibus quaerat aut commodi porro iusto laudantium dolorum quo.
-            </p>
+            {{blogPost.content}}
+          
+          {% endautoescape%}
 
             {% for tag in blogPost.tags.all %}
               {{ tag|split:' ' }}
