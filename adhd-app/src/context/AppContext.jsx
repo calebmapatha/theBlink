@@ -9,8 +9,8 @@ import { useTheme } from '../hooks/useTheme'
 
 const AppContext = createContext(null)
 
-export function AppProvider({ children }) {
-  const rewards = useRewards()
+export function AppProvider({ userId, children }) {
+  const rewards = useRewards(userId)
   const [toast, setToast] = useState(null)
 
   const showToast = useCallback((message, pts) => {
@@ -24,11 +24,11 @@ export function AppProvider({ children }) {
     return pts
   }, [rewards, showToast])
 
-  const timer = useTimer(() => awardAndToast('FOCUS_SESSION', 'Focus session complete!'))
-  const tasks   = useTasks()
-  const dump    = useBrainDump()
-  const habits  = useHabits()
-  const checkin = useCheckin()
+  const timer   = useTimer(() => awardAndToast('FOCUS_SESSION', 'Focus session complete!'))
+  const tasks   = useTasks(userId)
+  const dump    = useBrainDump(userId)
+  const habits  = useHabits(userId)
+  const checkin = useCheckin(userId)
   const theme   = useTheme()
 
   return (

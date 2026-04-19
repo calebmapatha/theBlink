@@ -22,3 +22,8 @@ export function useLocalStorage(key, initialValue) {
 
   return [storedValue, setValue]
 }
+
+// Prefix key with userId so each user has isolated data
+export function useUserLocalStorage(userId, key, initialValue) {
+  return useLocalStorage(userId ? `u_${userId}_${key}` : key, initialValue)
+}

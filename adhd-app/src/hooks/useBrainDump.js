@@ -1,17 +1,12 @@
 import { useCallback } from 'react'
-import { useLocalStorage } from './useLocalStorage'
+import { useUserLocalStorage } from './useLocalStorage'
 
-export function useBrainDump() {
-  const [entries, setEntries] = useLocalStorage('adhd_braindump', [])
+export function useBrainDump(userId) {
+  const [entries, setEntries] = useUserLocalStorage(userId, 'adhd_braindump', [])
 
   const addEntry = useCallback((text) => {
     if (!text.trim()) return
-    const entry = {
-      id: Date.now().toString(),
-      text: text.trim(),
-      createdAt: new Date().toISOString(),
-    }
-    setEntries(prev => [entry, ...prev])
+    setEntries(prev => [{ id: Date.now().toString(), text: text.trim(), createdAt: new Date().toISOString() }, ...prev])
   }, [setEntries])
 
   const deleteEntry = useCallback((id) => {

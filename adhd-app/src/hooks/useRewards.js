@@ -1,11 +1,11 @@
-import { useLocalStorage } from './useLocalStorage'
+import { useUserLocalStorage } from './useLocalStorage'
 import { POINTS, POINT_LABELS } from '../utils/pointsConfig'
 import { getLevelForPoints, getNextLevel } from '../utils/levelConfig'
 
 const INITIAL = { totalPoints: 0, history: [] }
 
-export function useRewards() {
-  const [state, setState] = useLocalStorage('adhd_rewards', INITIAL)
+export function useRewards(userId) {
+  const [state, setState] = useUserLocalStorage(userId, 'adhd_rewards', INITIAL)
 
   const awardPoints = (action, customLabel) => {
     const pts = POINTS[action] ?? 0
@@ -25,13 +25,5 @@ export function useRewards() {
   const xpInCurrentLevel = state.totalPoints - currentLevel.xpRequired
   const xpForNextLevel = nextLevel ? nextLevel.xpRequired - currentLevel.xpRequired : 0
 
-  return {
-    totalPoints: state.totalPoints,
-    history: state.history,
-    awardPoints,
-    currentLevel,
-    nextLevel,
-    xpInCurrentLevel,
-    xpForNextLevel,
-  }
+  return { totalPoints: state.totalPoints, history: state.history, awardPoints, currentLevel, nextLevel, xpInCurrentLevel, xpForNextLevel }
 }
