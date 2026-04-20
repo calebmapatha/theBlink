@@ -8,8 +8,10 @@ import { FocusTimer } from './pages/FocusTimer'
 import { TaskBoard } from './pages/TaskBoard'
 import { BrainDump } from './pages/BrainDump'
 import { HabitTracker } from './pages/HabitTracker'
+import { MonthlyTracker } from './pages/MonthlyTracker'
 import { DailyCheckin } from './pages/DailyCheckin'
 import { Rewards } from './pages/Rewards'
+import { Settings } from './pages/Settings'
 import { Login } from './pages/Login'
 import { useApp } from './context/AppContext'
 import { Zap } from 'lucide-react'
@@ -24,14 +26,16 @@ function AppShell() {
       <main className="flex-1 min-w-0 h-full pb-16 md:pb-0">
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
-            <Route path="/"        element={<Navigate to="/timer" replace />} />
-            <Route path="/timer"   element={<FocusTimer />} />
-            <Route path="/tasks"   element={<TaskBoard />} />
-            <Route path="/dump"    element={<BrainDump />} />
-            <Route path="/habits"  element={<HabitTracker />} />
-            <Route path="/checkin" element={<DailyCheckin />} />
-            <Route path="/rewards" element={<Rewards />} />
-            <Route path="*"        element={<Navigate to="/timer" replace />} />
+            <Route path="/"         element={<Navigate to="/timer" replace />} />
+            <Route path="/timer"    element={<FocusTimer />} />
+            <Route path="/tasks"    element={<TaskBoard />} />
+            <Route path="/dump"     element={<BrainDump />} />
+            <Route path="/habits"   element={<HabitTracker />} />
+            <Route path="/monthly"  element={<MonthlyTracker />} />
+            <Route path="/checkin"  element={<DailyCheckin />} />
+            <Route path="/rewards"  element={<Rewards />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="*"         element={<Navigate to="/timer" replace />} />
           </Routes>
         </AnimatePresence>
       </main>
@@ -55,14 +59,8 @@ function LoadingScreen() {
 
 function AuthGate() {
   const { user } = useAuth()
-
-  // Still checking auth state
   if (user === undefined) return <LoadingScreen />
-
-  // Not logged in
   if (user === null) return <Login />
-
-  // Logged in — mount full app with user-scoped data
   return (
     <AppProvider userId={user.uid}>
       <AppShell />

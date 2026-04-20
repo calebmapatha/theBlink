@@ -6,6 +6,7 @@ import { useHabits } from '../hooks/useHabits'
 import { useCheckin } from '../hooks/useCheckin'
 import { useRewards } from '../hooks/useRewards'
 import { useTheme } from '../hooks/useTheme'
+import { useUserProfile } from '../hooks/useUserProfile'
 
 const AppContext = createContext(null)
 
@@ -30,9 +31,10 @@ export function AppProvider({ userId, children }) {
   const habits  = useHabits(userId)
   const checkin = useCheckin(userId)
   const theme   = useTheme()
+  const userProfile = useUserProfile(userId)
 
   return (
-    <AppContext.Provider value={{ timer, tasks, dump, habits, checkin, rewards, theme, toast, awardAndToast }}>
+    <AppContext.Provider value={{ timer, tasks, dump, habits, checkin, rewards, theme, toast, awardAndToast, userProfile, userId }}>
       {children}
     </AppContext.Provider>
   )
