@@ -56,9 +56,8 @@ export function MonthlyTracker() {
   const monthData   = habits.getMonthlyData(viewYear, viewMonth)
   const daysInMonth = getDaysInMonth(new Date(viewYear, viewMonth))
 
-  // Pad start: what weekday (Mon=0) does the 1st fall on?
   const firstDay = startOfMonth(new Date(viewYear, viewMonth))
-  const startPad = (getDay(firstDay) + 6) % 7 // Mon=0
+  const startPad = (getDay(firstDay) + 6) % 7
 
   const goBack = () => {
     if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1) }
@@ -69,7 +68,6 @@ export function MonthlyTracker() {
     else setViewMonth(m => m + 1)
   }
 
-  // Per-habit monthly stats
   const habitStats = habits.habits.map(h => {
     const completed = monthData.filter(d => d.completed.includes(h.id)).length
     const applicable = monthData.filter(d => !isFuture(d.date) || isToday(d.date)).length
@@ -83,7 +81,6 @@ export function MonthlyTracker() {
         <p className="text-sm text-ink-400 mt-0.5">Habit performance over time</p>
       </div>
 
-      {/* Month navigator */}
       <div className="flex items-center justify-between mb-4">
         <button onClick={goBack} className="p-2 rounded-xl hover:bg-surface-100 dark:hover:bg-surface-800 text-ink-700 dark:text-ink-300 transition-colors">
           <ChevronLeft size={20} />
@@ -96,7 +93,6 @@ export function MonthlyTracker() {
         </button>
       </div>
 
-      {/* Legend */}
       <div className="flex items-center gap-3 mb-4 flex-wrap">
         {[
           { color: 'bg-success-100 dark:bg-success-500/20', label: 'All done' },
@@ -111,7 +107,6 @@ export function MonthlyTracker() {
         ))}
       </div>
 
-      {/* Calendar grid */}
       <Card className="p-4 mb-6">
         <div className="grid grid-cols-7 gap-1 mb-2">
           {WEEKDAYS.map(d => (
@@ -126,7 +121,6 @@ export function MonthlyTracker() {
         </div>
       </Card>
 
-      {/* Per-habit stats */}
       <div>
         <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">Habit breakdown</p>
         {habits.habits.length === 0 ? (
@@ -143,15 +137,12 @@ export function MonthlyTracker() {
                       {h.frequency === 'weekly' ? `${h.weeklyTarget}× per week` : 'Daily'} · {h.completed}/{h.applicable} days
                     </p>
                   </div>
-                  <span className={`text-sm font-bold tabular-nums ${
-                    h.rate >= 80 ? 'text-success-500' : h.rate >= 50 ? 'text-primary-500' : h.rate >= 20 ? 'text-warm-500' : 'text-ink-400'
-                  }`}>{h.rate}%</span>
+                  <span className="text-sm font-bold tabular-nums" style={{ color: h.color }}>{h.rate}%</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden">
                   <motion.div
-                    className={`h-full rounded-full ${
-                      h.rate >= 80 ? 'bg-success-500' : h.rate >= 50 ? 'bg-primary-500' : h.rate >= 20 ? 'bg-warm-400' : 'bg-surface-300'
-                    }`}
+                    className="h-full rounded-full"
+                    style={{ backgroundColor: h.color }}
                     animate={{ width: `${h.rate}%` }}
                     transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
                   />
