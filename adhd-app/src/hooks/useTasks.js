@@ -5,8 +5,8 @@ import { todayKey } from '../utils/dateUtils'
 export function useTasks(userId) {
   const [tasks, setTasks] = useUserLocalStorage(userId, 'adhd_tasks', [])
 
-  const addTask = useCallback((text, urgent = false) => {
-    const task = { id: Date.now().toString(), text: text.trim(), urgent, createdAt: new Date().toISOString(), scheduledDate: todayKey(), completedAt: null }
+  const addTask = useCallback((text, urgent = false, dueDate = null) => {
+    const task = { id: Date.now().toString(), text: text.trim(), urgent, dueDate, createdAt: new Date().toISOString(), scheduledDate: todayKey(), completedAt: null }
     setTasks(prev => [task, ...prev])
   }, [setTasks])
 
@@ -30,12 +30,24 @@ export function useTasks(userId) {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, urgent: !t.urgent } : t))
   }, [setTasks])
 
+  const reorderTask = useCallback((fromId, toId) => {
+    setTasks(prev => {
+      const fi = prev.findIndex(t => t.id === fromId)
+      const ti = prev.findIndex(t => t.id === toId)
+      if (fi === -1 || ti === -1 || fi === ti) return prev
+      const next = [...prev]
+      const [moved] = next.splice(fi, 1)
+      next.splice(ti, 0, moved)
+      return next
+    })
+  }, [setTasks])
+
   const today = todayKey()
   return {
     tasks,
     todayTasks:     tasks.filter(t => t.scheduledDate === today && !t.completedAt),
     completedToday: tasks.filter(t => t.scheduledDate === today && t.completedAt),
     backlogTasks:   tasks.filter(t => t.scheduledDate !== today && !t.completedAt),
-    addTask, completeTask, deleteTask, moveToToday, moveToBacklog, toggleUrgent,
+    addTask, completeTask, deleteTask, moveToToday, moveToBacklog, toggleUrgent, reorderTask,
   }
 }

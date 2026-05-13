@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { Play, Pause, RotateCcw, SkipForward, Settings } from 'lucide-react'
+import { Play, Pause, RotateCcw, SkipForward, Settings, Volume2 } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { ProgressRing } from '../components/ui/ProgressRing'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Modal } from '../components/ui/Modal'
 import { useApp } from '../context/AppContext'
+import { useAmbientSound, SOUNDS } from '../hooks/useAmbientSound'
 
 const MODE_LABELS = {
   work:       '🎯 Focus',
@@ -42,12 +43,9 @@ function SettingsModal({ open, onClose, settings, onSave }) {
         ].map(({ key, label }) => (
           <div key={key}>
             <label className="block text-sm font-medium text-ink-700 dark:text-ink-300 mb-1">{label}</label>
-            <input
-              type="number"
-              min="1"
+            <input type="number" min="1"
               className="w-full px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
-              {...field(key)}
-            />
+              {...field(key)} />
           </div>
         ))}
         <div className="flex gap-2 pt-1">
@@ -62,6 +60,7 @@ function SettingsModal({ open, onClose, settings, onSave }) {
 export function FocusTimer() {
   const { timer } = useApp()
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const { active, play, volume, setVolume } = useAmbientSound()
   const isRunning = timer.status === 'running'
 
   return (
@@ -76,24 +75,19 @@ export function FocusTimer() {
         </Button>
       </div>
 
-      {/* Mode tabs */}
       <div className="flex gap-2 mb-10 p-1 bg-surface-100 dark:bg-surface-800/60 rounded-xl">
         {Object.entries(MODE_LABELS).map(([mode, label]) => (
-          <button
-            key={mode}
-            onClick={() => timer.setMode(mode)}
+          <button key={mode} onClick={() => timer.setMode(mode)}
             className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
               timer.mode === mode
                 ? 'bg-white dark:bg-surface-700 text-ink-900 dark:text-ink-100 shadow-sm'
                 : 'text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
-            }`}
-          >
+            }`}>
             {label}
           </button>
         ))}
       </div>
 
-      {/* Timer ring */}
       <div className="flex flex-col items-center mb-10">
         <div className="relative">
           <ProgressRing progress={timer.progress} mode={timer.mode} size={240} />
@@ -104,31 +98,47 @@ export function FocusTimer() {
             <span className="text-sm text-ink-400 mt-1">{MODE_LABELS[timer.mode]}</span>
           </div>
         </div>
-        <p className="text-xs text-ink-400 mt-4">
-          Session {timer.sessionCount + 1} of {timer.settings.longBreakInterval}
-        </p>
+        <p className="text-xs text-ink-400 mt-4">Session {timer.sessionCount + 1} of {timer.settings.longBreakInterval}</p>
       </div>
 
-      {/* Controls */}
       <div className="flex items-center justify-center gap-3 mb-8">
-        <Button variant="ghost" size="icon" onClick={timer.reset} title="Reset">
-          <RotateCcw size={18} />
-        </Button>
-        <Button
-          size="lg"
-          variant={isRunning ? 'ghost' : 'primary'}
+        <Button variant="ghost" size="icon" onClick={timer.reset} title="Reset"><RotateCcw size={18} /></Button>
+        <Button size="lg" variant={isRunning ? 'ghost' : 'primary'}
           className={`px-10 ${isRunning ? 'border border-surface-200 dark:border-surface-700' : ''}`}
-          onClick={isRunning ? timer.pause : timer.start}
-        >
+          onClick={isRunning ? timer.pause : timer.start}>
           {isRunning ? <Pause size={20} /> : <Play size={20} />}
           {isRunning ? 'Pause' : 'Start'}
         </Button>
-        <Button variant="ghost" size="icon" onClick={timer.skip} title="Skip">
-          <SkipForward size={18} />
-        </Button>
+        <Button variant="ghost" size="icon" onClick={timer.skip} title="Skip"><SkipForward size={18} /></Button>
       </div>
 
-      {/* Stats */}
+      <div className="flex flex-col items-center gap-3 mb-6">
+        <div className="flex items-center gap-2">
+          <Volume2 size={13} className="text-ink-400" />
+          <span className="text-xs text-ink-400 font-medium">Ambient sound</span>
+        </div>
+        <div className="flex gap-2">
+          {SOUNDS.filter(s => s.id !== 'none').map(s => (
+            <button key={s.id} onClick={() => play(active === s.id ? 'none' : s.id)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all ${
+                active === s.id
+                  ? 'bg-primary-50 dark:bg-primary-700/20 border-primary-400 text-primary-600 dark:text-primary-300'
+                  : 'border-surface-200 dark:border-surface-700 text-ink-400 hover:border-surface-300 dark:hover:border-surface-600'
+              }`}>
+              {s.emoji} {s.label}
+            </button>
+          ))}
+        </div>
+        {active !== 'none' && (
+          <div className="flex items-center gap-2 w-40">
+            <span className="text-xs text-ink-400">Vol</span>
+            <input type="range" min="0" max="1" step="0.05" value={volume}
+              onChange={e => setVolume(Number(e.target.value))}
+              className="flex-1 accent-primary-500" />
+          </div>
+        )}
+      </div>
+
       {timer.sessionCount > 0 && (
         <Card className="p-4 text-center">
           <p className="text-sm text-ink-400">
@@ -138,12 +148,8 @@ export function FocusTimer() {
         </Card>
       )}
 
-      <SettingsModal
-        open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        settings={timer.settings}
-        onSave={timer.updateSettings}
-      />
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)}
+        settings={timer.settings} onSave={timer.updateSettings} />
     </PageWrapper>
   )
 }

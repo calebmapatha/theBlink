@@ -1,9 +1,10 @@
 import { NavLink } from 'react-router-dom'
-import { Timer, CheckSquare, Brain, Repeat, Sun, Trophy, Moon, Zap, LogOut, BarChart2, Settings } from 'lucide-react'
+import { Home, Timer, CheckSquare, Brain, Repeat, Sun, Trophy, Moon, Zap, LogOut, BarChart2, Settings } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { useAuth } from '../../context/AuthContext'
 
 const NAV = [
+  { to: '/',        icon: Home,        label: 'Home',       end: true },
   { to: '/timer',   icon: Timer,       label: 'Focus Timer' },
   { to: '/tasks',   icon: CheckSquare, label: 'Tasks' },
   { to: '/habits',  icon: Repeat,      label: 'Habits' },
@@ -14,12 +15,11 @@ const NAV = [
   { to: '/settings',icon: Settings,    label: 'Settings' },
 ]
 
-// Mobile bottom bar shows these 5
 const MOBILE_NAV = [
+  { to: '/',         icon: Home,        label: 'Home',   end: true },
   { to: '/timer',    icon: Timer,       label: 'Focus' },
   { to: '/tasks',    icon: CheckSquare, label: 'Tasks' },
   { to: '/habits',   icon: Repeat,      label: 'Habits' },
-  { to: '/monthly',  icon: BarChart2,   label: 'Monthly' },
   { to: '/settings', icon: Settings,    label: 'Settings' },
 ]
 
@@ -31,9 +31,7 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col w-56 flex-shrink-0 h-full bg-white dark:bg-surface-900 border-r border-surface-200 dark:border-surface-800">
-        {/* Logo + user */}
         <div className="px-5 py-5 border-b border-surface-200 dark:border-surface-800">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-7 h-7 rounded-lg bg-primary-500 flex items-center justify-center">
@@ -49,10 +47,9 @@ export function Sidebar() {
           )}
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {NAV.map(({ to, icon: Icon, label }) => (
-            <NavLink key={to} to={to}
+          {NAV.map(({ to, icon: Icon, label, end }) => (
+            <NavLink key={to} to={to} end={end}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                   isActive
@@ -66,7 +63,6 @@ export function Sidebar() {
           ))}
         </nav>
 
-        {/* Footer */}
         <div className="px-4 py-4 border-t border-surface-200 dark:border-surface-800 space-y-2">
           <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary-50 dark:bg-primary-700/15">
             <Zap size={14} className="text-primary-500" />
@@ -85,10 +81,9 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {/* Mobile bottom bar */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-surface-900 border-t border-surface-200 dark:border-surface-800 flex safe-bottom">
-        {MOBILE_NAV.map(({ to, icon: Icon, label }) => (
-          <NavLink key={to} to={to}
+        {MOBILE_NAV.map(({ to, icon: Icon, label, end }) => (
+          <NavLink key={to} to={to} end={end}
             className={({ isActive }) =>
               `flex-1 flex flex-col items-center gap-1 py-2.5 text-xs transition-colors ${
                 isActive ? 'text-primary-500' : 'text-ink-400'
