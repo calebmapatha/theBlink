@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { User, Moon, Sun, LogOut, Trash2, Check, ChevronRight, Bell, BellOff } from 'lucide-react'
+import { User, Moon, Sun, LogOut, Trash2, Check, ChevronRight, Bell, BellOff, RotateCcw } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -73,13 +73,31 @@ function ProfileModal({ open, onClose, profile, onSave, authUser }) {
   )
 }
 
+function ResetModal({ open, onClose, onConfirm }) {
+  return (
+    <Modal open={open} onClose={onClose} title="Reset to Defaults">
+      <div className="space-y-4">
+        <p className="text-sm text-ink-700 dark:text-ink-300">
+          This will clear all tasks, habits, brain dumps, check-ins, and rewards — and restore the original default habits. Your profile and theme will be kept.
+        </p>
+        <div className="flex gap-2">
+          <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
+          <Button className="flex-1 bg-amber-500 hover:bg-amber-600" onClick={() => { onConfirm(); onClose() }}>
+            Reset
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
 function ClearDataModal({ open, onClose, onConfirm }) {
   const [typed, setTyped] = useState('')
   return (
     <Modal open={open} onClose={onClose} title="Clear All Data">
       <div className="space-y-4">
         <p className="text-sm text-ink-700 dark:text-ink-300">
-          This will permanently delete all your tasks, habits, brain dumps, check-ins, and rewards. This cannot be undone.
+          This will permanently delete all your tasks, habits, brain dumps, check-ins, rewards, and profile. This cannot be undone.
         </p>
         <div>
           <label className="block text-xs font-medium text-ink-400 mb-1">Type <strong>DELETE</strong> to confirm</label>
@@ -142,14 +160,26 @@ export function Settings() {
   const { theme, userProfile, userId, notifications } = useApp()
   const { user, signOut } = useAuth()
   const [profileOpen, setProfileOpen] = useState(false)
+  const [resetOpen, setResetOpen]     = useState(false)
   const [clearOpen, setClearOpen]     = useState(false)
 
   const displayName = userProfile.profile.displayName || user?.displayName || user?.email?.split('@')[0] || 'You'
   const avatar      = userProfile.profile.avatarEmoji || '🧠'
 
+  const KEEP_KEYS = ['adhd_profile', 'adhd_theme']
+
+  const handleResetDefaults = () => {
+    const prefix = `u_${userId}_`
+    Object.keys(localStorage)
+      .filter(k => k.startsWith(prefix) && !KEEP_KEYS.some(s => k.endsWith(s)))
+      .forEach(k => localStorage.removeItem(k))
+    window.location.reload()
+  }
+
   const handleClearData = () => {
     const prefix = `u_${userId}_`
     Object.keys(localStorage).filter(k => k.startsWith(prefix)).forEach(k => localStorage.removeItem(k))
+    localStorage.removeItem('adhd_notifications')
     window.location.reload()
   }
 
@@ -184,6 +214,7 @@ export function Settings() {
       </Section>
 
       <Section title="Data">
+        <SettingsRow icon={RotateCcw} label="Reset to defaults" onClick={() => setResetOpen(true)} />
         <SettingsRow icon={Trash2} label="Clear all data" danger onClick={() => setClearOpen(true)} />
       </Section>
 
@@ -191,6 +222,7 @@ export function Settings() {
 
       <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)}
         profile={userProfile.profile} authUser={user} onSave={userProfile.updateProfile} />
+      <ResetModal open={resetOpen} onClose={() => setResetOpen(false)} onConfirm={handleResetDefaults} />
       <ClearDataModal open={clearOpen} onClose={() => setClearOpen(false)} onConfirm={handleClearData} />
     </PageWrapper>
   )
