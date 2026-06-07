@@ -1,11 +1,9 @@
 import { useCallback } from 'react'
-import { useLocalStorage } from './useLocalStorage'
+import { useUserLocalStorage } from './useLocalStorage'
 import { todayKey } from '../utils/dateUtils'
 
-export function useCheckin() {
-  const [checkins, setCheckins] = useLocalStorage('adhd_checkins', {})
-
-  const todayCheckin = checkins[todayKey()] || null
+export function useCheckin(userId) {
+  const [checkins, setCheckins] = useUserLocalStorage(userId, 'adhd_checkins', {})
 
   const saveCheckin = useCallback(({ mood, energy, intention }) => {
     setCheckins(prev => ({
@@ -14,5 +12,5 @@ export function useCheckin() {
     }))
   }, [setCheckins])
 
-  return { todayCheckin, saveCheckin, checkins }
+  return { todayCheckin: checkins[todayKey()] || null, saveCheckin, checkins }
 }

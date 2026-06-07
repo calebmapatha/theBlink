@@ -1,34 +1,17 @@
 import { useCallback } from 'react'
-import { useLocalStorage } from './useLocalStorage'
+import { useUserLocalStorage } from './useLocalStorage'
 import { todayKey } from '../utils/dateUtils'
 
-const INITIAL = []
-
-export function useTasks() {
-  const [tasks, setTasks] = useLocalStorage('adhd_tasks', INITIAL)
+export function useTasks(userId) {
+  const [tasks, setTasks] = useUserLocalStorage(userId, 'adhd_tasks', [])
 
   const addTask = useCallback((text, urgent = false) => {
-    const task = {
-      id: Date.now().toString(),
-      text: text.trim(),
-      urgent,
-      createdAt: new Date().toISOString(),
-      scheduledDate: todayKey(),
-      completedAt: null,
-    }
+    const task = { id: Date.now().toString(), text: text.trim(), urgent, createdAt: new Date().toISOString(), scheduledDate: todayKey(), completedAt: null }
     setTasks(prev => [task, ...prev])
   }, [setTasks])
 
   const completeTask = useCallback((id) => {
-    setTasks(prev => prev.map(t =>
-      t.id === id ? { ...t, completedAt: new Date().toISOString() } : t
-    ))
-  }, [setTasks])
-
-  const uncompleteTask = useCallback((id) => {
-    setTasks(prev => prev.map(t =>
-      t.id === id ? { ...t, completedAt: null } : t
-    ))
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, completedAt: new Date().toISOString() } : t))
   }, [setTasks])
 
   const deleteTask = useCallback((id) => {
@@ -36,39 +19,23 @@ export function useTasks() {
   }, [setTasks])
 
   const moveToToday = useCallback((id) => {
-    setTasks(prev => prev.map(t =>
-      t.id === id ? { ...t, scheduledDate: todayKey() } : t
-    ))
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, scheduledDate: todayKey() } : t))
   }, [setTasks])
 
   const moveToBacklog = useCallback((id) => {
-    setTasks(prev => prev.map(t =>
-      t.id === id ? { ...t, scheduledDate: null } : t
-    ))
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, scheduledDate: null } : t))
   }, [setTasks])
 
   const toggleUrgent = useCallback((id) => {
-    setTasks(prev => prev.map(t =>
-      t.id === id ? { ...t, urgent: !t.urgent } : t
-    ))
+    setTasks(prev => prev.map(t => t.id === id ? { ...t, urgent: !t.urgent } : t))
   }, [setTasks])
 
   const today = todayKey()
-  const todayTasks    = tasks.filter(t => t.scheduledDate === today && !t.completedAt)
-  const completedToday = tasks.filter(t => t.scheduledDate === today && t.completedAt)
-  const backlogTasks  = tasks.filter(t => t.scheduledDate !== today && !t.completedAt)
-
   return {
     tasks,
-    todayTasks,
-    completedToday,
-    backlogTasks,
-    addTask,
-    completeTask,
-    uncompleteTask,
-    deleteTask,
-    moveToToday,
-    moveToBacklog,
-    toggleUrgent,
+    todayTasks:     tasks.filter(t => t.scheduledDate === today && !t.completedAt),
+    completedToday: tasks.filter(t => t.scheduledDate === today && t.completedAt),
+    backlogTasks:   tasks.filter(t => t.scheduledDate !== today && !t.completedAt),
+    addTask, completeTask, deleteTask, moveToToday, moveToBacklog, toggleUrgent,
   }
 }
