@@ -3,13 +3,18 @@ import { useUserLocalStorage } from './useLocalStorage'
 import { todayKey } from '../utils/dateUtils'
 import { format, subDays, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns'
 
+export const HABIT_COLORS = [
+  '#FF3B30', '#FF9500', '#FFCC00', '#34C759',
+  '#00C7BE', '#007AFF', '#5856D6', '#AF52DE', '#FF2D55', '#A2845E',
+]
+
 const DEFAULT_HABITS = [
-  { id: '1', name: 'Drink water',        emoji: '💧', frequency: 'daily',  weeklyTarget: 1 },
-  { id: '2', name: 'Move body',          emoji: '🚶', frequency: 'daily',  weeklyTarget: 1 },
-  { id: '3', name: 'Take meds',          emoji: '💊', frequency: 'daily',  weeklyTarget: 1 },
-  { id: '4', name: 'Eat breakfast',      emoji: '🍳', frequency: 'daily',  weeklyTarget: 1 },
-  { id: '5', name: 'Sleep by 11pm',      emoji: '🛏️', frequency: 'daily',  weeklyTarget: 1 },
-  { id: '6', name: 'Breathe / meditate', emoji: '🧘', frequency: 'daily',  weeklyTarget: 1 },
+  { id: '1', name: 'Drink water',        emoji: '💧', frequency: 'daily',  weeklyTarget: 1, color: '#007AFF' },
+  { id: '2', name: 'Move body',          emoji: '🚶', frequency: 'daily',  weeklyTarget: 1, color: '#34C759' },
+  { id: '3', name: 'Take meds',          emoji: '💊', frequency: 'daily',  weeklyTarget: 1, color: '#FF3B30' },
+  { id: '4', name: 'Eat breakfast',      emoji: '🍳', frequency: 'daily',  weeklyTarget: 1, color: '#FF9500' },
+  { id: '5', name: 'Sleep by 11pm',      emoji: '🛏️', frequency: 'daily',  weeklyTarget: 1, color: '#5856D6' },
+  { id: '6', name: 'Breathe / meditate', emoji: '🧘', frequency: 'daily',  weeklyTarget: 1, color: '#00C7BE' },
 ]
 
 const INITIAL = { definitions: DEFAULT_HABITS, completions: {} }
@@ -26,13 +31,14 @@ export function useHabits(userId) {
     })
   }, [setState])
 
-  const addHabit = useCallback((name, emoji, frequency = 'daily', weeklyTarget = 1) => {
+  const addHabit = useCallback((name, emoji, frequency = 'daily', weeklyTarget = 1, color) => {
     setState(prev => {
       if (prev.definitions.length >= 10) return prev
+      const assignedColor = color || HABIT_COLORS[prev.definitions.length % HABIT_COLORS.length]
       return {
         ...prev,
         definitions: [...prev.definitions, {
-          id: Date.now().toString(), name, emoji, frequency, weeklyTarget
+          id: Date.now().toString(), name, emoji, frequency, weeklyTarget, color: assignedColor
         }]
       }
     })
@@ -71,7 +77,6 @@ export function useHabits(userId) {
   }
 
   const getMonthlyData = (year, month) => {
-    // Returns array of { date, completedIds, totalApplicable, ratio }
     const daysInMonth = new Date(year, month + 1, 0).getDate()
     return Array.from({ length: daysInMonth }, (_, i) => {
       const date = new Date(year, month, i + 1)
@@ -82,10 +87,11 @@ export function useHabits(userId) {
   }
 
   return {
-    habits: state.definitions.map(h => ({
+    habits: state.definitions.map((h, i) => ({
       ...h,
       frequency: h.frequency || 'daily',
       weeklyTarget: h.weeklyTarget || 1,
+      color: h.color || HABIT_COLORS[i % HABIT_COLORS.length],
     })),
     completions: state.completions,
     toggleHabit, addHabit, editHabit, removeHabit,
