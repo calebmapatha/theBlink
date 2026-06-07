@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save } from 'lucide-react'
+import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, X } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -9,6 +9,18 @@ import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
 
 const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400'
+
+const DATA_LABELS = { habits: '🔄 Habits', checkin: '😊 Mood', focus: '⏱️ Focus', tasks: '✅ Tasks' }
+
+const DAYS = [
+  { key: 'mon', label: 'Monday' },
+  { key: 'tue', label: 'Tuesday' },
+  { key: 'wed', label: 'Wednesday' },
+  { key: 'thu', label: 'Thursday' },
+  { key: 'fri', label: 'Friday' },
+  { key: 'sat', label: 'Saturday' },
+  { key: 'sun', label: 'Sunday' },
+]
 
 function EditModal({ open, onClose, profile, onSave }) {
   const [form, setForm] = useState({
@@ -35,9 +47,9 @@ function EditModal({ open, onClose, profile, onSave }) {
           <textarea value={form.bio} onChange={e => set('bio', e.target.value)} rows={4} className={`${inputCls} resize-none`} />
         </div>
         <div>
-          <label className="block text-xs font-medium text-ink-400 mb-1">Session fee (USD)</label>
+          <label className="block text-xs font-medium text-ink-400 mb-1">Session fee (ZAR)</label>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 text-sm">$</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 text-sm">R</span>
             <input type="number" value={form.sessionFee} onChange={e => set('sessionFee', e.target.value)} min="0" className={`${inputCls} pl-7`} />
           </div>
         </div>
@@ -69,10 +81,22 @@ function AppointmentCard({ appt, onConfirm, onDecline }) {
           <p className="text-xs text-ink-400">{appt.patientEmail}</p>
           <p className="text-xs text-ink-400 mt-1 flex items-center gap-1">
             <Calendar size={10} className="flex-shrink-0" />
-            {appt.date} · <span className="capitalize">{appt.timeSlot}</span>
+            {appt.date} · {appt.timeSlot}
           </p>
           {appt.notes && (
             <p className="text-xs text-ink-600 dark:text-ink-300 mt-1.5 italic bg-surface-50 dark:bg-surface-900 px-2 py-1 rounded-lg">"{appt.notes}"</p>
+          )}
+          {appt.sharedDataTypes?.length > 0 && (
+            <div className="mt-2">
+              <p className="text-[10px] text-ink-400 mb-1">Patient shared:</p>
+              <div className="flex flex-wrap gap-1">
+                {appt.sharedDataTypes.map(t => DATA_LABELS[t] ? (
+                  <span key={t} className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400">
+                    {DATA_LABELS[t]}
+                  </span>
+                ) : null)}
+              </div>
+            </div>
           )}
         </div>
         {appt.status === 'pending' && (
@@ -100,10 +124,81 @@ function AppointmentCard({ appt, onConfirm, onDecline }) {
   )
 }
 
+function DiaryManager({ providerUid, getDiary, saveDiary }) {
+  const [diary, setDiary]             = useState({})
+  const [diaryLoading, setDiaryLoading] = useState(true)
+  const [selectedDay, setSelectedDay] = useState('mon')
+  const [newTime, setNewTime]         = useState('09:00')
+  const [saving, setSaving]           = useState(false)
+
+  useEffect(() => {
+    getDiary(providerUid).then(d => { setDiary(d || {}); setDiaryLoading(false) })
+  }, [providerUid])
+
+  const addSlot = async () => {
+    if (!newTime) return
+    const slots = diary[selectedDay] || []
+    if (slots.includes(newTime)) return
+    const updated = { ...diary, [selectedDay]: [...slots, newTime].sort() }
+    setSaving(true)
+    setDiary(updated)
+    await saveDiary(providerUid, updated)
+    setSaving(false)
+  }
+
+  const removeSlot = async (day, time) => {
+    const updated = { ...diary, [day]: (diary[day] || []).filter(t => t !== time) }
+    setDiary(updated)
+    await saveDiary(providerUid, updated)
+  }
+
+  if (diaryLoading) return <div className="h-20 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />
+
+  return (
+    <div className="space-y-4">
+      <Card className="p-4">
+        <p className="text-xs font-medium text-ink-400 mb-3">Add availability slot</p>
+        <div className="flex gap-2">
+          <select value={selectedDay} onChange={e => setSelectedDay(e.target.value)}
+            className="flex-1 px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400">
+            {DAYS.map(d => <option key={d.key} value={d.key}>{d.label}</option>)}
+          </select>
+          <input type="time" value={newTime} onChange={e => setNewTime(e.target.value)}
+            className="flex-1 px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
+          <Button size="sm" onClick={addSlot} disabled={saving}>Add</Button>
+        </div>
+      </Card>
+
+      <div className="space-y-2.5">
+        {DAYS.map(({ key, label }) => (
+          <div key={key} className="flex items-start gap-3">
+            <p className="text-xs font-medium text-ink-400 w-8 flex-shrink-0 pt-1.5">{label.slice(0, 3)}</p>
+            <div className="flex-1 flex flex-wrap gap-1.5">
+              {(diary[key] || []).length === 0 ? (
+                <span className="text-xs text-ink-400 italic">—</span>
+              ) : (
+                (diary[key] || []).map(time => (
+                  <span key={time}
+                    className="flex items-center gap-1 text-xs bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400 px-2 py-1 rounded-lg">
+                    {time}
+                    <button onClick={() => removeSlot(key, time)} className="hover:text-red-500 transition-colors">
+                      <X size={9} />
+                    </button>
+                  </span>
+                ))
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export function ProviderDashboard() {
-  const { user }                                                          = useAuth()
-  const { getProvider, getAppointments, updateAppointment, saveProvider } = useProviders()
-  const navigate                                                          = useNavigate()
+  const { user }                                                                               = useAuth()
+  const { getProvider, getAppointments, updateAppointment, saveProvider, getDiary, saveDiary } = useProviders()
+  const navigate                                                                               = useNavigate()
   const [profile, setProfile]           = useState(null)
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading]           = useState(true)
@@ -167,7 +262,8 @@ export function ProviderDashboard() {
               <BadgeCheck size={14} className="text-primary-500" />
             </div>
             <p className="text-xs text-ink-400">{profile?.type} · {profile?.experience} yrs exp</p>
-            <p className="text-xs text-ink-400 mt-0.5">${profile?.sessionFee}/session · {profile?.availability}</p>
+            {profile?.hpcsa && <p className="text-xs text-ink-400">HPCSA: {profile.hpcsa}</p>}
+            <p className="text-xs text-ink-400 mt-0.5">R{profile?.sessionFee}/session · {profile?.availability}</p>
           </div>
         </div>
         {profile?.bio && (
@@ -201,7 +297,7 @@ export function ProviderDashboard() {
       </div>
 
       {appointments.length === 0 ? (
-        <div className="py-14 text-center">
+        <div className="py-14 text-center mb-6">
           <p className="text-4xl mb-3">📭</p>
           <p className="text-sm text-ink-400">No appointment requests yet.</p>
           <p className="text-xs text-ink-400 mt-1">Your profile is live — patients can book you from the Connect page.</p>
@@ -221,7 +317,7 @@ export function ProviderDashboard() {
             </div>
           )}
           {confirmed.length > 0 && (
-            <div>
+            <div className="mb-6">
               <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">Confirmed ({confirmed.length})</p>
               <div className="space-y-3">
                 {confirmed.map(a => (
@@ -232,6 +328,11 @@ export function ProviderDashboard() {
           )}
         </>
       )}
+
+      <div className="mb-6">
+        <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-4">Manage Diary</p>
+        <DiaryManager providerUid={user.uid} getDiary={getDiary} saveDiary={saveDiary} />
+      </div>
 
       <EditModal open={editOpen} onClose={() => setEditOpen(false)} profile={profile} onSave={handleSave} />
     </PageWrapper>
