@@ -13,6 +13,9 @@ import { MonthlyTracker } from './pages/MonthlyTracker'
 import { DailyCheckin } from './pages/DailyCheckin'
 import { Rewards } from './pages/Rewards'
 import { Settings } from './pages/Settings'
+import { Connect } from './pages/Connect'
+import { ProviderSignup } from './pages/ProviderSignup'
+import { ProviderDashboard } from './pages/ProviderDashboard'
 import { Login } from './pages/Login'
 import { useApp } from './context/AppContext'
 import { Zap } from 'lucide-react'
@@ -27,16 +30,19 @@ function AppShell() {
       <main className="flex-1 min-w-0 h-full pb-16 md:pb-0">
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
-            <Route path="/"         element={<Dashboard />} />
-            <Route path="/timer"    element={<FocusTimer />} />
-            <Route path="/tasks"    element={<TaskBoard />} />
-            <Route path="/dump"     element={<BrainDump />} />
-            <Route path="/habits"   element={<HabitTracker />} />
-            <Route path="/monthly"  element={<MonthlyTracker />} />
-            <Route path="/checkin"  element={<DailyCheckin />} />
-            <Route path="/rewards"  element={<Rewards />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="*"         element={<Navigate to="/" replace />} />
+            <Route path="/"                   element={<Dashboard />} />
+            <Route path="/timer"              element={<FocusTimer />} />
+            <Route path="/tasks"              element={<TaskBoard />} />
+            <Route path="/dump"               element={<BrainDump />} />
+            <Route path="/habits"             element={<HabitTracker />} />
+            <Route path="/monthly"            element={<MonthlyTracker />} />
+            <Route path="/checkin"            element={<DailyCheckin />} />
+            <Route path="/rewards"            element={<Rewards />} />
+            <Route path="/settings"           element={<Settings />} />
+            <Route path="/connect"            element={<Connect />} />
+            <Route path="/provider/signup"    element={<ProviderSignup />} />
+            <Route path="/provider/dashboard" element={<ProviderDashboard />} />
+            <Route path="*"                   element={<Navigate to="/" replace />} />
           </Routes>
         </AnimatePresence>
       </main>

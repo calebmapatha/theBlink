@@ -1,26 +1,28 @@
 import { NavLink } from 'react-router-dom'
-import { Home, Timer, CheckSquare, Brain, Repeat, Sun, Trophy, Moon, Zap, LogOut, BarChart2, Settings } from 'lucide-react'
+import { Home, Timer, CheckSquare, Brain, Repeat, Sun, Trophy, Moon, Zap, LogOut, BarChart2, Settings, HeartHandshake } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { useAuth } from '../../context/AuthContext'
 
 const NAV = [
-  { to: '/',        icon: Home,        label: 'Home',       end: true },
-  { to: '/timer',   icon: Timer,       label: 'Focus Timer' },
-  { to: '/tasks',   icon: CheckSquare, label: 'Tasks' },
-  { to: '/habits',  icon: Repeat,      label: 'Habits' },
-  { to: '/monthly', icon: BarChart2,   label: 'Monthly' },
-  { to: '/dump',    icon: Brain,       label: 'Brain Dump' },
-  { to: '/checkin', icon: Sun,         label: 'Check-in' },
-  { to: '/rewards', icon: Trophy,      label: 'Rewards' },
-  { to: '/settings',icon: Settings,    label: 'Settings' },
+  { to: '/',         icon: Home,           label: 'Home',       end: true },
+  { to: '/timer',    icon: Timer,          label: 'Focus Timer' },
+  { to: '/tasks',    icon: CheckSquare,    label: 'Tasks' },
+  { to: '/habits',   icon: Repeat,         label: 'Habits' },
+  { to: '/monthly',  icon: BarChart2,      label: 'Monthly' },
+  { to: '/dump',     icon: Brain,          label: 'Brain Dump' },
+  { to: '/checkin',  icon: Sun,            label: 'Check-in' },
+  { to: '/rewards',  icon: Trophy,         label: 'Rewards' },
+  { to: '/connect',  icon: HeartHandshake, label: 'Connect' },
+  { to: '/settings', icon: Settings,       label: 'Settings' },
 ]
 
 const MOBILE_NAV = [
-  { to: '/',         icon: Home,        label: 'Home',   end: true },
-  { to: '/timer',    icon: Timer,       label: 'Focus' },
-  { to: '/tasks',    icon: CheckSquare, label: 'Tasks' },
-  { to: '/habits',   icon: Repeat,      label: 'Habits' },
-  { to: '/settings', icon: Settings,    label: 'Settings' },
+  { to: '/',         icon: Home,           label: 'Home',    end: true },
+  { to: '/timer',    icon: Timer,          label: 'Focus' },
+  { to: '/tasks',    icon: CheckSquare,    label: 'Tasks' },
+  { to: '/habits',   icon: Repeat,         label: 'Habits' },
+  { to: '/connect',  icon: HeartHandshake, label: 'Connect' },
+  { to: '/settings', icon: Settings,       label: 'Settings' },
 ]
 
 export function Sidebar() {
