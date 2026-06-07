@@ -8,12 +8,12 @@ import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
 
 const SPECIALTIES = ['ADHD', 'Anxiety', 'Depression', 'OCD', 'PTSD', 'Autism Spectrum', 'Bipolar Disorder', 'Stress Management', 'Sleep Disorders', 'Trauma', 'Life Transitions', 'Executive Function']
-const LANGUAGES   = ['English', 'Spanish', 'French', 'Portuguese', 'Mandarin', 'Arabic', 'Hindi', 'German']
-const TIMEZONES   = ['Eastern (ET)', 'Central (CT)', 'Mountain (MT)', 'Pacific (PT)', 'GMT', 'CET', 'IST', 'AEST']
+const LANGUAGES   = ['English', 'Zulu', 'Xhosa', 'Afrikaans', 'Sotho', 'Tswana', 'Venda', 'Tsonga', 'Spanish', 'French', 'Portuguese', 'Mandarin']
+const TIMEZONES   = ['South Africa (SAST, UTC+2)', 'GMT', 'Eastern (ET)', 'Central (CT)', 'Western Europe (CET)', 'India (IST)', 'Australia (AEST)']
 const AVATARS     = ['🧠', '😊', '⚕️', '🌟', '💙', '🌿', '🔬', '🏥', '💊', '🌸', '🌊', '☀️']
 const PLANS = [
-  { id: 'standard', price: 49, label: 'Standard', features: ['Profile listing', 'Appointment requests', 'Patient messaging', 'Analytics'] },
-  { id: 'featured', price: 99, label: 'Featured',  features: ['Everything in Standard', 'Featured placement in search', 'Priority support', 'Advanced analytics'] },
+  { id: 'standard', price: 49,  label: 'Standard', features: ['Profile listing', 'Appointment requests', 'Patient messaging', 'Analytics'] },
+  { id: 'featured', price: 99,  label: 'Featured',  features: ['Everything in Standard', 'Featured placement in search', 'Priority support', 'Advanced analytics'] },
 ]
 
 function SpecialtyChips({ selected, onToggle, items }) {
@@ -47,6 +47,7 @@ export function ProviderSignup() {
   const [form, setForm] = useState({
     name:         '',
     type:         'Psychiatrist',
+    hpcsa:        '',
     specialties:  ['ADHD'],
     bio:          '',
     experience:   '',
@@ -55,7 +56,7 @@ export function ProviderSignup() {
     sessionFee:   '',
     availability: '',
     meetingLink:  '',
-    timezone:     'Eastern (ET)',
+    timezone:     'South Africa (SAST, UTC+2)',
   })
 
   useEffect(() => {
@@ -89,8 +90,9 @@ export function ProviderSignup() {
 
   if (checking) return null
 
+  const hpcsaHint = form.type === 'Psychiatrist' ? 'MP0123456' : 'PS0123456'
   const STEPS = ['Profile', 'Session Setup', 'Subscribe']
-  const canProceed1 = form.name.trim() && form.bio.trim() && form.specialties.length > 0
+  const canProceed1 = form.name.trim() && form.bio.trim() && form.specialties.length > 0 && form.hpcsa.trim()
   const canProceed2 = form.sessionFee && Number(form.sessionFee) > 0
 
   return (
@@ -157,6 +159,16 @@ export function ProviderSignup() {
               </div>
             </div>
             <div>
+              <label className="block text-xs font-medium text-ink-400 mb-1">
+                HPCSA practice number <span className="text-red-400">*</span>
+              </label>
+              <input value={form.hpcsa} onChange={e => set('hpcsa', e.target.value.toUpperCase())}
+                className={inputCls} placeholder={`e.g. ${hpcsaHint}`} />
+              <p className="text-[10px] text-ink-400 mt-1">
+                Psychiatrists: MP + digits · Psychologists: PS + digits
+              </p>
+            </div>
+            <div>
               <label className="block text-xs font-medium text-ink-400 mb-1">Years of experience</label>
               <input type="number" value={form.experience} onChange={e => set('experience', e.target.value)}
                 min="0" max="60" className={inputCls} placeholder="10" />
@@ -164,7 +176,7 @@ export function ProviderSignup() {
             <div>
               <label className="block text-xs font-medium text-ink-400 mb-1">Bio</label>
               <textarea value={form.bio} onChange={e => set('bio', e.target.value)} rows={4}
-                placeholder="I specialize in ADHD and related conditions, helping clients develop practical strategies…"
+                placeholder="I specialise in ADHD and related conditions, helping clients develop practical strategies…"
                 className={`${inputCls} resize-none`} />
             </div>
           </Card>
@@ -187,18 +199,18 @@ export function ProviderSignup() {
         <div className="space-y-4">
           <Card className="p-4 space-y-4">
             <div>
-              <label className="block text-xs font-medium text-ink-400 mb-1">Session fee (USD)</label>
+              <label className="block text-xs font-medium text-ink-400 mb-1">Session fee (ZAR)</label>
               <p className="text-xs text-ink-400 mb-1">Charged directly to patients — you set the price.</p>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 text-sm">$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 text-sm">R</span>
                 <input type="number" value={form.sessionFee} onChange={e => set('sessionFee', e.target.value)}
-                  min="0" className={`${inputCls} pl-7`} placeholder="150" />
+                  min="0" className={`${inputCls} pl-7`} placeholder="800" />
               </div>
             </div>
             <div>
               <label className="block text-xs font-medium text-ink-400 mb-1">Availability</label>
               <input value={form.availability} onChange={e => set('availability', e.target.value)}
-                className={inputCls} placeholder="Mon–Fri, 9 am–5 pm" />
+                className={inputCls} placeholder="Mon–Fri, 8 am–5 pm SAST" />
             </div>
             <div>
               <label className="block text-xs font-medium text-ink-400 mb-1">Timezone</label>
@@ -239,7 +251,7 @@ export function ProviderSignup() {
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-warm-400 text-white font-medium">Popular</span>
                   )}
                 </div>
-                <span className="font-bold text-ink-900 dark:text-ink-100 text-base">${p.price}<span className="text-xs font-normal text-ink-400">/mo</span></span>
+                <span className="font-bold text-ink-900 dark:text-ink-100 text-base">R{p.price}<span className="text-xs font-normal text-ink-400">/mo</span></span>
               </div>
               <ul className="space-y-1">
                 {p.features.map(f => (
@@ -279,7 +291,7 @@ export function ProviderSignup() {
           </Card>
 
           <Button className="w-full" disabled={saving} onClick={handleActivate}>
-            {saving ? 'Activating…' : `Activate for $${PLANS.find(p => p.id === plan)?.price}/month`}
+            {saving ? 'Activating…' : `Activate for R${PLANS.find(p => p.id === plan)?.price}/month`}
           </Button>
         </div>
       )}
