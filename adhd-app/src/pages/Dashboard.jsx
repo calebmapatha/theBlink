@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Play, ChevronRight, Sun } from 'lucide-react'
+import { Play, ChevronRight, Sun, HeartHandshake } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
@@ -8,7 +8,7 @@ import { useApp } from '../context/AppContext'
 import { formatDayHeader } from '../utils/dateUtils'
 
 const MOOD_EMOJI = { 1: '😔', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' }
-const ENERGY_EMOJI = { 1: '🪫', 2: '😴', 3: '⚡', 4: '🔥', 5: '🚀' }
+const ENERGY_EMOJI = { 1: '🪷', 2: '😴', 3: '⚡', 4: '🔥', 5: '🚀' }
 
 function greeting() {
   const h = new Date().getHours()
@@ -66,6 +66,23 @@ export function Dashboard() {
       </div>
 
       <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-3">
+
+        {/* Mental Health Journey */}
+        <motion.div variants={itemVariants}>
+          <Card className="p-4 cursor-pointer border-primary-200 dark:border-primary-700/40 bg-gradient-to-r from-primary-50 to-primary-100/50 dark:from-primary-700/10 dark:to-primary-900/10 hover:border-primary-300 dark:hover:border-primary-600 transition-colors"
+            onClick={() => navigate('/connect')}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-700/30 flex items-center justify-center flex-shrink-0">
+                <HeartHandshake size={18} className="text-primary-500" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-ink-900 dark:text-ink-100">Mental Health Support</p>
+                <p className="text-xs text-ink-400">Connect with HPCSA-registered psychiatrists &amp; psychologists</p>
+              </div>
+              <ChevronRight size={16} className="text-ink-400 flex-shrink-0" />
+            </div>
+          </Card>
+        </motion.div>
 
         {/* Check-in */}
         <motion.div variants={itemVariants}>
