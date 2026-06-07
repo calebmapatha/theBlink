@@ -36,10 +36,10 @@ export function Sidebar() {
       <aside className="hidden md:flex flex-col w-56 flex-shrink-0 h-full bg-white dark:bg-surface-900 border-r border-surface-200 dark:border-surface-800">
         <div className="px-5 py-5 border-b border-surface-200 dark:border-surface-800">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-primary-500 flex items-center justify-center">
-              <Zap size={14} className="text-white" />
+            <div className="w-7 h-7 rounded-lg bg-teal-500 flex items-center justify-center">
+              <HeartHandshake size={14} className="text-white" />
             </div>
-            <span className="font-semibold text-ink-900 dark:text-ink-100">FocusBlink</span>
+            <span className="font-semibold text-ink-900 dark:text-ink-100">Mentora</span>
           </div>
           {user && (
             <div className="flex items-center gap-2">

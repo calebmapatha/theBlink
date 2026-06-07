@@ -105,7 +105,7 @@ export function ProviderSignup() {
 
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-ink-900 dark:text-ink-100">Join as a Provider</h1>
-        <p className="text-sm text-ink-400 mt-0.5">List your practice on FocusBlink</p>
+        <p className="text-sm text-ink-400 mt-0.5">List your practice on Mentora</p>
       </div>
 
       <div className="flex items-center gap-1 mb-8">

@@ -218,7 +218,7 @@ export function Settings() {
         <SettingsRow icon={Trash2} label="Clear all data" danger onClick={() => setClearOpen(true)} />
       </Section>
 
-      <p className="text-center text-xs text-ink-400 mt-4">FocusBlink v1.0.0 · Your data stays on your device</p>
+      <p className="text-center text-xs text-ink-400 mt-4">Mentora v1.0.0 · Your data stays on your device</p>
 
       <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)}
         profile={userProfile.profile} authUser={user} onSave={userProfile.updateProfile} />
