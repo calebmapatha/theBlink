@@ -12,6 +12,76 @@ const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:b
 
 const DATA_LABELS = { habits: '🔄 Habits', checkin: '😊 Mood', focus: '⏱️ Focus', tasks: '✅ Tasks' }
 
+const MOOD_LABELS   = { 1: 'Very low', 2: 'Low', 3: 'Neutral', 4: 'Good',   5: 'Great' }
+const ENERGY_LABELS = { 1: 'Depleted', 2: 'Low', 3: 'Moderate', 4: 'High', 5: 'Peak' }
+
+function DataSnapshot({ snapshot }) {
+  if (!snapshot || Object.keys(snapshot).length === 0) return null
+  return (
+    <div className="mt-3 pt-3 border-t border-surface-100 dark:border-surface-800 space-y-3">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Last 30 days</p>
+
+      {snapshot.checkin && (
+        <div className="flex gap-4 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm">😊</span>
+            <div>
+              <p className="text-[10px] text-ink-400">Avg mood</p>
+              <p className="text-xs font-semibold text-ink-800 dark:text-ink-200">
+                {snapshot.checkin.avgMood}/5
+                <span className="text-ink-400 font-normal ml-1">{MOOD_LABELS[Math.round(snapshot.checkin.avgMood)]}</span>
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm">⚡</span>
+            <div>
+              <p className="text-[10px] text-ink-400">Avg energy</p>
+              <p className="text-xs font-semibold text-ink-800 dark:text-ink-200">
+                {snapshot.checkin.avgEnergy}/5
+                <span className="text-ink-400 font-normal ml-1">{ENERGY_LABELS[Math.round(snapshot.checkin.avgEnergy)]}</span>
+              </p>
+            </div>
+          </div>
+          <p className="text-[10px] text-ink-400 self-end">{snapshot.checkin.count} check-ins</p>
+        </div>
+      )}
+
+      {snapshot.tasks && (
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-[10px] text-ink-400">Task completion</p>
+            <p className="text-[10px] font-semibold text-ink-700 dark:text-ink-300">
+              {snapshot.tasks.completed}/{snapshot.tasks.total} tasks · {snapshot.tasks.rate}%
+            </p>
+          </div>
+          <div className="h-1.5 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden">
+            <div className="h-full rounded-full bg-primary-500" style={{ width: `${snapshot.tasks.rate}%` }} />
+          </div>
+        </div>
+      )}
+
+      {snapshot.habits?.length > 0 && (
+        <div className="space-y-1.5">
+          {snapshot.habits.map((h, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="text-sm w-5 flex-shrink-0">{h.emoji}</span>
+              <p className="text-[10px] text-ink-600 dark:text-ink-300 flex-1 truncate">{h.name}</p>
+              <p className="text-[10px] font-semibold text-ink-700 dark:text-ink-300 flex-shrink-0">
+                {h.completed}/{h.total}d
+              </p>
+              <div className="w-16 h-1 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden flex-shrink-0">
+                <div className="h-full rounded-full bg-success-500"
+                  style={{ width: `${Math.round(h.completed / h.total * 100)}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 const DAYS = [
   { key: 'mon', label: 'Monday' },
   { key: 'tue', label: 'Tuesday' },
@@ -98,6 +168,7 @@ function AppointmentCard({ appt, onConfirm, onDecline }) {
               </div>
             </div>
           )}
+          <DataSnapshot snapshot={appt.sharedDataSnapshot} />
         </div>
         {appt.status === 'pending' && (
           <div className="flex gap-1.5 flex-shrink-0">

@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Providers: any authenticated user can read active profiles; only the provider can write their own
+    match /providers/{uid} {
+      allow read: if request.auth != null &&
+        (resource == null || resource.data.subscriptionActive == true || request.auth.uid == uid);
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Appointments: patient or provider of that appointment can read/write; any authed user can create
+    match /appointments/{id} {
+      allow create: if request.auth != null &&
+        request.resource.data.patientUid == request.auth.uid;
+      allow read, update: if request.auth != null && (
+        request.auth.uid == resource.data.patientUid ||
+        request.auth.uid == resource.data.providerUid
+      );
+    }
+
+    // Patients: only the patient themselves can read/write their own record
+    match /patients/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}

@@ -15,11 +15,47 @@ const SPECIALTIES = ['ADHD', 'Anxiety', 'Depression', 'OCD', 'PTSD', 'Autism Spe
 const DATA_TYPES = [
   { id: 'habits',  label: 'Habit streaks',  emoji: '🔄' },
   { id: 'checkin', label: 'Mood & energy',   emoji: '😊' },
-  { id: 'focus',   label: 'Focus sessions',  emoji: '⏱️' },
   { id: 'tasks',   label: 'Task completion', emoji: '✅' },
 ]
 
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
+
+function buildDataSnapshot(uid, types) {
+  const last30 = Array.from({ length: 30 }, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - i)
+    return d.toISOString().split('T')[0]
+  })
+  const snapshot = {}
+  try {
+    if (types.includes('habits')) {
+      const raw = JSON.parse(localStorage.getItem(`u_${uid}_adhd_habits`) || '{"definitions":[],"completions":{}}')
+      snapshot.habits = (raw.definitions || []).map(h => ({
+        name: h.name, emoji: h.emoji,
+        completed: last30.filter(d => (raw.completions[d] || []).includes(h.id)).length,
+        total: 30,
+      }))
+    }
+    if (types.includes('checkin')) {
+      const raw = JSON.parse(localStorage.getItem(`u_${uid}_adhd_checkins`) || '{}')
+      const entries = last30.map(d => raw[d]).filter(Boolean)
+      if (entries.length > 0) {
+        snapshot.checkin = {
+          avgMood:   +(entries.reduce((s, e) => s + (Number(e.mood)   || 0), 0) / entries.length).toFixed(1),
+          avgEnergy: +(entries.reduce((s, e) => s + (Number(e.energy) || 0), 0) / entries.length).toFixed(1),
+          count: entries.length,
+        }
+      }
+    }
+    if (types.includes('tasks')) {
+      const raw = JSON.parse(localStorage.getItem(`u_${uid}_adhd_tasks`) || '[]')
+      const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30)
+      const recent = raw.filter(t => new Date(t.createdAt) >= cutoff)
+      const completed = recent.filter(t => t.completedAt).length
+      snapshot.tasks = { total: recent.length, completed, rate: recent.length > 0 ? Math.round(completed / recent.length * 100) : 0 }
+    }
+  } catch {}
+  return snapshot
+}
 
 function ProviderCard({ provider, onBook, onLink, linked }) {
   return (
@@ -114,16 +150,18 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
     if (!date || !timeSlot) return
     setLoading(true)
     try {
+      const snapshot = sharedTypes.length > 0 ? buildDataSnapshot(user.uid, sharedTypes) : {}
       await bookAppointment({
-        providerUid:     provider.id,
-        providerName:    provider.name,
-        patientUid:      user.uid,
-        patientName:     userProfile?.profile?.displayName || user?.displayName || user?.email,
-        patientEmail:    user?.email,
+        providerUid:          provider.id,
+        providerName:         provider.name,
+        patientUid:           user.uid,
+        patientName:          userProfile?.profile?.displayName || user?.displayName || user?.email,
+        patientEmail:         user?.email,
         date,
         timeSlot,
         notes,
-        sharedDataTypes: sharedTypes,
+        sharedDataTypes:     sharedTypes,
+        sharedDataSnapshot:  snapshot,
       })
       setDone(true)
     } finally {
