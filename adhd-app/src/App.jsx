@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { AppProvider } from './context/AppContext'
 import { Sidebar } from './components/layout/Sidebar'
 import { Toast } from './components/ui/Toast'
+import { Dashboard } from './pages/Dashboard'
 import { FocusTimer } from './pages/FocusTimer'
 import { TaskBoard } from './pages/TaskBoard'
 import { BrainDump } from './pages/BrainDump'
@@ -26,7 +27,7 @@ function AppShell() {
       <main className="flex-1 min-w-0 h-full pb-16 md:pb-0">
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
-            <Route path="/"         element={<Navigate to="/timer" replace />} />
+            <Route path="/"         element={<Dashboard />} />
             <Route path="/timer"    element={<FocusTimer />} />
             <Route path="/tasks"    element={<TaskBoard />} />
             <Route path="/dump"     element={<BrainDump />} />
@@ -35,7 +36,7 @@ function AppShell() {
             <Route path="/checkin"  element={<DailyCheckin />} />
             <Route path="/rewards"  element={<Rewards />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="*"         element={<Navigate to="/timer" replace />} />
+            <Route path="*"         element={<Navigate to="/" replace />} />
           </Routes>
         </AnimatePresence>
       </main>

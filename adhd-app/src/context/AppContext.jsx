@@ -7,6 +7,7 @@ import { useCheckin } from '../hooks/useCheckin'
 import { useRewards } from '../hooks/useRewards'
 import { useTheme } from '../hooks/useTheme'
 import { useUserProfile } from '../hooks/useUserProfile'
+import { useNotifications } from '../hooks/useNotifications'
 
 const AppContext = createContext(null)
 
@@ -25,16 +26,17 @@ export function AppProvider({ userId, children }) {
     return pts
   }, [rewards, showToast])
 
-  const timer   = useTimer(() => awardAndToast('FOCUS_SESSION', 'Focus session complete!'))
-  const tasks   = useTasks(userId)
-  const dump    = useBrainDump(userId)
-  const habits  = useHabits(userId)
-  const checkin = useCheckin(userId)
-  const theme   = useTheme()
-  const userProfile = useUserProfile(userId)
+  const timer         = useTimer(() => awardAndToast('FOCUS_SESSION', 'Focus session complete!'))
+  const tasks         = useTasks(userId)
+  const dump          = useBrainDump(userId)
+  const habits        = useHabits(userId)
+  const checkin       = useCheckin(userId)
+  const theme         = useTheme()
+  const userProfile   = useUserProfile(userId)
+  const notifications = useNotifications()
 
   return (
-    <AppContext.Provider value={{ timer, tasks, dump, habits, checkin, rewards, theme, toast, awardAndToast, userProfile, userId }}>
+    <AppContext.Provider value={{ timer, tasks, dump, habits, checkin, rewards, theme, toast, awardAndToast, userProfile, userId, notifications }}>
       {children}
     </AppContext.Provider>
   )
