@@ -8,7 +8,7 @@ import { useApp } from '../context/AppContext'
 import { formatDayHeader } from '../utils/dateUtils'
 
 const MOOD_EMOJI = { 1: '😔', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' }
-const ENERGY_EMOJI = { 1: '🪫', 2: '😴', 3: '⚡', 4: '🔥', 5: '🚀' }
+const ENERGY_EMOJI = { 1: '�be0b', 2: '😴', 3: '⚡', 4: '🔥', 5: '🚀' }
 
 function greeting() {
   const h = new Date().getHours()

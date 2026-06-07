@@ -71,9 +71,7 @@ export function useProviders() {
   const unlinkDoctor = async (patientUid) => {
     try {
       await updateDoc(doc(db, 'patients', patientUid), { linkedDoctorUid: deleteField() })
-    } catch {
-      // Document doesn't exist, nothing to unlink
-    }
+    } catch {}
   }
 
   const searchProviderByHPCSA = async (hpcsa) => {
