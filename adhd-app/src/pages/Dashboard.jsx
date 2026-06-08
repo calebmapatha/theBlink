@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Play, ChevronRight, Sun, HeartHandshake } from 'lucide-react'
+import { Play, ChevronRight, Sun, HeartHandshake, Zap } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
@@ -7,8 +7,8 @@ import { Button } from '../components/ui/Button'
 import { useApp } from '../context/AppContext'
 import { formatDayHeader } from '../utils/dateUtils'
 
-const MOOD_EMOJI = { 1: '😔', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' }
-const ENERGY_EMOJI = { 1: '🪷', 2: '😴', 3: '⚡', 4: '🔥', 5: '🚀' }
+const MOOD_EMOJI   = { 1: '😔', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' }
+const ENERGY_EMOJI = { 1: '🪴', 2: '😴', 3: '⚡', 4: '🔥', 5: '🚀' }
 
 function greeting() {
   const h = new Date().getHours()
@@ -24,7 +24,7 @@ function formatSeconds(s) {
 }
 
 function MiniRing({ color, progress, size = 36, stroke = 5 }) {
-  const r = (size - stroke) / 2
+  const r    = (size - stroke) / 2
   const circ = 2 * Math.PI * r
   const fill = Math.min(Math.max(progress, 0), 1)
   const dash = fill * circ
@@ -52,7 +52,7 @@ export function Dashboard() {
   const isRunning          = timer.status === 'running'
   const isPaused           = timer.status === 'paused'
 
-  const xpToNext = rewards.nextLevel ? rewards.nextLevel.xpRequired - rewards.currentLevel.xpRequired : 0
+  const xpToNext   = rewards.nextLevel ? rewards.nextLevel.xpRequired - rewards.currentLevel.xpRequired : 0
   const xpProgress = xpToNext > 0 ? Math.min(rewards.xpInCurrentLevel / xpToNext, 1) : 1
 
   return (
@@ -67,21 +67,36 @@ export function Dashboard() {
 
       <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-3">
 
-        {/* Mental Health Journey */}
+        {/* Connect — hero card */}
         <motion.div variants={itemVariants}>
-          <Card className="p-4 cursor-pointer border-primary-200 dark:border-primary-700/40 bg-gradient-to-r from-primary-50 to-primary-100/50 dark:from-primary-700/10 dark:to-primary-900/10 hover:border-primary-300 dark:hover:border-primary-600 transition-colors"
-            onClick={() => navigate('/connect')}>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-700/30 flex items-center justify-center flex-shrink-0">
-                <HeartHandshake size={18} className="text-primary-500" />
-              </div>
+          <button
+            onClick={() => navigate('/connect')}
+            className="w-full text-left p-5 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-md hover:shadow-lg transition-shadow"
+          >
+            <div className="flex items-start justify-between gap-3">
               <div className="flex-1">
-                <p className="text-sm font-medium text-ink-900 dark:text-ink-100">Mental Health Support</p>
-                <p className="text-xs text-ink-400">Connect with HPCSA-registered psychiatrists &amp; psychologists</p>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <HeartHandshake size={16} className="opacity-80" />
+                  <p className="text-xs font-semibold opacity-80 uppercase tracking-wider">MentisFlow Connect</p>
+                </div>
+                <p className="text-lg font-semibold leading-snug mb-1">Mental Health Support</p>
+                <p className="text-sm opacity-80 leading-relaxed">
+                  Connect with HPCSA-registered psychiatrists &amp; psychologists. Book appointments and share your wellness data.
+                </p>
               </div>
-              <ChevronRight size={16} className="text-ink-400 flex-shrink-0" />
+              <ChevronRight size={18} className="opacity-60 flex-shrink-0 mt-1" />
             </div>
-          </Card>
+          </button>
+        </motion.div>
+
+        {/* FocusBlink section divider */}
+        <motion.div variants={itemVariants} className="flex items-center gap-3 pt-1">
+          <div className="flex-1 h-px bg-surface-200 dark:bg-surface-700" />
+          <div className="flex items-center gap-1.5">
+            <Zap size={12} className="text-primary-500" />
+            <span className="text-xs font-semibold text-ink-400 uppercase tracking-wider">FocusBlink</span>
+          </div>
+          <div className="flex-1 h-px bg-surface-200 dark:bg-surface-700" />
         </motion.div>
 
         {/* Check-in */}

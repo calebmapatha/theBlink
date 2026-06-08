@@ -81,6 +81,7 @@ function ProviderCard({ provider, onBook, onLink, linked }) {
           </div>
         </div>
       </div>
+
       <div className="mt-3 flex items-center gap-4 text-xs text-ink-400 flex-wrap">
         {provider.availability && (
           <span className="flex items-center gap-1"><Clock size={10} /> {provider.availability}</span>
@@ -89,9 +90,11 @@ function ProviderCard({ provider, onBook, onLink, linked }) {
           <span className="flex items-center gap-1"><Globe size={10} /> {provider.languages.join(', ')}</span>
         )}
       </div>
+
       {provider.bio && (
         <p className="mt-2 text-xs text-ink-400 line-clamp-2">{provider.bio}</p>
       )}
+
       <div className="mt-3 flex items-center justify-between gap-2">
         <div>
           <span className="text-sm font-bold text-ink-900 dark:text-ink-100">R{provider.sessionFee}</span>
@@ -128,7 +131,10 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
   useEffect(() => {
     if (!provider || !open) return
     setDiaryLoading(true)
-    getDiary(provider.id).then(d => { setDiary(d || {}); setDiaryLoading(false) })
+    getDiary(provider.id).then(d => {
+      setDiary(d || {})
+      setDiaryLoading(false)
+    })
   }, [provider?.id, open])
 
   const availableSlots = useMemo(() => {
@@ -146,16 +152,21 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
     try {
       const snapshot = sharedTypes.length > 0 ? buildDataSnapshot(user.uid, sharedTypes) : {}
       await bookAppointment({
-        providerUid: provider.id, providerName: provider.name,
-        patientUid: user.uid,
-        patientName: userProfile?.profile?.displayName || user?.displayName || user?.email,
-        patientEmail: user?.email,
-        date, timeSlot, notes,
-        sharedDataTypes: sharedTypes,
+        providerUid:         provider.id,
+        providerName:        provider.name,
+        patientUid:          user.uid,
+        patientName:         userProfile?.profile?.displayName || user?.displayName || user?.email,
+        patientEmail:        user?.email,
+        date,
+        timeSlot,
+        notes,
+        sharedDataTypes:    sharedTypes,
         sharedDataSnapshot: snapshot,
       })
       setDone(true)
-    } finally { setLoading(false) }
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleClose = () => {
@@ -182,6 +193,7 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
               min={new Date().toISOString().split('T')[0]}
               className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
           </div>
+
           {date && (
             <div>
               <label className="block text-xs font-medium text-ink-400 mb-2">Available slots</label>
@@ -199,18 +211,22 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
                         timeSlot === slot
                           ? 'border-primary-400 bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400'
                           : 'border-surface-200 dark:border-surface-700 text-ink-400 hover:border-surface-300'
-                      }`}>{slot}</button>
+                      }`}>
+                      {slot}
+                    </button>
                   ))}
                 </div>
               )}
             </div>
           )}
+
           <div>
             <label className="block text-xs font-medium text-ink-400 mb-1">Notes (optional)</label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3}
               placeholder="What would you like to discuss?"
               className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 resize-none" />
           </div>
+
           <div>
             <label className="block text-xs font-medium text-ink-400 mb-2">Share app data with doctor (optional)</label>
             <div className="grid grid-cols-2 gap-2">
@@ -221,18 +237,23 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
                       ? 'border-primary-400 bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400'
                       : 'border-surface-200 dark:border-surface-700 text-ink-400 hover:border-surface-300'
                   }`}>
-                  <span>{t.emoji}</span><span>{t.label}</span>
+                  <span>{t.emoji}</span>
+                  <span>{t.label}</span>
                   {sharedTypes.includes(t.id) && <Check size={10} className="ml-auto text-primary-500 flex-shrink-0" />}
                 </button>
               ))}
             </div>
             {sharedTypes.length > 0 && (
-              <p className="text-[10px] text-ink-400 mt-1.5">Your selected data will be visible to {provider.name} before the session.</p>
+              <p className="text-[10px] text-ink-400 mt-1.5">
+                Your selected data will be visible to {provider.name} before the session.
+              </p>
             )}
           </div>
+
           <div className="px-3 py-2 rounded-xl bg-surface-50 dark:bg-surface-900 text-xs text-ink-400">
             Session fee: <strong className="text-ink-700 dark:text-ink-300">R{provider.sessionFee}</strong> · Payment arranged directly with the provider after confirmation.
           </div>
+
           <div className="flex gap-2">
             <Button variant="ghost" className="flex-1" onClick={handleClose}>Cancel</Button>
             <Button className="flex-1" disabled={!date || !timeSlot || loading} onClick={handleBook}>
@@ -246,7 +267,12 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
 }
 
 export function Connect() {
-  const { providers, loading, bookAppointment, getDiary, linkDoctor, getLinkedDoctor, unlinkDoctor, searchProviderByHPCSA, getPatientAppointments } = useProviders()
+  const {
+    providers, loading, bookAppointment,
+    getDiary, linkDoctor, getLinkedDoctor, unlinkDoctor,
+    searchProviderByHPCSA, getPatientAppointments,
+    incrementProfileViews,
+  } = useProviders()
   const { user }        = useAuth()
   const { userProfile } = useApp()
   const navigate        = useNavigate()
@@ -256,6 +282,7 @@ export function Connect() {
   const [typeFilter, setTypeFilter] = useState('All')
   const [specFilter, setSpecFilter] = useState('')
   const [booking, setBooking]       = useState(null)
+
   const [linkedDoctor, setLinkedDoctor]     = useState(undefined)
   const [linkLoading, setLinkLoading]       = useState(true)
   const [hpcsaQuery, setHpcsaQuery]         = useState('')
@@ -265,31 +292,46 @@ export function Connect() {
 
   useEffect(() => {
     if (!user) return
-    Promise.all([getLinkedDoctor(user.uid), getPatientAppointments(user.uid)]).then(([doc, appts]) => {
+    Promise.all([
+      getLinkedDoctor(user.uid),
+      getPatientAppointments(user.uid),
+    ]).then(([doc, appts]) => {
       setLinkedDoctor(doc || null)
       setMyAppointments(appts.sort((a, b) => (a.date > b.date ? 1 : -1)))
       setLinkLoading(false)
     })
   }, [user])
 
+  const handleBookClick = (provider) => {
+    incrementProfileViews(provider.id)
+    setBooking(provider)
+  }
+
   const handleHpcsaSearch = async () => {
-    setSearchError(''); setSearchResult(null)
+    setSearchError('')
+    setSearchResult(null)
     const q = hpcsaQuery.trim()
     if (!q) return
-    let result = /^(MP|PS)\d+/i.test(q)
-      ? await searchProviderByHPCSA(q.toUpperCase())
-      : providers.find(p => p.name?.toLowerCase().includes(q.toLowerCase())) || null
+    let result = null
+    if (/^(MP|PS)\d+/i.test(q)) {
+      result = await searchProviderByHPCSA(q.toUpperCase())
+    } else {
+      result = providers.find(p => p.name?.toLowerCase().includes(q.toLowerCase())) || null
+    }
     if (!result) setSearchError('No provider found with that HPCSA number or name.')
     else setSearchResult(result)
   }
 
   const handleLink = async (provider) => {
     await linkDoctor(user.uid, provider.id)
-    setLinkedDoctor(provider); setSearchResult(null); setHpcsaQuery('')
+    setLinkedDoctor(provider)
+    setSearchResult(null)
+    setHpcsaQuery('')
   }
 
   const handleUnlink = async () => {
-    await unlinkDoctor(user.uid); setLinkedDoctor(null)
+    await unlinkDoctor(user.uid)
+    setLinkedDoctor(null)
   }
 
   const filtered = providers.filter(p => {
@@ -297,7 +339,10 @@ export function Connect() {
     if (specFilter && !(p.specialties || []).includes(specFilter)) return false
     if (search) {
       const q = search.toLowerCase()
-      return p.name?.toLowerCase().includes(q) || (p.specialties || []).some(s => s.toLowerCase().includes(q)) || p.bio?.toLowerCase().includes(q) || p.hpcsa?.toLowerCase().includes(q)
+      return p.name?.toLowerCase().includes(q) ||
+             (p.specialties || []).some(s => s.toLowerCase().includes(q)) ||
+             p.bio?.toLowerCase().includes(q) ||
+             p.hpcsa?.toLowerCase().includes(q)
     }
     return true
   })
@@ -316,11 +361,18 @@ export function Connect() {
       </div>
 
       <div className="flex gap-2 mb-5">
-        {[{ key: 'find', label: 'Find a Doctor' }, { key: 'my-doctor', label: 'My Doctor' }].map(t => (
+        {[
+          { key: 'find',      label: 'Find a Doctor' },
+          { key: 'my-doctor', label: 'My Doctor' },
+        ].map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
             className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-              tab === t.key ? 'bg-primary-500 text-white' : 'bg-surface-100 dark:bg-surface-800 text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
-            }`}>{t.label}</button>
+              tab === t.key
+                ? 'bg-primary-500 text-white'
+                : 'bg-surface-100 dark:bg-surface-800 text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
+            }`}>
+            {t.label}
+          </button>
         ))}
       </div>
 
@@ -328,50 +380,88 @@ export function Connect() {
         <>
           <div className="relative mb-4">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, HPCSA number or specialty…"
+            <input value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Search by name, HPCSA number or specialty…"
               className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-800 text-sm text-ink-900 dark:text-ink-100 placeholder-ink-400 focus:outline-none focus:ring-2 focus:ring-primary-400" />
-            {search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700"><X size={14} /></button>}
+            {search && (
+              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700">
+                <X size={14} />
+              </button>
+            )}
           </div>
+
           <div className="flex gap-2 mb-3 flex-wrap">
             {['All', 'Psychiatrist', 'Psychologist'].map(t => (
               <button key={t} onClick={() => setTypeFilter(t)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                  typeFilter === t ? 'bg-primary-500 text-white' : 'bg-surface-100 dark:bg-surface-800 text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
-                }`}>{t}</button>
+                  typeFilter === t
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-surface-100 dark:bg-surface-800 text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
+                }`}>
+                {t}
+              </button>
             ))}
           </div>
+
           <div className="flex gap-2 mb-5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
             {['', ...SPECIALTIES].map((s, i) => (
               <button key={i} onClick={() => setSpecFilter(s === specFilter ? '' : s)}
                 className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  specFilter === s && s !== '' ? 'bg-warm-400 text-white' : 'bg-surface-100 dark:bg-surface-800 text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
-                }`}>{s || 'All specialties'}</button>
+                  specFilter === s && s !== ''
+                    ? 'bg-warm-400 text-white'
+                    : 'bg-surface-100 dark:bg-surface-800 text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
+                }`}>
+                {s || 'All specialties'}
+              </button>
             ))}
           </div>
+
           {loading ? (
-            <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-44 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />)}</div>
+            <div className="space-y-3">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-44 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />
+              ))}
+            </div>
           ) : filtered.length === 0 ? (
             <div className="py-16 text-center">
               <p className="text-4xl mb-3">{providers.length === 0 ? '🌱' : '🔍'}</p>
-              <p className="text-sm text-ink-400">{providers.length === 0 ? 'No providers have joined yet — check back soon.' : 'No providers match your filters.'}</p>
-              {providers.length > 0 && <button onClick={() => { setSearch(''); setTypeFilter('All'); setSpecFilter('') }} className="mt-3 text-xs text-primary-500 hover:underline">Clear filters</button>}
+              <p className="text-sm text-ink-400">
+                {providers.length === 0
+                  ? 'No providers have joined yet — check back soon.'
+                  : 'No providers match your filters.'}
+              </p>
+              {providers.length > 0 && (
+                <button onClick={() => { setSearch(''); setTypeFilter('All'); setSpecFilter('') }}
+                  className="mt-3 text-xs text-primary-500 hover:underline">Clear filters</button>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
               <p className="text-xs text-ink-400">{filtered.length} provider{filtered.length !== 1 ? 's' : ''} available</p>
               <AnimatePresence>
                 {filtered.map((p, i) => (
-                  <motion.div key={p.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
-                    <ProviderCard provider={p} onBook={setBooking} onLink={handleLink} linked={linkedDoctor?.id === p.id} />
+                  <motion.div key={p.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.04 }}>
+                    <ProviderCard
+                      provider={p}
+                      onBook={handleBookClick}
+                      onLink={handleLink}
+                      linked={linkedDoctor?.id === p.id}
+                    />
                   </motion.div>
                 ))}
               </AnimatePresence>
             </div>
           )}
+
           <div className="mt-10 p-4 rounded-2xl border border-dashed border-primary-200 dark:border-primary-700/40 bg-primary-50/50 dark:bg-primary-700/10">
             <p className="text-sm font-semibold text-ink-900 dark:text-ink-100 mb-1">Are you a psychiatrist or psychologist?</p>
-            <p className="text-xs text-ink-400 mb-3">List your practice and connect with ADHD clients who need your expertise.</p>
-            <Button variant="soft" size="sm" onClick={() => navigate('/provider/signup')}>Join as a provider →</Button>
+            <p className="text-xs text-ink-400 mb-3">List your practice and connect with mental health clients who need your expertise.</p>
+            <Button variant="soft" size="sm" onClick={() => navigate('/provider/signup')}>
+              Join as a provider →
+            </Button>
           </div>
         </>
       )}
@@ -384,7 +474,9 @@ export function Connect() {
             <>
               <Card className="p-4">
                 <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-2xl flex-shrink-0">{linkedDoctor.avatar || '🧠'}</div>
+                  <div className="w-12 h-12 rounded-2xl bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-2xl flex-shrink-0">
+                    {linkedDoctor.avatar || '🧠'}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <p className="font-semibold text-ink-900 dark:text-ink-100 text-sm">{linkedDoctor.name}</p>
@@ -392,16 +484,24 @@ export function Connect() {
                     </div>
                     <p className="text-xs text-ink-400">{linkedDoctor.type} · {linkedDoctor.experience} yrs exp</p>
                     {linkedDoctor.hpcsa && <p className="text-xs text-ink-400">HPCSA: {linkedDoctor.hpcsa}</p>}
-                    {linkedDoctor.availability && <p className="text-xs text-ink-400 mt-0.5 flex items-center gap-1"><Clock size={10} /> {linkedDoctor.availability}</p>}
+                    {linkedDoctor.availability && (
+                      <p className="text-xs text-ink-400 mt-0.5 flex items-center gap-1">
+                        <Clock size={10} /> {linkedDoctor.availability}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-2 mt-4">
-                  <Button className="flex-1" size="sm" onClick={() => setBooking(linkedDoctor)}><Calendar size={13} /> Book session</Button>
-                  <button onClick={handleUnlink} className="px-3 py-1.5 rounded-xl text-xs text-ink-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 border border-surface-200 dark:border-surface-700 transition-colors flex items-center gap-1.5">
+                  <Button className="flex-1" size="sm" onClick={() => handleBookClick(linkedDoctor)}>
+                    <Calendar size={13} /> Book session
+                  </Button>
+                  <button onClick={handleUnlink}
+                    className="px-3 py-1.5 rounded-xl text-xs text-ink-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 border border-surface-200 dark:border-surface-700 transition-colors flex items-center gap-1.5">
                     <Unlink size={12} /> Unlink
                   </button>
                 </div>
               </Card>
+
               {upcomingAppts.length > 0 && (
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">Upcoming appointments</p>
@@ -413,7 +513,14 @@ export function Connect() {
                             <p className="text-sm font-medium text-ink-900 dark:text-ink-100">{a.date} at {a.timeSlot}</p>
                             {a.sharedDataTypes?.length > 0 && (
                               <div className="flex gap-1 mt-1.5 flex-wrap">
-                                {a.sharedDataTypes.map(t => { const dt = DATA_TYPES.find(d => d.id === t); return dt ? <span key={t} className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400">{dt.emoji} {dt.label}</span> : null })}
+                                {a.sharedDataTypes.map(t => {
+                                  const dt = DATA_TYPES.find(d => d.id === t)
+                                  return dt ? (
+                                    <span key={t} className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400">
+                                      {dt.emoji} {dt.label}
+                                    </span>
+                                  ) : null
+                                })}
                               </div>
                             )}
                           </div>
@@ -428,6 +535,7 @@ export function Connect() {
                   </div>
                 </div>
               )}
+
               {upcomingAppts.length === 0 && (
                 <div className="py-8 text-center">
                   <p className="text-3xl mb-2">📅</p>
@@ -440,9 +548,12 @@ export function Connect() {
             <div>
               <Card className="p-5 mb-5">
                 <p className="text-sm font-semibold text-ink-900 dark:text-ink-100 mb-1">Link your existing doctor</p>
-                <p className="text-xs text-ink-400 mb-4">Enter your doctor's HPCSA practice number (e.g. MP0123456) or their name to find and link them.</p>
+                <p className="text-xs text-ink-400 mb-4">
+                  Enter your doctor's HPCSA practice number (e.g. MP0123456) or their name to find and link them.
+                </p>
                 <div className="flex gap-2">
-                  <input value={hpcsaQuery} onChange={e => setHpcsaQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleHpcsaSearch()}
+                  <input value={hpcsaQuery} onChange={e => setHpcsaQuery(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleHpcsaSearch()}
                     placeholder="HPCSA number or doctor's name"
                     className="flex-1 px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
                   <Button size="sm" onClick={handleHpcsaSearch}>Search</Button>
@@ -459,25 +570,42 @@ export function Connect() {
                         </div>
                         <p className="text-xs text-ink-400">{searchResult.type} · HPCSA: {searchResult.hpcsa}</p>
                       </div>
-                      <Button size="sm" onClick={() => handleLink(searchResult)}><Link2 size={12} /> Link</Button>
+                      <Button size="sm" onClick={() => handleLink(searchResult)}>
+                        <Link2 size={12} /> Link
+                      </Button>
                     </div>
                   </div>
                 )}
               </Card>
+
               <p className="text-xs text-ink-400 mb-3">Or link a doctor from the directory:</p>
               <div className="space-y-3">
-                {loading ? [1,2].map(i => <div key={i} className="h-36 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />) : providers.slice(0, 5).map(p => (
-                  <ProviderCard key={p.id} provider={p} onBook={setBooking} onLink={handleLink} linked={false} />
+                {loading ? (
+                  [1, 2].map(i => <div key={i} className="h-36 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />)
+                ) : providers.slice(0, 5).map(p => (
+                  <ProviderCard key={p.id} provider={p} onBook={handleBookClick} onLink={handleLink} linked={false} />
                 ))}
-                {!loading && providers.length === 0 && <div className="py-10 text-center"><p className="text-3xl mb-2">🌱</p><p className="text-sm text-ink-400">No providers yet — check back soon.</p></div>}
+                {!loading && providers.length === 0 && (
+                  <div className="py-10 text-center">
+                    <p className="text-3xl mb-2">🌱</p>
+                    <p className="text-sm text-ink-400">No providers yet — check back soon.</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
         </div>
       )}
 
-      <BookingModal provider={booking} open={!!booking} onClose={() => setBooking(null)}
-        bookAppointment={bookAppointment} user={user} userProfile={userProfile} getDiary={getDiary} />
+      <BookingModal
+        provider={booking}
+        open={!!booking}
+        onClose={() => setBooking(null)}
+        bookAppointment={bookAppointment}
+        user={user}
+        userProfile={userProfile}
+        getDiary={getDiary}
+      />
     </PageWrapper>
   )
 }

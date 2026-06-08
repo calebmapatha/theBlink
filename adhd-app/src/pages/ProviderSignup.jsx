@@ -11,9 +11,17 @@ const SPECIALTIES = ['ADHD', 'Anxiety', 'Depression', 'OCD', 'PTSD', 'Autism Spe
 const LANGUAGES   = ['English', 'Zulu', 'Xhosa', 'Afrikaans', 'Sotho', 'Tswana', 'Venda', 'Tsonga', 'Spanish', 'French', 'Portuguese', 'Mandarin']
 const TIMEZONES   = ['South Africa (SAST, UTC+2)', 'GMT', 'Eastern (ET)', 'Central (CT)', 'Western Europe (CET)', 'India (IST)', 'Australia (AEST)']
 const AVATARS     = ['🧠', '😊', '⚕️', '🌟', '💙', '🌿', '🔬', '🏥', '💊', '🌸', '🌊', '☀️']
+const PLATFORMS   = [
+  { value: 'zoom',    label: 'Zoom' },
+  { value: 'meet',    label: 'Google Meet' },
+  { value: 'teams',   label: 'MS Teams' },
+  { value: 'whereby', label: 'Whereby' },
+  { value: 'skype',   label: 'Skype' },
+  { value: 'other',   label: 'Other' },
+]
 const PLANS = [
-  { id: 'standard', price: 49,  label: 'Standard', features: ['Profile listing', 'Appointment requests', 'Patient messaging', 'Analytics'] },
-  { id: 'featured', price: 99,  label: 'Featured',  features: ['Everything in Standard', 'Featured placement in search', 'Priority support', 'Advanced analytics'] },
+  { id: 'standard', price: 49, label: 'Standard', features: ['Profile listing', 'Appointment requests', 'Patient messaging', 'Analytics'] },
+  { id: 'featured', price: 99, label: 'Featured',  features: ['Everything in Standard', 'Featured placement in search', 'Priority support', 'Advanced analytics'] },
 ]
 
 function SpecialtyChips({ selected, onToggle, items }) {
@@ -45,18 +53,19 @@ export function ProviderSignup() {
   const [saving, setSaving]           = useState(false)
 
   const [form, setForm] = useState({
-    name:         '',
-    type:         'Psychiatrist',
-    hpcsa:        '',
-    specialties:  ['ADHD'],
-    bio:          '',
-    experience:   '',
-    languages:    ['English'],
-    avatar:       '🧠',
-    sessionFee:   '',
-    availability: '',
-    meetingLink:  '',
-    timezone:     'South Africa (SAST, UTC+2)',
+    name:            '',
+    type:            'Psychiatrist',
+    hpcsa:           '',
+    specialties:     ['ADHD'],
+    bio:             '',
+    experience:      '',
+    languages:       ['English'],
+    avatar:          '🧠',
+    sessionFee:      '',
+    availability:    '',
+    meetingPlatform: '',
+    meetingLink:     '',
+    timezone:        'South Africa (SAST, UTC+2)',
   })
 
   useEffect(() => {
@@ -81,8 +90,10 @@ export function ProviderSignup() {
         subscriptionActive:  true,
         subscriptionPlan:    plan,
         subscriptionStarted: new Date().toISOString(),
+        profileViews:        0,
       })
-      navigate('/provider/dashboard')
+      localStorage.setItem('mf_role', 'provider')
+      window.location.reload()
     } finally {
       setSaving(false)
     }
@@ -90,10 +101,18 @@ export function ProviderSignup() {
 
   if (checking) return null
 
-  const hpcsaHint = form.type === 'Psychiatrist' ? 'MP0123456' : 'PS0123456'
-  const STEPS = ['Profile', 'Session Setup', 'Subscribe']
+  const hpcsaHint   = form.type === 'Psychiatrist' ? 'MP0123456' : 'PS0123456'
+  const STEPS       = ['Profile', 'Session Setup', 'Subscribe']
   const canProceed1 = form.name.trim() && form.bio.trim() && form.specialties.length > 0 && form.hpcsa.trim()
   const canProceed2 = form.sessionFee && Number(form.sessionFee) > 0
+
+  const meetingPlaceholder = form.meetingPlatform === 'meet'
+    ? 'https://meet.google.com/abc-defg-hij'
+    : form.meetingPlatform === 'zoom'
+    ? 'https://zoom.us/j/123456789'
+    : form.meetingPlatform === 'teams'
+    ? 'https://teams.microsoft.com/l/meetup-join/…'
+    : 'https://…'
 
   return (
     <PageWrapper>
@@ -105,7 +124,7 @@ export function ProviderSignup() {
 
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-ink-900 dark:text-ink-100">Join as a Provider</h1>
-        <p className="text-sm text-ink-400 mt-0.5">List your practice on Mentora</p>
+        <p className="text-sm text-ink-400 mt-0.5">List your practice on MentisFlow</p>
       </div>
 
       <div className="flex items-center gap-1 mb-8">
@@ -116,7 +135,7 @@ export function ProviderSignup() {
             }`}>
               {step > i + 1 ? <Check size={12} /> : i + 1}
             </div>
-            <span className={`text-xs font-medium hidden sm:block ${ step === i + 1 ? 'text-ink-900 dark:text-ink-100' : 'text-ink-400'}`}>{s}</span>
+            <span className={`text-xs font-medium hidden sm:block ${step === i + 1 ? 'text-ink-900 dark:text-ink-100' : 'text-ink-400'}`}>{s}</span>
             {i < STEPS.length - 1 && <div className="flex-1 h-px bg-surface-200 dark:bg-surface-700 ml-1" />}
           </div>
         ))}
@@ -219,10 +238,27 @@ export function ProviderSignup() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-ink-400 mb-1">Video meeting link</label>
+              <label className="block text-xs font-medium text-ink-400 mb-2">Video platform</label>
+              <div className="grid grid-cols-3 gap-2">
+                {PLATFORMS.map(p => (
+                  <button key={p.value} type="button" onClick={() => set('meetingPlatform', p.value)}
+                    className={`py-2 px-2 rounded-xl text-xs font-medium border transition-colors ${
+                      form.meetingPlatform === p.value
+                        ? 'border-primary-400 bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400'
+                        : 'border-surface-200 dark:border-surface-700 text-ink-400 hover:border-surface-300'
+                    }`}>
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-ink-400 mb-1">
+                Meeting link <span className="text-ink-400 font-normal">(optional — can be added later)</span>
+              </label>
               <p className="text-xs text-ink-400 mb-1">Shared with patients only after you confirm their appointment.</p>
               <input value={form.meetingLink} onChange={e => set('meetingLink', e.target.value)}
-                className={inputCls} placeholder="https://zoom.us/j/…" />
+                className={inputCls} placeholder={meetingPlaceholder} />
             </div>
           </Card>
           <Button className="w-full" disabled={!canProceed2} onClick={() => setStep(3)}>Continue →</Button>

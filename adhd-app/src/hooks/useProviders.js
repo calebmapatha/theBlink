@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { collection, doc, getDoc, getDocs, setDoc, addDoc, query, where, updateDoc, deleteField, serverTimestamp } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, setDoc, addDoc, query, where, updateDoc, deleteField, serverTimestamp, increment } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 
 export function useProviders() {
@@ -85,11 +85,18 @@ export function useProviders() {
     }
   }
 
+  const incrementProfileViews = async (providerUid) => {
+    try {
+      await updateDoc(doc(db, 'providers', providerUid), { profileViews: increment(1) })
+    } catch {}
+  }
+
   return {
     providers, loading, reload,
     getProvider, saveProvider,
     getDiary, saveDiary,
     bookAppointment, getAppointments, getPatientAppointments, updateAppointment,
     linkDoctor, getLinkedDoctor, unlinkDoctor, searchProviderByHPCSA,
+    incrementProfileViews,
   }
 }
