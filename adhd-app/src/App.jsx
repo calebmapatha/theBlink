@@ -17,6 +17,7 @@ import { DailyCheckin } from './pages/DailyCheckin'
 import { Rewards } from './pages/Rewards'
 import { Settings } from './pages/Settings'
 import { Connect } from './pages/Connect'
+import { TreatmentPlan } from './pages/TreatmentPlan'
 import { ProviderSignup } from './pages/ProviderSignup'
 import { ProviderDashboard } from './pages/ProviderDashboard'
 import { Login } from './pages/Login'
@@ -51,6 +52,7 @@ function AppShell({ isProvider }) {
               <>
                 <Route path="/"                   element={<Dashboard />} />
                 <Route path="/connect"            element={<Connect />} />
+                <Route path="/treatment"          element={<TreatmentPlan />} />
                 <Route path="/timer"              element={<FocusTimer />} />
                 <Route path="/tasks"              element={<TaskBoard />} />
                 <Route path="/dump"               element={<BrainDump />} />

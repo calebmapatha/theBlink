@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom'
-import { Home, Timer, CheckSquare, Brain, Repeat, Sun, Trophy, Moon, Zap, LogOut, BarChart2, Settings, HeartHandshake, LayoutDashboard } from 'lucide-react'
+import { Home, Timer, CheckSquare, Brain, Repeat, Sun, Trophy, Moon, Zap, LogOut, BarChart2, Settings, HeartHandshake, LayoutDashboard, ClipboardList } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { useAuth } from '../../context/AuthContext'
 
 const CONNECT_NAV = [
-  { to: '/connect', icon: HeartHandshake, label: 'Connect' },
+  { to: '/connect',   icon: HeartHandshake, label: 'Connect' },
+  { to: '/treatment', icon: ClipboardList,  label: 'Treatment Plan' },
 ]
 
 const FOCUSBLINK_NAV = [

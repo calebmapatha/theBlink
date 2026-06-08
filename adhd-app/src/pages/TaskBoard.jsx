@@ -143,7 +143,7 @@ export function TaskBoard() {
           {currentTasks.length === 0 ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-12 text-center">
               <p className="text-4xl mb-3">✨</p>
-              <p className="text-sm text-ink-400">{tab === 'today' ? 'Nothing here — add a task above!' : 'Backlog is clear'}</p>
+              <p className="text-sm text-ink-400">{tab === 'today' ? 'Nothing here. Add a task above!' : 'Backlog is clear'}</p>
             </motion.div>
           ) : (
             currentTasks.map(task => (

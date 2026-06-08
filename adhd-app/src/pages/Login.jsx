@@ -109,7 +109,7 @@ export function Login() {
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-slate-900 mb-0.5">FocusBlink</p>
               <p className="text-xs text-slate-500 leading-relaxed">
-                ADHD companion — habits, focus timer, mood check-ins, and task management to support your daily routine.
+                ADHD companion: habits, focus timer, mood check-ins, and task management to support your daily routine.
               </p>
             </div>
           </div>

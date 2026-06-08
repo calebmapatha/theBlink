@@ -1,11 +1,13 @@
-import { useState } from 'react'
-import { User, Moon, Sun, LogOut, Trash2, Check, ChevronRight, Bell, BellOff, RotateCcw } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { User, Moon, Sun, LogOut, Trash2, Check, ChevronRight, Bell, BellOff, RotateCcw, Camera, Loader, Database } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import { useApp } from '../context/AppContext'
 import { useAuth } from '../context/AuthContext'
+import { useProviders } from '../hooks/useProviders'
+import { seedDemoProviders } from '../utils/seedProviders'
 
 const AVATAR_OPTIONS = ['🧠','😊','⚡','🎯','🦁','🐢','🦊','🌟','🔥','💎','🏔️','🌊','🎨','🎥','🚀']
 
@@ -32,27 +34,71 @@ function SettingsRow({ icon: Icon, label, value, onClick, danger }) {
   )
 }
 
-function ProfileModal({ open, onClose, profile, onSave, authUser }) {
-  const [name, setName]     = useState(profile.displayName || authUser?.displayName || '')
-  const [avatar, setAvatar] = useState(profile.avatarEmoji || '🧠')
+function PhotoAvatar({ photoURL, avatar, size = 'lg', onClick, uploading }) {
+  const sz = size === 'lg' ? 'w-16 h-16 text-3xl' : 'w-14 h-14 text-2xl'
+  return (
+    <button
+      onClick={onClick}
+      className={`relative ${sz} rounded-2xl flex-shrink-0 overflow-hidden group`}
+      disabled={uploading}
+      title="Change photo"
+    >
+      {photoURL ? (
+        <img src={photoURL} alt="Profile" className="w-full h-full object-cover" />
+      ) : (
+        <div className={`w-full h-full bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center ${size === 'lg' ? 'text-3xl' : 'text-2xl'}`}>
+          {avatar}
+        </div>
+      )}
+      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl">
+        {uploading
+          ? <Loader size={16} className="text-white animate-spin" />
+          : <Camera size={16} className="text-white" />
+        }
+      </div>
+    </button>
+  )
+}
+
+function ProfileModal({ open, onClose, profile, onSave, authUser, photoURL, onPhotoUpload }) {
+  const [name, setName]       = useState(profile.displayName || authUser?.displayName || '')
+  const [avatar, setAvatar]   = useState(profile.avatarEmoji || '🧠')
+  const [uploading, setUploading] = useState(false)
+  const fileRef               = useRef()
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    await onPhotoUpload(file)
+    setUploading(false)
+  }
 
   return (
     <Modal open={open} onClose={onClose} title="Edit Profile">
       <div className="space-y-4">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 rounded-2xl bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-4xl">{avatar}</div>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-ink-400 mb-2">Avatar</label>
-          <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-surface-50 dark:bg-surface-900 max-h-28 overflow-y-auto">
-            {AVATAR_OPTIONS.map(e => (
-              <button key={e} onClick={() => setAvatar(e)}
-                className={`text-2xl p-1.5 rounded-xl transition-colors ${avatar === e ? 'bg-primary-100 dark:bg-primary-700/30 ring-1 ring-primary-400' : 'hover:bg-surface-100 dark:hover:bg-surface-700'}`}>
-                {e}
-              </button>
-            ))}
+        <div className="flex flex-col items-center gap-3">
+          <div className="relative">
+            <PhotoAvatar photoURL={photoURL} avatar={avatar} size="lg" onClick={() => fileRef.current.click()} uploading={uploading} />
           </div>
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+          <p className="text-xs text-ink-400">Tap photo to change</p>
         </div>
+
+        {!photoURL && (
+          <div>
+            <label className="block text-xs font-medium text-ink-400 mb-2">Avatar emoji</label>
+            <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-surface-50 dark:bg-surface-900 max-h-28 overflow-y-auto">
+              {AVATAR_OPTIONS.map(e => (
+                <button key={e} onClick={() => setAvatar(e)}
+                  className={`text-2xl p-1.5 rounded-xl transition-colors ${avatar === e ? 'bg-primary-100 dark:bg-primary-700/30 ring-1 ring-primary-400' : 'hover:bg-surface-100 dark:hover:bg-surface-700'}`}>
+                  {e}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div>
           <label className="block text-xs font-medium text-ink-400 mb-1">Display name</label>
           <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name"
@@ -78,7 +124,7 @@ function ResetModal({ open, onClose, onConfirm }) {
     <Modal open={open} onClose={onClose} title="Reset to Defaults">
       <div className="space-y-4">
         <p className="text-sm text-ink-700 dark:text-ink-300">
-          This will clear all tasks, habits, brain dumps, check-ins, and rewards — and restore the original default habits. Your profile and theme will be kept.
+          This will clear all tasks, habits, brain dumps, check-ins, and rewards. The original default habits will be restored. Your profile and theme will be kept.
         </p>
         <div className="flex gap-2">
           <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
@@ -158,10 +204,41 @@ function RemindersSection({ notifications }) {
 
 export function Settings() {
   const { theme, userProfile, userId, notifications } = useApp()
-  const { user, signOut } = useAuth()
+  const { user, signOut }    = useAuth()
+  const { uploadPhoto, getPatientProfile } = useProviders()
   const [profileOpen, setProfileOpen] = useState(false)
   const [resetOpen, setResetOpen]     = useState(false)
   const [clearOpen, setClearOpen]     = useState(false)
+  const [photoURL, setPhotoURL]       = useState(null)
+  const [seeding, setSeeding]         = useState(false)
+  const [seedMsg, setSeedMsg]         = useState('')
+
+  const handleSeedProviders = async () => {
+    setSeeding(true)
+    setSeedMsg('')
+    try {
+      const results = await seedDemoProviders()
+      const ok  = results.filter(r => r.success).length
+      const fail = results.filter(r => !r.success).length
+      setSeedMsg(fail === 0 ? `${ok} demo providers seeded successfully.` : `${ok} seeded, ${fail} failed.`)
+    } catch (e) {
+      setSeedMsg(`Error: ${e.message}`)
+    } finally {
+      setSeeding(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!user) return
+    getPatientProfile(user.uid).then(p => {
+      if (p?.photoURL) setPhotoURL(p.photoURL)
+    })
+  }, [user])
+
+  const handlePhotoUpload = async (file) => {
+    const url = await uploadPhoto(user.uid, file, 'patient')
+    if (url) setPhotoURL(url)
+  }
 
   const displayName = userProfile.profile.displayName || user?.displayName || user?.email?.split('@')[0] || 'You'
   const avatar      = userProfile.profile.avatarEmoji || '🧠'
@@ -191,10 +268,13 @@ export function Settings() {
 
       <Card className="p-4 mb-6">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-3xl flex-shrink-0">{avatar}</div>
+          <PhotoAvatar photoURL={photoURL} avatar={avatar} size="lg" onClick={() => setProfileOpen(true)} />
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-ink-900 dark:text-ink-100 truncate">{displayName}</p>
             <p className="text-xs text-ink-400 truncate">{user?.email}</p>
+            <p className="text-xs text-primary-500 mt-0.5 cursor-pointer hover:underline" onClick={() => setProfileOpen(true)}>
+              Change photo
+            </p>
           </div>
           <Button variant="soft" size="sm" onClick={() => setProfileOpen(true)}>Edit</Button>
         </div>
@@ -218,10 +298,27 @@ export function Settings() {
         <SettingsRow icon={Trash2} label="Clear all data" danger onClick={() => setClearOpen(true)} />
       </Section>
 
+      {user?.email === 'calebmapatha@gmail.com' && (
+        <Section title="Admin">
+          <div className="px-4 py-3.5 space-y-2">
+            <div className="flex items-center gap-3">
+              <Database size={17} className="text-ink-400" />
+              <span className="flex-1 text-sm font-medium text-ink-900 dark:text-ink-100">Seed test providers</span>
+              <Button size="sm" variant="soft" onClick={handleSeedProviders} disabled={seeding}>
+                {seeding ? <Loader size={13} className="animate-spin" /> : null}
+                {seeding ? 'Seeding…' : 'Seed 6 doctors'}
+              </Button>
+            </div>
+            {seedMsg && <p className="text-xs text-primary-500 pl-8">{seedMsg}</p>}
+          </div>
+        </Section>
+      )}
+
       <p className="text-center text-xs text-ink-400 mt-4">MentisFlow v1.0.0 · Your data stays on your device</p>
 
       <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)}
-        profile={userProfile.profile} authUser={user} onSave={userProfile.updateProfile} />
+        profile={userProfile.profile} authUser={user} onSave={userProfile.updateProfile}
+        photoURL={photoURL} onPhotoUpload={handlePhotoUpload} />
       <ResetModal open={resetOpen} onClose={() => setResetOpen(false)} onConfirm={handleResetDefaults} />
       <ClearDataModal open={clearOpen} onClose={() => setClearOpen(false)} onConfirm={handleClearData} />
     </PageWrapper>
