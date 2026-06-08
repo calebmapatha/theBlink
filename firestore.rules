@@ -35,5 +35,9 @@ service cloud.firestore {
         request.resource.data.patientUid == request.auth.uid;
       allow update, delete: if false;
     }
+    // User app data (habits, tasks, brain dump, etc.) — synced across devices
+    match /users/{uid}/data/{key} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
   }
 }

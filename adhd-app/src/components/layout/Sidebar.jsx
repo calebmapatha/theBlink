@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Home, Timer, CheckSquare, Brain, Repeat, Sun, Trophy, Moon, Zap, LogOut, BarChart2, Settings, HeartHandshake, LayoutDashboard, ClipboardList } from 'lucide-react'
+import { Home, Timer, CheckSquare, Brain, Repeat, Sun, Trophy, Moon, Zap, LogOut, BarChart2, Settings, HeartHandshake, LayoutDashboard, ClipboardList, MoreHorizontal, X } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { useAuth } from '../../context/AuthContext'
 
@@ -29,11 +30,20 @@ const PROVIDER_NAV = [
 ]
 
 const PATIENT_MOBILE_NAV = [
-  { to: '/connect',  icon: HeartHandshake, label: 'Connect' },
-  { to: '/',         icon: Home,           label: 'Home',    end: true },
-  { to: '/timer',    icon: Timer,          label: 'Focus' },
-  { to: '/tasks',    icon: CheckSquare,    label: 'Tasks' },
-  { to: '/settings', icon: Settings,       label: 'Settings' },
+  { to: '/',        icon: Home,           label: 'Home',    end: true },
+  { to: '/tasks',   icon: CheckSquare,    label: 'Tasks' },
+  { to: '/habits',  icon: Repeat,         label: 'Habits' },
+  { to: '/connect', icon: HeartHandshake, label: 'Connect' },
+]
+
+const PATIENT_MORE_NAV = [
+  { to: '/dump',      icon: Brain,         label: 'Brain Dump' },
+  { to: '/timer',     icon: Timer,         label: 'Focus Timer' },
+  { to: '/monthly',   icon: BarChart2,     label: 'Monthly' },
+  { to: '/checkin',   icon: Sun,           label: 'Check-in' },
+  { to: '/rewards',   icon: Trophy,        label: 'Rewards' },
+  { to: '/treatment', icon: ClipboardList, label: 'Treatment Plan' },
+  { to: '/settings',  icon: Settings,      label: 'Settings' },
 ]
 
 const PROVIDER_MOBILE_NAV = [
@@ -62,8 +72,9 @@ function NavItem({ to, icon: Icon, label, end }) {
 export function Sidebar({ isProvider }) {
   const { theme, rewards, userProfile } = useApp()
   const { user, signOut } = useAuth()
-  const avatar = userProfile?.profile?.avatarEmoji || '🧠'
-  const name   = userProfile?.profile?.displayName || user?.displayName || user?.email?.split('@')[0] || ''
+  const avatar    = userProfile?.profile?.avatarEmoji || '🧠'
+  const name      = userProfile?.profile?.displayName || user?.displayName || user?.email?.split('@')[0] || ''
+  const [moreOpen, setMoreOpen] = useState(false)
 
   const mobileNav = isProvider ? PROVIDER_MOBILE_NAV : PATIENT_MOBILE_NAV
 
@@ -138,10 +149,7 @@ export function Sidebar({ isProvider }) {
 
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-surface-900 border-t border-surface-200 dark:border-surface-800 flex safe-bottom">
         {mobileNav.map(({ to, icon: Icon, label, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
+          <NavLink key={to} to={to} end={end}
             className={({ isActive }) =>
               `flex-1 flex flex-col items-center gap-1 py-2.5 text-xs transition-colors ${
                 isActive ? 'text-primary-500' : 'text-ink-400'
@@ -152,7 +160,44 @@ export function Sidebar({ isProvider }) {
             <span className="leading-none">{label}</span>
           </NavLink>
         ))}
+        {!isProvider && (
+          <button onClick={() => setMoreOpen(true)}
+            className="flex-1 flex flex-col items-center gap-1 py-2.5 text-xs text-ink-400">
+            <MoreHorizontal size={20} />
+            <span className="leading-none">More</span>
+          </button>
+        )}
       </nav>
+
+      {moreOpen && !isProvider && (
+        <>
+          <div className="md:hidden fixed inset-0 z-50 bg-black/40" onClick={() => setMoreOpen(false)} />
+          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-surface-900 rounded-t-2xl border-t border-surface-200 dark:border-surface-700">
+            <div className="flex items-center justify-between px-5 pt-4 pb-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">More</p>
+              <button onClick={() => setMoreOpen(false)} className="p-1 rounded-lg text-ink-400 hover:text-ink-700 dark:hover:text-ink-100">
+                <X size={16} />
+              </button>
+            </div>
+            <div className="grid grid-cols-3 gap-2 px-4 pb-8">
+              {PATIENT_MORE_NAV.map(({ to, icon: Icon, label }) => (
+                <NavLink key={to} to={to} onClick={() => setMoreOpen(false)}
+                  className={({ isActive }) =>
+                    `flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl text-xs font-medium transition-colors ${
+                      isActive
+                        ? 'bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400'
+                        : 'bg-surface-50 dark:bg-surface-800 text-ink-600 dark:text-ink-300'
+                    }`
+                  }
+                >
+                  <Icon size={22} />
+                  <span className="text-center leading-tight">{label}</span>
+                </NavLink>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </>
   )
 }

@@ -1,10 +1,12 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Play, ChevronRight, Sun, HeartHandshake, Zap } from 'lucide-react'
+import { Play, ChevronRight, Sun, HeartHandshake, Zap, Brain, BarChart2, ClipboardList } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { useApp } from '../context/AppContext'
+import { useTreatmentPlan } from '../hooks/useTreatmentPlan'
 import { formatDayHeader } from '../utils/dateUtils'
 
 const MOOD_EMOJI   = { 1: '😔', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' }
@@ -44,7 +46,9 @@ const itemVariants = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, 
 
 export function Dashboard() {
   const navigate = useNavigate()
-  const { habits, tasks, checkin, timer, rewards } = useApp()
+  const { habits, tasks, checkin, dump, timer, rewards, userId, awardAndToast } = useApp()
+  const treatmentPlan = useTreatmentPlan(userId)
+  const [dumpText, setDumpText] = useState('')
 
   const checkedTodayCount  = habits.habits.filter(h => habits.isCheckedToday(h.id)).length
   const completedTaskCount = tasks.completedToday.length
@@ -54,6 +58,29 @@ export function Dashboard() {
 
   const xpToNext   = rewards.nextLevel ? rewards.nextLevel.xpRequired - rewards.currentLevel.xpRequired : 0
   const xpProgress = xpToNext > 0 ? Math.min(rewards.xpInCurrentLevel / xpToNext, 1) : 1
+
+  // Monthly stats
+  const now   = new Date()
+  const mData = habits.getMonthlyData(now.getFullYear(), now.getMonth())
+  const daysWithData = mData.filter(d => d.total > 0)
+  const monthHabitRate = daysWithData.length > 0
+    ? Math.round(daysWithData.reduce((s, d) => s + d.completed.length / d.total, 0) / daysWithData.length * 100)
+    : 0
+  const monthPrefix    = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const monthTasksDone = tasks.tasks.filter(t => t.completedAt?.startsWith(monthPrefix)).length
+  const monthCheckins  = Object.keys(checkin.checkins).filter(k => k.startsWith(monthPrefix)).length
+
+  // Treatment plan
+  const activeGoals = treatmentPlan.plan.goals.filter(g => g.status === 'active')
+  const activeMeds  = treatmentPlan.plan.medications.filter(m => m.active)
+  const topGoal     = activeGoals[0] ?? null
+
+  const handleQuickDump = () => {
+    if (!dumpText.trim()) return
+    dump.addEntry(dumpText)
+    awardAndToast('BRAIN_DUMP', 'Thought captured!')
+    setDumpText('')
+  }
 
   return (
     <PageWrapper>
@@ -178,6 +205,39 @@ export function Dashboard() {
           </button>
         </motion.div>
 
+        {/* Brain Dump */}
+        <motion.div variants={itemVariants}>
+          <Card className="p-4">
+            <button className="w-full flex items-center justify-between mb-3" onClick={() => navigate('/dump')}>
+              <div className="flex items-center gap-2">
+                <Brain size={15} className="text-ink-400" />
+                <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">Brain Dump</p>
+                {dump.entries.length > 0 && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-surface-100 dark:bg-surface-700 text-ink-400">{dump.entries.length}</span>
+                )}
+              </div>
+              <ChevronRight size={13} className="text-ink-400" />
+            </button>
+            <div className="flex gap-2">
+              <input
+                value={dumpText}
+                onChange={e => setDumpText(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleQuickDump()}
+                placeholder="What's on your mind? (Enter to save)"
+                className="flex-1 px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-sm text-ink-900 dark:text-ink-100 placeholder-ink-400 focus:outline-none focus:ring-1 focus:ring-primary-400"
+              />
+              <Button size="sm" onClick={handleQuickDump} disabled={!dumpText.trim()}>
+                <Zap size={13} /> Dump
+              </Button>
+            </div>
+            {dump.entries.length > 0 && (
+              <p className="text-xs text-ink-400 mt-2 truncate">
+                Last: {dump.entries[0].text.slice(0, 70)}{dump.entries[0].text.length > 70 ? '…' : ''}
+              </p>
+            )}
+          </Card>
+        </motion.div>
+
         {/* Timer */}
         <motion.div variants={itemVariants}>
           <Card className="p-4 cursor-pointer hover:border-primary-300 dark:hover:border-primary-700 transition-colors" onClick={() => navigate('/timer')}>
@@ -215,6 +275,75 @@ export function Dashboard() {
               <div className="mt-3 h-1 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden">
                 <div className="h-full rounded-full bg-primary-500 transition-all duration-1000"
                   style={{ width: `${(1 - timer.secondsLeft / (timer.settings.workDuration * 60)) * 100}%` }} />
+              </div>
+            )}
+          </Card>
+        </motion.div>
+
+        {/* Monthly overview */}
+        <motion.div variants={itemVariants}>
+          <Card className="p-4 cursor-pointer hover:border-primary-300 dark:hover:border-primary-700 transition-colors" onClick={() => navigate('/monthly')}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <BarChart2 size={15} className="text-ink-400" />
+                <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">This Month</p>
+              </div>
+              <ChevronRight size={13} className="text-ink-400" />
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div>
+                <p className="text-2xl font-bold text-ink-900 dark:text-ink-100">{monthHabitRate}%</p>
+                <p className="text-[10px] text-ink-400 mt-0.5">Habit avg</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-ink-900 dark:text-ink-100">{monthTasksDone}</p>
+                <p className="text-[10px] text-ink-400 mt-0.5">Tasks done</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-ink-900 dark:text-ink-100">{monthCheckins}</p>
+                <p className="text-[10px] text-ink-400 mt-0.5">Check-ins</p>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+
+        {/* Treatment Plan */}
+        <motion.div variants={itemVariants}>
+          <Card className="p-4 cursor-pointer hover:border-primary-300 dark:hover:border-primary-700 transition-colors" onClick={() => navigate('/treatment')}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <ClipboardList size={15} className="text-ink-400" />
+                <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">Treatment Plan</p>
+              </div>
+              <ChevronRight size={13} className="text-ink-400" />
+            </div>
+            {activeGoals.length === 0 && activeMeds.length === 0 ? (
+              <p className="text-sm text-ink-400">Track goals, medications and symptoms for your doctor</p>
+            ) : (
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div>
+                  <p className="text-2xl font-bold text-ink-900 dark:text-ink-100">{activeGoals.length}</p>
+                  <p className="text-[10px] text-ink-400 mt-0.5">Goals</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-ink-900 dark:text-ink-100">{activeMeds.length}</p>
+                  <p className="text-[10px] text-ink-400 mt-0.5">Medications</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-ink-900 dark:text-ink-100">{treatmentPlan.plan.symptoms.length}</p>
+                  <p className="text-[10px] text-ink-400 mt-0.5">Symptoms</p>
+                </div>
+              </div>
+            )}
+            {topGoal && (
+              <div className="mt-3">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-xs text-ink-600 dark:text-ink-300 truncate flex-1">{topGoal.text}</p>
+                  <span className="text-xs text-primary-500 font-semibold ml-2 flex-shrink-0">{topGoal.progress}%</span>
+                </div>
+                <div className="h-1.5 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden">
+                  <div className="h-full rounded-full bg-primary-500 transition-all duration-500" style={{ width: `${topGoal.progress}%` }} />
+                </div>
               </div>
             )}
           </Card>
