@@ -30,10 +30,10 @@ const PROVIDER_NAV = [
 ]
 
 const PATIENT_MOBILE_NAV = [
+  { to: '/connect', icon: HeartHandshake, label: 'Connect' },
   { to: '/',        icon: Home,           label: 'Home',    end: true },
   { to: '/tasks',   icon: CheckSquare,    label: 'Tasks' },
   { to: '/habits',  icon: Repeat,         label: 'Habits' },
-  { to: '/connect', icon: HeartHandshake, label: 'Connect' },
 ]
 
 const PATIENT_MORE_NAV = [
