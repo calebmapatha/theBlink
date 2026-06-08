@@ -2,42 +2,88 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Providers: any authenticated user can read active profiles; only the provider (or admin) can write
-    match /providers/{uid} {
-      allow read: if request.auth != null &&
-        (resource == null || resource.data.subscriptionActive == true || request.auth.uid == uid);
-      allow write: if request.auth != null && (
-        request.auth.uid == uid ||
-        request.auth.token.email == 'calebmapatha@gmail.com'
-      );
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'calebmapatha@gmail.com';
+    }
+    // Keys that hold aggregate rating / view counters on a provider doc.
+    // These must never be writable directly by the provider (anti-fraud),
+    // and are the ONLY keys a non-owner (a patient submitting a rating /
+    // recording a view) may touch.
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
     }
 
-    // Appointments: patient or provider of that appointment can read/write; any authed user can create
+    // Providers: any authed user can read ACTIVE profiles (or their own).
+    match /providers/{uid} {
+      allow read: if isSignedIn() &&
+        (resource == null || resource.data.subscriptionActive == true || request.auth.uid == uid);
+
+      // Owner (or admin) may create their profile.
+      allow create: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+
+      allow update: if isSignedIn() && (
+        // Admin (seeding / moderation) — unrestricted.
+        isAdmin() ||
+        // Owner editing their own profile, but NOT the rating aggregates.
+        (request.auth.uid == uid &&
+          !changedKeys().hasAny(['ratingCount', 'ratingAvg'])) ||
+        // Anyone else may only bump rating aggregates / view counts
+        // (used by patient rating submission + profile-view tracking).
+        changedKeys().hasOnly(['ratingCount', 'ratingAvg', 'profileViews'])
+      );
+
+      allow delete: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+    }
+
+    // Appointments: created by the patient; readable/updatable by either party.
+    // Patients may delete their own appointments (right to erasure of the
+    // medical snapshot embedded in the doc).
     match /appointments/{id} {
-      allow create: if request.auth != null &&
+      allow create: if isSignedIn() &&
         request.resource.data.patientUid == request.auth.uid;
-      allow read, update: if request.auth != null && (
+      allow read, update: if isSignedIn() && (
         request.auth.uid == resource.data.patientUid ||
         request.auth.uid == resource.data.providerUid
       );
+      allow delete: if isSignedIn() && request.auth.uid == resource.data.patientUid;
     }
 
-    // Patients: the patient can read/write their own record; providers can read (for appointment context)
+    // Patients: readable by the patient themselves and by their linked doctor
+    // only. Writable/deletable only by the patient.
     match /patients/{uid} {
-      allow read:  if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == uid;
+      allow read: if isSignedIn() && (
+        request.auth.uid == uid ||
+        (resource != null && resource.data.linkedDoctorUid == request.auth.uid)
+      );
+      allow write:  if isSignedIn() && request.auth.uid == uid;
+      allow delete: if isSignedIn() && request.auth.uid == uid;
     }
 
-    // Ratings: any authed user can read; only the patient who owns the rating can create it; no updates/deletes
+    // Ratings: readable only by the patient who wrote it or the rated provider.
+    // Public-facing scores are exposed via the provider doc's aggregate fields,
+    // so individual ratings never need to be world-readable. Immutable once made.
     match /ratings/{appointmentId} {
-      allow read:   if request.auth != null;
-      allow create: if request.auth != null &&
+      allow read: if isSignedIn() && (
+        request.auth.uid == resource.data.patientUid ||
+        request.auth.uid == resource.data.providerId
+      );
+      allow create: if isSignedIn() &&
         request.resource.data.patientUid == request.auth.uid;
       allow update, delete: if false;
     }
-    // User app data (habits, tasks, brain dump, etc.) — synced across devices
+
+    // User app data (habits, tasks, brain dump, treatment plan, etc.) —
+    // synced across devices, strictly owner-only.
     match /users/{uid}/data/{key} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, write: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Default deny everything else.
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

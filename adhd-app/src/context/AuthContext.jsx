@@ -41,7 +41,17 @@ export function AuthProvider({ children }) {
     }
   }
 
-  const signOut = () => firebaseSignOut(auth)
+  const signOut = async () => {
+    // Wipe the unencrypted, user-scoped data cache (habits, tasks, brain dump,
+    // treatment plan, etc.) so sensitive health data does not linger on a
+    // shared device after logout. Firestore remains the source of truth.
+    try {
+      Object.keys(window.localStorage)
+        .filter(k => k.startsWith('u_') || k === 'mf_role')
+        .forEach(k => window.localStorage.removeItem(k))
+    } catch { /* ignore */ }
+    await firebaseSignOut(auth)
+  }
 
   return (
     <AuthContext.Provider value={{ user, authError, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut }}>
