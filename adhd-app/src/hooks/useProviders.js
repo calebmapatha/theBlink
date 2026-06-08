@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
-import { collection, doc, getDoc, getDocs, setDoc, addDoc, query, where, updateDoc, deleteField, serverTimestamp, increment } from 'firebase/firestore'
-import { db } from '../lib/firebase'
+import { collection, doc, getDoc, getDocs, setDoc, addDoc, query, where, updateDoc, deleteField, serverTimestamp, increment, runTransaction } from 'firebase/firestore'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { db, storage } from '../lib/firebase'
 
 export function useProviders() {
   const [providers, setProviders] = useState([])
@@ -91,6 +92,75 @@ export function useProviders() {
     } catch {}
   }
 
+  // Upload a profile photo for a provider or patient.
+  // Returns the download URL on success, null on failure.
+  const uploadPhoto = async (uid, file, type = 'provider') => {
+    try {
+      const ext = file.name.split('.').pop()
+      const storageRef = ref(storage, `profile-photos/${type}/${uid}.${ext}`)
+      await uploadBytes(storageRef, file)
+      const url = await getDownloadURL(storageRef)
+      const col = type === 'provider' ? 'providers' : 'patients'
+      await setDoc(doc(db, col, uid), { photoURL: url }, { merge: true })
+      return url
+    } catch {
+      return null
+    }
+  }
+
+  // Fetch a patient's Firestore profile (photoURL, etc.)
+  const getPatientProfile = async (patientUid) => {
+    try {
+      const snap = await getDoc(doc(db, 'patients', patientUid))
+      return snap.exists() ? snap.data() : null
+    } catch { return null }
+  }
+
+  // Submit a patient rating for a completed appointment.
+  // Atomically updates the provider's aggregate rating fields.
+  const submitRating = async ({ appointmentId, providerId, patientUid, communication, empathy, professionalism, treatmentPlan, overall, comment }) => {
+    await setDoc(doc(db, 'ratings', appointmentId), {
+      appointmentId, providerId, patientUid,
+      communication, empathy, professionalism, treatmentPlan, overall,
+      comment: comment || '',
+      createdAt: serverTimestamp(),
+    })
+
+    await runTransaction(db, async (tx) => {
+      const provRef = doc(db, 'providers', providerId)
+      const snap = await tx.get(provRef)
+      if (!snap.exists()) return
+      const data = snap.data()
+      const count = (data.ratingCount || 0) + 1
+      const prev = data.ratingAvg || {}
+      const n = count - 1
+      const newAvg = {
+        communication:  +((((prev.communication  || 0) * n) + communication)  / count).toFixed(2),
+        empathy:        +((((prev.empathy        || 0) * n) + empathy)        / count).toFixed(2),
+        professionalism:+((((prev.professionalism|| 0) * n) + professionalism)/ count).toFixed(2),
+        treatmentPlan:  +((((prev.treatmentPlan  || 0) * n) + treatmentPlan)  / count).toFixed(2),
+        overall:        +((((prev.overall        || 0) * n) + overall)        / count).toFixed(2),
+      }
+      tx.update(provRef, { ratingCount: count, ratingAvg: newAvg })
+    })
+  }
+
+  // Check if an appointment has already been rated.
+  const getRating = async (appointmentId) => {
+    try {
+      const snap = await getDoc(doc(db, 'ratings', appointmentId))
+      return snap.exists() ? snap.data() : null
+    } catch { return null }
+  }
+
+  // Fetch all ratings for a provider (for the provider dashboard).
+  const getProviderRatings = async (providerUid) => {
+    try {
+      const snap = await getDocs(query(collection(db, 'ratings'), where('providerId', '==', providerUid)))
+      return snap.docs.map(d => d.data())
+    } catch { return [] }
+  }
+
   return {
     providers, loading, reload,
     getProvider, saveProvider,
@@ -98,5 +168,7 @@ export function useProviders() {
     bookAppointment, getAppointments, getPatientAppointments, updateAppointment,
     linkDoctor, getLinkedDoctor, unlinkDoctor, searchProviderByHPCSA,
     incrementProfileViews,
+    uploadPhoto, getPatientProfile,
+    submitRating, getRating, getProviderRatings,
   }
 }

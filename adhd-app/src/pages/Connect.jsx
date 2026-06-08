@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Search, Clock, Globe, BadgeCheck, Calendar, X, HeartHandshake, Link2, Unlink, Check } from 'lucide-react'
+import { Search, Clock, Globe, BadgeCheck, Calendar, X, HeartHandshake, Link2, Unlink, Check, Star, MessageSquare, Loader } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { PageWrapper } from '../components/layout/PageWrapper'
@@ -19,6 +19,14 @@ const DATA_TYPES = [
 ]
 
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
+
+const RATING_METRICS = [
+  { key: 'communication',   label: 'Communication',   desc: 'Explains clearly & listens well' },
+  { key: 'empathy',         label: 'Empathy',         desc: 'Made you feel heard & safe' },
+  { key: 'professionalism', label: 'Professionalism', desc: 'Punctual, prepared & organised' },
+  { key: 'treatmentPlan',   label: 'Treatment plan',  desc: 'Approach felt genuinely helpful' },
+  { key: 'overall',         label: 'Overall',         desc: 'Would you recommend?' },
+]
 
 function buildDataSnapshot(uid, types) {
   const last30 = Array.from({ length: 30 }, (_, i) => {
@@ -57,12 +65,55 @@ function buildDataSnapshot(uid, types) {
   return snapshot
 }
 
+function StarRating({ value, onChange }) {
+  const [hovered, setHovered] = useState(0)
+  return (
+    <div className="flex gap-1">
+      {[1,2,3,4,5].map(n => (
+        <button
+          key={n}
+          type="button"
+          onMouseEnter={() => setHovered(n)}
+          onMouseLeave={() => setHovered(0)}
+          onClick={() => onChange(n)}
+          className="transition-transform hover:scale-110"
+        >
+          <Star
+            size={28}
+            className={n <= (hovered || value) ? 'text-yellow-400 fill-yellow-400' : 'text-surface-300 dark:text-surface-600'}
+          />
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function StarDisplay({ value, count }) {
+  if (!value) return null
+  return (
+    <div className="flex items-center gap-1">
+      <Star size={11} className="text-yellow-400 fill-yellow-400" />
+      <span className="text-xs font-medium text-ink-700 dark:text-ink-300">{value.toFixed(1)}</span>
+      {count != null && <span className="text-[10px] text-ink-400">({count})</span>}
+    </div>
+  )
+}
+
 function ProviderCard({ provider, onBook, onLink, linked }) {
+  const rating    = provider.ratingAvg?.overall
+  const ratingCnt = provider.ratingCount || 0
+
   return (
     <Card className="p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-2xl flex-shrink-0">
-          {provider.avatar || '🧠'}
+        <div className="w-12 h-12 rounded-2xl overflow-hidden flex-shrink-0">
+          {provider.photoURL ? (
+            <img src={provider.photoURL} alt={provider.name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-2xl">
+              {provider.avatar || '🧠'}
+            </div>
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
@@ -71,7 +122,8 @@ function ProviderCard({ provider, onBook, onLink, linked }) {
           </div>
           <p className="text-xs text-ink-400 mt-0.5">{provider.type} · {provider.experience} yrs exp</p>
           {provider.hpcsa && <p className="text-xs text-ink-400">HPCSA: {provider.hpcsa}</p>}
-          <div className="flex flex-wrap gap-1 mt-2">
+          {ratingCnt > 0 && <StarDisplay value={rating} count={ratingCnt} />}
+          <div className="flex flex-wrap gap-1 mt-1.5">
             {(provider.specialties || []).slice(0, 3).map(s => (
               <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400">{s}</span>
             ))}
@@ -115,6 +167,92 @@ function ProviderCard({ provider, onBook, onLink, linked }) {
         </div>
       </div>
     </Card>
+  )
+}
+
+function RatingModal({ open, onClose, appointment, providerName, onSubmit }) {
+  const [scores, setScores] = useState({ communication: 0, empathy: 0, professionalism: 0, treatmentPlan: 0, overall: 0 })
+  const [comment, setComment] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [done, setDone] = useState(false)
+
+  const setScore = (key, val) => setScores(s => ({ ...s, [key]: val }))
+  const allFilled = Object.values(scores).every(v => v > 0)
+
+  const handleSubmit = async () => {
+    if (!allFilled) return
+    setSubmitting(true)
+    await onSubmit({ ...scores, comment })
+    setDone(true)
+    setSubmitting(false)
+  }
+
+  const handleClose = () => {
+    setDone(false)
+    setScores({ communication: 0, empathy: 0, professionalism: 0, treatmentPlan: 0, overall: 0 })
+    setComment('')
+    onClose()
+  }
+
+  if (!appointment) return null
+
+  return (
+    <Modal open={open} onClose={handleClose} title={`Rate your session`}>
+      {done ? (
+        <div className="text-center py-6 space-y-3">
+          <p className="text-5xl">⭐</p>
+          <p className="font-semibold text-ink-900 dark:text-ink-100">Thank you for your feedback!</p>
+          <p className="text-sm text-ink-400">Your rating helps other patients find the right care.</p>
+          <Button className="w-full" onClick={handleClose}>Done</Button>
+        </div>
+      ) : (
+        <div className="space-y-5">
+          <p className="text-sm text-ink-500 dark:text-ink-400">
+            Rate your session with <strong className="text-ink-800 dark:text-ink-100">{providerName}</strong> on {appointment.date}.
+          </p>
+
+          {RATING_METRICS.map(({ key, label, desc }) => (
+            <div key={key}>
+              <div className="flex items-start justify-between mb-1.5">
+                <div>
+                  <p className="text-sm font-medium text-ink-900 dark:text-ink-100">{label}</p>
+                  <p className="text-xs text-ink-400">{desc}</p>
+                </div>
+                {scores[key] > 0 && (
+                  <span className="text-xs font-semibold text-primary-500">{scores[key]}/5</span>
+                )}
+              </div>
+              <StarRating value={scores[key]} onChange={v => setScore(key, v)} />
+            </div>
+          ))}
+
+          <div>
+            <label className="block text-xs font-medium text-ink-400 mb-1.5">
+              <MessageSquare size={11} className="inline mr-1" />
+              Additional comments <span className="font-normal">(optional)</span>
+            </label>
+            <textarea
+              value={comment}
+              onChange={e => setComment(e.target.value)}
+              rows={3}
+              placeholder="Anything else you'd like to share…"
+              className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 resize-none"
+            />
+          </div>
+
+          {!allFilled && (
+            <p className="text-xs text-ink-400 text-center">Please rate all 5 areas to submit.</p>
+          )}
+
+          <div className="flex gap-2">
+            <Button variant="ghost" className="flex-1" onClick={handleClose}>Cancel</Button>
+            <Button className="flex-1" disabled={!allFilled || submitting} onClick={handleSubmit}>
+              {submitting ? <Loader size={14} className="animate-spin" /> : 'Submit rating'}
+            </Button>
+          </div>
+        </div>
+      )}
+    </Modal>
   )
 }
 
@@ -271,7 +409,7 @@ export function Connect() {
     providers, loading, bookAppointment,
     getDiary, linkDoctor, getLinkedDoctor, unlinkDoctor,
     searchProviderByHPCSA, getPatientAppointments,
-    incrementProfileViews,
+    incrementProfileViews, submitRating, getRating,
   } = useProviders()
   const { user }        = useAuth()
   const { userProfile } = useApp()
@@ -289,16 +427,24 @@ export function Connect() {
   const [searchResult, setSearchResult]     = useState(null)
   const [searchError, setSearchError]       = useState('')
   const [myAppointments, setMyAppointments] = useState([])
+  const [ratedSet, setRatedSet]             = useState(new Set())
+  const [ratingAppt, setRatingAppt]         = useState(null)
 
   useEffect(() => {
     if (!user) return
     Promise.all([
       getLinkedDoctor(user.uid),
       getPatientAppointments(user.uid),
-    ]).then(([doc, appts]) => {
+    ]).then(async ([doc, appts]) => {
       setLinkedDoctor(doc || null)
-      setMyAppointments(appts.sort((a, b) => (a.date > b.date ? 1 : -1)))
+      const sorted = appts.sort((a, b) => (a.date > b.date ? 1 : -1))
+      setMyAppointments(sorted)
       setLinkLoading(false)
+
+      // Check which confirmed appointments already have a rating
+      const confirmed = sorted.filter(a => a.status === 'confirmed')
+      const checks = await Promise.all(confirmed.map(a => getRating(a.id).then(r => r ? a.id : null)))
+      setRatedSet(new Set(checks.filter(Boolean)))
     })
   }, [user])
 
@@ -332,6 +478,17 @@ export function Connect() {
   const handleUnlink = async () => {
     await unlinkDoctor(user.uid)
     setLinkedDoctor(null)
+  }
+
+  const handleRatingSubmit = async (scores) => {
+    if (!ratingAppt || !linkedDoctor) return
+    await submitRating({
+      appointmentId: ratingAppt.id,
+      providerId:    ratingAppt.providerUid,
+      patientUid:    user.uid,
+      ...scores,
+    })
+    setRatedSet(prev => new Set([...prev, ratingAppt.id]))
   }
 
   const filtered = providers.filter(p => {
@@ -474,8 +631,14 @@ export function Connect() {
             <>
               <Card className="p-4">
                 <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-2xl flex-shrink-0">
-                    {linkedDoctor.avatar || '🧠'}
+                  <div className="w-12 h-12 rounded-2xl overflow-hidden flex-shrink-0">
+                    {linkedDoctor.photoURL ? (
+                      <img src={linkedDoctor.photoURL} alt={linkedDoctor.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-2xl">
+                        {linkedDoctor.avatar || '🧠'}
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
@@ -484,6 +647,9 @@ export function Connect() {
                     </div>
                     <p className="text-xs text-ink-400">{linkedDoctor.type} · {linkedDoctor.experience} yrs exp</p>
                     {linkedDoctor.hpcsa && <p className="text-xs text-ink-400">HPCSA: {linkedDoctor.hpcsa}</p>}
+                    {linkedDoctor.ratingCount > 0 && (
+                      <StarDisplay value={linkedDoctor.ratingAvg?.overall} count={linkedDoctor.ratingCount} />
+                    )}
                     {linkedDoctor.availability && (
                       <p className="text-xs text-ink-400 mt-0.5 flex items-center gap-1">
                         <Clock size={10} /> {linkedDoctor.availability}
@@ -504,7 +670,7 @@ export function Connect() {
 
               {upcomingAppts.length > 0 && (
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">Upcoming appointments</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">Appointments</p>
                   <div className="space-y-2">
                     {upcomingAppts.map(a => (
                       <Card key={a.id} className="p-3">
@@ -524,11 +690,27 @@ export function Connect() {
                               </div>
                             )}
                           </div>
-                          <span className={`text-xs px-2 py-1 rounded-full font-medium flex-shrink-0 ${
-                            a.status === 'confirmed' ? 'bg-success-100 dark:bg-success-500/20 text-success-700 dark:text-success-400'
-                            : a.status === 'pending' ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400'
-                            : 'bg-surface-100 dark:bg-surface-700 text-ink-400'
-                          }`}>{a.status}</span>
+                          <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                              a.status === 'confirmed' ? 'bg-success-100 dark:bg-success-500/20 text-success-700 dark:text-success-400'
+                              : a.status === 'pending' ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400'
+                              : 'bg-surface-100 dark:bg-surface-700 text-ink-400'
+                            }`}>{a.status}</span>
+
+                            {a.status === 'confirmed' && !ratedSet.has(a.id) && (
+                              <button
+                                onClick={() => setRatingAppt(a)}
+                                className="flex items-center gap-1 text-[10px] text-primary-500 hover:text-primary-600 font-medium"
+                              >
+                                <Star size={10} /> Rate session
+                              </button>
+                            )}
+                            {ratedSet.has(a.id) && (
+                              <span className="text-[10px] text-ink-400 flex items-center gap-1">
+                                <Star size={10} className="text-yellow-400 fill-yellow-400" /> Rated
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </Card>
                     ))}
@@ -562,7 +744,15 @@ export function Connect() {
                 {searchResult && (
                   <div className="mt-3 p-3 rounded-xl bg-surface-50 dark:bg-surface-900 border border-surface-200 dark:border-surface-700">
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">{searchResult.avatar || '🧠'}</span>
+                      <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0">
+                        {searchResult.photoURL ? (
+                          <img src={searchResult.photoURL} alt={searchResult.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-xl">
+                            {searchResult.avatar || '🧠'}
+                          </div>
+                        )}
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1">
                           <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">{searchResult.name}</p>
@@ -605,6 +795,14 @@ export function Connect() {
         user={user}
         userProfile={userProfile}
         getDiary={getDiary}
+      />
+
+      <RatingModal
+        open={!!ratingAppt}
+        onClose={() => setRatingAppt(null)}
+        appointment={ratingAppt}
+        providerName={linkedDoctor?.name || ''}
+        onSubmit={handleRatingSubmit}
       />
     </PageWrapper>
   )

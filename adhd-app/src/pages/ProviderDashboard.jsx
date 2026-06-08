@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, X, Eye, TrendingUp } from 'lucide-react'
+import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, X, Eye, TrendingUp, Camera, Loader, Star } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -19,10 +19,29 @@ const PLATFORMS = [
   { value: 'other',   label: 'Other' },
 ]
 
-const DATA_LABELS = { habits: '🔄 Habits', checkin: '😊 Mood', focus: '⏱️ Focus', tasks: '✅ Tasks' }
+const RATING_METRICS = [
+  { key: 'communication',   label: 'Communication',   desc: 'Explains clearly & listens well' },
+  { key: 'empathy',         label: 'Empathy',         desc: 'Makes patients feel heard & safe' },
+  { key: 'professionalism', label: 'Professionalism', desc: 'Punctual, prepared & organised' },
+  { key: 'treatmentPlan',   label: 'Treatment plan',  desc: 'Therapy/medication approach' },
+  { key: 'overall',         label: 'Overall',         desc: 'Would patients recommend?' },
+]
 
+const DATA_LABELS = { habits: '🔄 Habits', checkin: '😊 Mood', focus: '⏱️ Focus', tasks: '✅ Tasks' }
 const MOOD_LABELS   = { 1: 'Very low', 2: 'Low', 3: 'Neutral', 4: 'Good',   5: 'Great' }
 const ENERGY_LABELS = { 1: 'Depleted', 2: 'Low', 3: 'Moderate', 4: 'High', 5: 'Peak' }
+
+function StarDisplay({ value, size = 14 }) {
+  return (
+    <div className="flex gap-0.5">
+      {[1,2,3,4,5].map(n => (
+        <Star key={n} size={size}
+          className={n <= Math.round(value || 0) ? 'text-yellow-400 fill-yellow-400' : 'text-surface-300 dark:text-surface-600'}
+        />
+      ))}
+    </div>
+  )
+}
 
 function DataSnapshot({ snapshot }) {
   if (!snapshot || Object.keys(snapshot).length === 0) return null
@@ -294,23 +313,31 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
 }
 
 export function ProviderDashboard() {
-  const { user }                                                                               = useAuth()
-  const { getProvider, getAppointments, updateAppointment, saveProvider, getDiary, saveDiary } = useProviders()
-  const navigate                                                                               = useNavigate()
+  const { user }                                                                                                    = useAuth()
+  const { getProvider, getAppointments, updateAppointment, saveProvider, getDiary, saveDiary, uploadPhoto, getProviderRatings } = useProviders()
+  const navigate                                                                                                    = useNavigate()
   const [profile, setProfile]           = useState(null)
   const [appointments, setAppointments] = useState([])
+  const [ratings, setRatings]           = useState([])
   const [loading, setLoading]           = useState(true)
   const [editOpen, setEditOpen]         = useState(false)
+  const [photoUploading, setPhotoUploading] = useState(false)
+  const fileRef                         = useRef()
 
   useEffect(() => {
     if (!user) return
-    Promise.all([getProvider(user.uid), getAppointments(user.uid)]).then(([p, appts]) => {
+    Promise.all([
+      getProvider(user.uid),
+      getAppointments(user.uid),
+      getProviderRatings(user.uid),
+    ]).then(([p, appts, rats]) => {
       if (!p) { navigate('/provider/signup'); return }
       setProfile(p)
       setAppointments(appts.sort((a, b) => {
         const order = { pending: 0, confirmed: 1, cancelled: 2 }
         return (order[a.status] ?? 3) - (order[b.status] ?? 3)
       }))
+      setRatings(rats)
       setLoading(false)
     })
   }, [user])
@@ -323,6 +350,15 @@ export function ProviderDashboard() {
   const handleSave = async (updates) => {
     await saveProvider(user.uid, updates)
     setProfile(p => ({ ...p, ...updates }))
+  }
+
+  const handlePhotoFile = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPhotoUploading(true)
+    const url = await uploadPhoto(user.uid, file, 'provider')
+    if (url) setProfile(p => ({ ...p, photoURL: url }))
+    setPhotoUploading(false)
   }
 
   if (loading) return (
@@ -344,6 +380,21 @@ export function ProviderDashboard() {
   const planLabel      = profile?.subscriptionPlan === 'featured' ? '⭐ Featured' : '✓ Standard'
   const platformLabel  = PLATFORMS.find(p => p.value === profile?.meetingPlatform)?.label || null
 
+  // Prefer live-computed average from loaded ratings if available; fall back to stored aggregate
+  const ratingCount = ratings.length || (profile?.ratingCount || 0)
+  const ratingAvg   = ratingCount > 0 && ratings.length > 0
+    ? RATING_METRICS.reduce((acc, m) => {
+        acc[m.key] = +(ratings.reduce((s, r) => s + (r[m.key] || 0), 0) / ratings.length).toFixed(2)
+        return acc
+      }, {})
+    : (profile?.ratingAvg || null)
+
+  // Recent comments (max 5)
+  const recentComments = ratings
+    .filter(r => r.comment?.trim())
+    .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+    .slice(0, 5)
+
   return (
     <PageWrapper>
       <div className="mb-6 flex items-center justify-between">
@@ -356,11 +407,32 @@ export function ProviderDashboard() {
         </Button>
       </div>
 
+      {/* Profile card */}
       <Card className="p-4 mb-5">
         <div className="flex items-center gap-3">
-          <div className="w-14 h-14 rounded-2xl bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-3xl flex-shrink-0">
-            {profile?.avatar || '🧠'}
-          </div>
+          {/* Photo with upload overlay */}
+          <button
+            className="relative w-14 h-14 rounded-2xl overflow-hidden flex-shrink-0 group"
+            onClick={() => fileRef.current.click()}
+            disabled={photoUploading}
+            title="Change photo"
+          >
+            {profile?.photoURL ? (
+              <img src={profile.photoURL} alt={profile.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-3xl">
+                {profile?.avatar || '🧠'}
+              </div>
+            )}
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              {photoUploading
+                ? <Loader size={16} className="text-white animate-spin" />
+                : <Camera size={16} className="text-white" />
+              }
+            </div>
+          </button>
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoFile} />
+
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
               <p className="font-semibold text-ink-900 dark:text-ink-100">{profile?.name}</p>
@@ -369,6 +441,12 @@ export function ProviderDashboard() {
             <p className="text-xs text-ink-400">{profile?.type} · {profile?.experience} yrs exp</p>
             {profile?.hpcsa && <p className="text-xs text-ink-400">HPCSA: {profile.hpcsa}</p>}
             <p className="text-xs text-ink-400 mt-0.5">R{profile?.sessionFee}/session · {profile?.availability}</p>
+            {ratingCount > 0 && ratingAvg && (
+              <div className="flex items-center gap-1.5 mt-1">
+                <StarDisplay value={ratingAvg.overall} size={12} />
+                <span className="text-xs text-ink-400">{ratingAvg.overall?.toFixed(1)} ({ratingCount} review{ratingCount !== 1 ? 's' : ''})</span>
+              </div>
+            )}
           </div>
         </div>
         {profile?.bio && (
@@ -390,6 +468,7 @@ export function ProviderDashboard() {
         </div>
       </Card>
 
+      {/* Activity stats */}
       <div className="grid grid-cols-3 gap-3 mb-5">
         <Card className="p-3 text-center">
           <Eye size={17} className="text-primary-500 mx-auto mb-1" />
@@ -409,6 +488,52 @@ export function ProviderDashboard() {
           <p className="text-xs text-ink-400">Accept rate</p>
         </Card>
       </div>
+
+      {/* Rating breakdown */}
+      {ratingCount > 0 && ratingAvg && (
+        <Card className="p-4 mb-5">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">Patient ratings</p>
+            <span className="text-xs text-ink-400">{ratingCount} review{ratingCount !== 1 ? 's' : ''}</span>
+          </div>
+          <div className="space-y-3">
+            {RATING_METRICS.map(({ key, label, desc }) => {
+              const val = ratingAvg[key] || 0
+              return (
+                <div key={key}>
+                  <div className="flex items-center justify-between mb-1">
+                    <div>
+                      <span className="text-xs font-medium text-ink-800 dark:text-ink-200">{label}</span>
+                      <span className="text-[10px] text-ink-400 ml-1.5">{desc}</span>
+                    </div>
+                    <span className="text-xs font-semibold text-ink-700 dark:text-ink-300">{val.toFixed(1)}</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden">
+                    <div className="h-full rounded-full bg-primary-500 transition-all duration-500"
+                      style={{ width: `${(val / 5) * 100}%` }} />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {recentComments.length > 0 && (
+            <div className="mt-4 pt-3 border-t border-surface-100 dark:border-surface-800">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-2">Recent feedback</p>
+              <div className="space-y-2">
+                {recentComments.map((r, i) => (
+                  <div key={i} className="bg-surface-50 dark:bg-surface-900 rounded-xl px-3 py-2">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <StarDisplay value={r.overall} size={11} />
+                    </div>
+                    <p className="text-xs text-ink-600 dark:text-ink-300 italic">"{r.comment}"</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
 
       <div className="grid grid-cols-3 gap-3 mb-6">
         {[
