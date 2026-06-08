@@ -166,6 +166,8 @@ const DAYS = [
   { key: 'sun', label: 'Sunday' },
 ]
 
+const SA_PROVINCES = ['Gauteng', 'Western Cape', 'KwaZulu-Natal', 'Eastern Cape', 'Free State', 'Limpopo', 'Mpumalanga', 'North West', 'Northern Cape']
+
 function EditModal({ open, onClose, profile, onSave }) {
   const [form, setForm] = useState({
     bio:             profile?.bio || '',
@@ -173,6 +175,8 @@ function EditModal({ open, onClose, profile, onSave }) {
     availability:    profile?.availability || '',
     meetingPlatform: profile?.meetingPlatform || '',
     meetingLink:     profile?.meetingLink || '',
+    city:            profile?.city || '',
+    province:        profile?.province || '',
   })
   const [saving, setSaving] = useState(false)
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
@@ -222,6 +226,19 @@ function EditModal({ open, onClose, profile, onSave }) {
             Meeting link <span className="text-ink-400 font-normal">(optional)</span>
           </label>
           <input value={form.meetingLink} onChange={e => set('meetingLink', e.target.value)} className={inputCls} placeholder="https://…" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-ink-400 mb-1">City</label>
+            <input value={form.city} onChange={e => set('city', e.target.value)} className={inputCls} placeholder="e.g. Cape Town" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-ink-400 mb-1">Province</label>
+            <select value={form.province} onChange={e => set('province', e.target.value)} className={inputCls}>
+              <option value="">Select…</option>
+              {SA_PROVINCES.map(p => <option key={p}>{p}</option>)}
+            </select>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>

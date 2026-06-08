@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Search, Clock, Globe, BadgeCheck, Calendar, X, HeartHandshake, Link2, Unlink, Check, Star, MessageSquare, Loader, ClipboardList } from 'lucide-react'
+import { Search, Clock, Globe, BadgeCheck, Calendar, X, HeartHandshake, Link2, Unlink, Check, Star, MessageSquare, Loader, ClipboardList, Video, MapPin } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { PageWrapper } from '../components/layout/PageWrapper'
@@ -10,7 +10,8 @@ import { useProviders } from '../hooks/useProviders'
 import { useAuth } from '../context/AuthContext'
 import { useApp } from '../context/AppContext'
 
-const SPECIALTIES = ['ADHD', 'Anxiety', 'Depression', 'OCD', 'PTSD', 'Autism Spectrum', 'Bipolar Disorder', 'Stress Management', 'Sleep Disorders', 'Trauma']
+const SPECIALTIES  = ['ADHD', 'Anxiety', 'Depression', 'OCD', 'PTSD', 'Autism Spectrum', 'Bipolar Disorder', 'Stress Management', 'Sleep Disorders', 'Trauma']
+const SA_PROVINCES = ['Gauteng', 'Western Cape', 'KwaZulu-Natal', 'Eastern Cape', 'Free State', 'Limpopo', 'Mpumalanga', 'North West', 'Northern Cape']
 
 const DATA_TYPES = [
   { id: 'habits',        label: 'Habit streaks',    emoji: '🔄' },
@@ -111,55 +112,190 @@ function StarDisplay({ value, count }) {
   )
 }
 
-function ProviderCard({ provider, onBook, onLink, linked }) {
+const PLATFORM_LABELS = { zoom: 'Zoom', meet: 'Google Meet', teams: 'MS Teams', whereby: 'Whereby', skype: 'Skype', other: 'Video call' }
+
+function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked }) {
+  if (!provider) return null
+  const rating     = provider.ratingAvg
+  const ratingCnt  = provider.ratingCount || 0
+  const platform   = provider.meetingPlatform ? PLATFORM_LABELS[provider.meetingPlatform] || provider.meetingPlatform : null
+
+  return (
+    <Modal open={open} onClose={onClose} title="">
+      <div className="space-y-5 -mt-1">
+        {/* Header */}
+        <div className="flex items-start gap-4">
+          <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0">
+            {provider.photoURL ? (
+              <img src={provider.photoURL} alt={provider.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-3xl">
+                {provider.avatar || '🧠'}
+              </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <p className="font-bold text-ink-900 dark:text-ink-100">{provider.name}</p>
+              <BadgeCheck size={15} className="text-primary-500 flex-shrink-0" />
+            </div>
+            <p className="text-sm text-ink-500 dark:text-ink-400">{provider.type}</p>
+            {provider.experience && <p className="text-xs text-ink-400">{provider.experience} years experience</p>}
+            {provider.hpcsa && <p className="text-xs text-ink-400">HPCSA: {provider.hpcsa}</p>}
+            {ratingCnt > 0 && rating && <StarDisplay value={rating.overall} count={ratingCnt} />}
+          </div>
+        </div>
+
+        {/* Rating breakdown */}
+        {ratingCnt > 0 && rating && (
+          <div className="p-3 rounded-xl bg-surface-50 dark:bg-surface-900 space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">Patient ratings</p>
+            {RATING_METRICS.map(({ key, label }) => (
+              <div key={key} className="flex items-center gap-2">
+                <span className="text-[10px] text-ink-500 dark:text-ink-400 w-28 flex-shrink-0">{label}</span>
+                <div className="flex-1 h-1.5 rounded-full bg-surface-200 dark:bg-surface-700 overflow-hidden">
+                  <div className="h-full rounded-full bg-primary-500 transition-all" style={{ width: `${((rating[key] || 0) / 5) * 100}%` }} />
+                </div>
+                <span className="text-[10px] font-semibold text-ink-600 dark:text-ink-300 w-6 text-right">{(rating[key] || 0).toFixed(1)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Bio */}
+        {provider.bio && (
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-1.5">About</p>
+            <p className="text-sm text-ink-700 dark:text-ink-300 leading-relaxed">{provider.bio}</p>
+          </div>
+        )}
+
+        {/* Specialties */}
+        {(provider.specialties || []).length > 0 && (
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-1.5">Specialties</p>
+            <div className="flex flex-wrap gap-1.5">
+              {provider.specialties.map(s => (
+                <span key={s} className="text-xs px-2.5 py-1 rounded-full bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400">{s}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Details */}
+        <div className="space-y-2">
+          {(provider.city || provider.province) && (
+            <div className="flex items-center gap-2.5">
+              <MapPin size={14} className="text-ink-400 flex-shrink-0" />
+              <span className="text-sm text-ink-700 dark:text-ink-300">
+                {[provider.city, provider.province].filter(Boolean).join(', ')}
+              </span>
+            </div>
+          )}
+          {provider.availability && (
+            <div className="flex items-center gap-2.5">
+              <Clock size={14} className="text-ink-400 flex-shrink-0" />
+              <span className="text-sm text-ink-700 dark:text-ink-300">{provider.availability}</span>
+            </div>
+          )}
+          {(provider.languages || []).length > 0 && (
+            <div className="flex items-center gap-2.5">
+              <Globe size={14} className="text-ink-400 flex-shrink-0" />
+              <span className="text-sm text-ink-700 dark:text-ink-300">{provider.languages.join(', ')}</span>
+            </div>
+          )}
+          {platform && (
+            <div className="flex items-center gap-2.5">
+              <Video size={14} className="text-ink-400 flex-shrink-0" />
+              <span className="text-sm text-ink-700 dark:text-ink-300">Sessions via {platform}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Fee */}
+        <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-surface-50 dark:bg-surface-900">
+          <span className="text-sm text-ink-500 dark:text-ink-400">Session fee</span>
+          <div>
+            <span className="text-xl font-bold text-ink-900 dark:text-ink-100">R{provider.sessionFee}</span>
+            <span className="text-xs text-ink-400 ml-1">/ session</span>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2">
+          {onLink && !linked && (
+            <Button variant="ghost" className="flex-1" onClick={() => { onLink(provider); onClose() }}>
+              <Link2 size={13} /> Link doctor
+            </Button>
+          )}
+          {linked && (
+            <span className="flex-1 flex items-center justify-center text-xs px-2 py-1.5 rounded-xl bg-success-100 dark:bg-success-500/20 text-success-700 dark:text-success-400 font-medium">Linked</span>
+          )}
+          <Button className="flex-1" onClick={() => { onBook(provider); onClose() }}>
+            <Calendar size={13} /> Book appointment
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
+function ProviderCard({ provider, onBook, onLink, linked, onViewProfile }) {
   const rating    = provider.ratingAvg?.overall
   const ratingCnt = provider.ratingCount || 0
 
   return (
     <Card className="p-4 hover:shadow-md transition-shadow">
-      <div className="flex items-start gap-3">
-        <div className="w-12 h-12 rounded-2xl overflow-hidden flex-shrink-0">
-          {provider.photoURL ? (
-            <img src={provider.photoURL} alt={provider.name} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-2xl">
-              {provider.avatar || '🧠'}
-            </div>
-          )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <p className="font-semibold text-ink-900 dark:text-ink-100 text-sm">{provider.name}</p>
-            <BadgeCheck size={14} className="text-primary-500 flex-shrink-0" />
-          </div>
-          <p className="text-xs text-ink-400 mt-0.5">{provider.type} · {provider.experience} yrs exp</p>
-          {provider.hpcsa && <p className="text-xs text-ink-400">HPCSA: {provider.hpcsa}</p>}
-          {ratingCnt > 0 && <StarDisplay value={rating} count={ratingCnt} />}
-          <div className="flex flex-wrap gap-1 mt-1.5">
-            {(provider.specialties || []).slice(0, 3).map(s => (
-              <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400">{s}</span>
-            ))}
-            {(provider.specialties || []).length > 3 && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-surface-100 dark:bg-surface-700 text-ink-400">+{(provider.specialties || []).length - 3} more</span>
+      {/* Tappable profile area */}
+      <button className="w-full text-left" onClick={() => onViewProfile?.(provider)}>
+        <div className="flex items-start gap-3">
+          <div className="w-12 h-12 rounded-2xl overflow-hidden flex-shrink-0">
+            {provider.photoURL ? (
+              <img src={provider.photoURL} alt={provider.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-2xl">
+                {provider.avatar || '🧠'}
+              </div>
             )}
           </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <p className="font-semibold text-ink-900 dark:text-ink-100 text-sm">{provider.name}</p>
+              <BadgeCheck size={14} className="text-primary-500 flex-shrink-0" />
+            </div>
+            <p className="text-xs text-ink-400 mt-0.5">{provider.type} · {provider.experience} yrs exp</p>
+            {provider.hpcsa && <p className="text-xs text-ink-400">HPCSA: {provider.hpcsa}</p>}
+            {ratingCnt > 0 && <StarDisplay value={rating} count={ratingCnt} />}
+            <div className="flex flex-wrap gap-1 mt-1.5">
+              {(provider.specialties || []).slice(0, 3).map(s => (
+                <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400">{s}</span>
+              ))}
+              {(provider.specialties || []).length > 3 && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-surface-100 dark:bg-surface-700 text-ink-400">+{(provider.specialties || []).length - 3} more</span>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div className="mt-3 flex items-center gap-4 text-xs text-ink-400 flex-wrap">
-        {provider.availability && (
-          <span className="flex items-center gap-1"><Clock size={10} /> {provider.availability}</span>
+        <div className="mt-2.5 flex items-center gap-4 text-xs text-ink-400 flex-wrap">
+          {(provider.city || provider.province) && (
+            <span className="flex items-center gap-1"><MapPin size={10} /> {[provider.city, provider.province].filter(Boolean).join(', ')}</span>
+          )}
+          {provider.availability && (
+            <span className="flex items-center gap-1"><Clock size={10} /> {provider.availability}</span>
+          )}
+          {(provider.languages || []).length > 0 && (
+            <span className="flex items-center gap-1"><Globe size={10} /> {provider.languages.join(', ')}</span>
+          )}
+        </div>
+
+        {provider.bio && (
+          <p className="mt-2 text-xs text-ink-400 line-clamp-2">{provider.bio}</p>
         )}
-        {(provider.languages || []).length > 0 && (
-          <span className="flex items-center gap-1"><Globe size={10} /> {provider.languages.join(', ')}</span>
-        )}
-      </div>
+        <p className="mt-1.5 text-xs text-primary-500 font-medium">View full profile →</p>
+      </button>
 
-      {provider.bio && (
-        <p className="mt-2 text-xs text-ink-400 line-clamp-2">{provider.bio}</p>
-      )}
-
-      <div className="mt-3 flex items-center justify-between gap-2">
+      <div className="mt-3 pt-3 border-t border-surface-100 dark:border-surface-800 flex items-center justify-between gap-2">
         <div>
           <span className="text-sm font-bold text-ink-900 dark:text-ink-100">R{provider.sessionFee}</span>
           <span className="text-xs text-ink-400"> / session</span>
@@ -427,11 +563,14 @@ export function Connect() {
   const { userProfile } = useApp()
   const navigate        = useNavigate()
 
-  const [tab, setTab]               = useState('find')
-  const [search, setSearch]         = useState('')
-  const [typeFilter, setTypeFilter] = useState('All')
-  const [specFilter, setSpecFilter] = useState('')
-  const [booking, setBooking]       = useState(null)
+  const [tab, setTab]                   = useState('find')
+  const [search, setSearch]             = useState('')
+  const [typeFilter, setTypeFilter]     = useState('All')
+  const [specFilter, setSpecFilter]     = useState('')
+  const [provinceFilter, setProvinceFilter] = useState('')
+  const [userProvince, setUserProvince] = useState('')
+  const [locationLoading, setLocationLoading] = useState(false)
+  const [booking, setBooking]           = useState(null)
 
   const [linkedDoctor, setLinkedDoctor]     = useState(undefined)
   const [linkLoading, setLinkLoading]       = useState(true)
@@ -441,6 +580,7 @@ export function Connect() {
   const [myAppointments, setMyAppointments] = useState([])
   const [ratedSet, setRatedSet]             = useState(new Set())
   const [ratingAppt, setRatingAppt]         = useState(null)
+  const [viewingProvider, setViewingProvider] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -480,6 +620,31 @@ export function Connect() {
     else setSearchResult(result)
   }
 
+  const handleNearMe = () => {
+    if (!navigator.geolocation) return
+    setLocationLoading(true)
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${coords.latitude}&lon=${coords.longitude}&format=json`,
+            { headers: { 'Accept-Language': 'en' } }
+          )
+          const data = await res.json()
+          const state = data.address?.state || ''
+          const matched = SA_PROVINCES.find(p => state.toLowerCase().includes(p.toLowerCase()) || p.toLowerCase().includes(state.toLowerCase()))
+          if (matched) {
+            setUserProvince(matched)
+            setProvinceFilter(matched)
+          }
+        } catch {}
+        setLocationLoading(false)
+      },
+      () => setLocationLoading(false),
+      { timeout: 8000 }
+    )
+  }
+
   const handleLink = async (provider) => {
     await linkDoctor(user.uid, provider.id)
     setLinkedDoctor(provider)
@@ -506,12 +671,15 @@ export function Connect() {
   const filtered = providers.filter(p => {
     if (typeFilter !== 'All' && p.type !== typeFilter) return false
     if (specFilter && !(p.specialties || []).includes(specFilter)) return false
+    if (provinceFilter && p.province !== provinceFilter) return false
     if (search) {
       const q = search.toLowerCase()
       return p.name?.toLowerCase().includes(q) ||
              (p.specialties || []).some(s => s.toLowerCase().includes(q)) ||
              p.bio?.toLowerCase().includes(q) ||
-             p.hpcsa?.toLowerCase().includes(q)
+             p.hpcsa?.toLowerCase().includes(q) ||
+             p.city?.toLowerCase().includes(q) ||
+             p.province?.toLowerCase().includes(q)
     }
     return true
   })
@@ -572,6 +740,39 @@ export function Connect() {
             ))}
           </div>
 
+          {/* Province / location filter */}
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex gap-1.5 overflow-x-auto flex-1 pb-0.5" style={{ scrollbarWidth: 'none' }}>
+              <button onClick={() => setProvinceFilter('')}
+                className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  !provinceFilter ? 'bg-primary-500 text-white' : 'bg-surface-100 dark:bg-surface-800 text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
+                }`}>
+                All provinces
+              </button>
+              {SA_PROVINCES.map(prov => (
+                <button key={prov} onClick={() => setProvinceFilter(prov === provinceFilter ? '' : prov)}
+                  className={`flex-shrink-0 flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                    provinceFilter === prov
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-surface-100 dark:bg-surface-800 text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
+                  }`}>
+                  {userProvince === prov && <MapPin size={9} className="flex-shrink-0" />}
+                  {prov}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={handleNearMe}
+              disabled={locationLoading}
+              title="Use my location"
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-surface-200 dark:border-surface-700 text-ink-400 hover:text-primary-500 hover:border-primary-300 transition-colors disabled:opacity-50">
+              {locationLoading
+                ? <Loader size={12} className="animate-spin" />
+                : <MapPin size={12} />}
+              Near me
+            </button>
+          </div>
+
           <div className="flex gap-2 mb-5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
             {['', ...SPECIALTIES].map((s, i) => (
               <button key={i} onClick={() => setSpecFilter(s === specFilter ? '' : s)}
@@ -600,7 +801,7 @@ export function Connect() {
                   : 'No providers match your filters.'}
               </p>
               {providers.length > 0 && (
-                <button onClick={() => { setSearch(''); setTypeFilter('All'); setSpecFilter('') }}
+                <button onClick={() => { setSearch(''); setTypeFilter('All'); setSpecFilter(''); setProvinceFilter('') }}
                   className="mt-3 text-xs text-primary-500 hover:underline">Clear filters</button>
               )}
             </div>
@@ -618,6 +819,7 @@ export function Connect() {
                       onBook={handleBookClick}
                       onLink={handleLink}
                       linked={linkedDoctor?.id === p.id}
+                      onViewProfile={setViewingProvider}
                     />
                   </motion.div>
                 ))}
@@ -785,7 +987,7 @@ export function Connect() {
                 {loading ? (
                   [1, 2].map(i => <div key={i} className="h-36 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />)
                 ) : providers.slice(0, 5).map(p => (
-                  <ProviderCard key={p.id} provider={p} onBook={handleBookClick} onLink={handleLink} linked={false} />
+                  <ProviderCard key={p.id} provider={p} onBook={handleBookClick} onLink={handleLink} linked={false} onViewProfile={setViewingProvider} />
                 ))}
                 {!loading && providers.length === 0 && (
                   <div className="py-10 text-center">
@@ -798,6 +1000,15 @@ export function Connect() {
           )}
         </div>
       )}
+
+      <ProviderProfileModal
+        provider={viewingProvider}
+        open={!!viewingProvider}
+        onClose={() => setViewingProvider(null)}
+        onBook={(p) => { setViewingProvider(null); handleBookClick(p) }}
+        onLink={handleLink}
+        linked={linkedDoctor?.id === viewingProvider?.id}
+      />
 
       <BookingModal
         provider={booking}

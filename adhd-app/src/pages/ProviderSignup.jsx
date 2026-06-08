@@ -9,6 +9,7 @@ import { useProviders } from '../hooks/useProviders'
 
 const SPECIALTIES = ['ADHD', 'Anxiety', 'Depression', 'OCD', 'PTSD', 'Autism Spectrum', 'Bipolar Disorder', 'Stress Management', 'Sleep Disorders', 'Trauma', 'Life Transitions', 'Executive Function']
 const LANGUAGES   = ['English', 'Zulu', 'Xhosa', 'Afrikaans', 'Sotho', 'Tswana', 'Venda', 'Tsonga', 'Spanish', 'French', 'Portuguese', 'Mandarin']
+const SA_PROVINCES = ['Gauteng', 'Western Cape', 'KwaZulu-Natal', 'Eastern Cape', 'Free State', 'Limpopo', 'Mpumalanga', 'North West', 'Northern Cape']
 const TIMEZONES   = ['South Africa (SAST, UTC+2)', 'GMT', 'Eastern (ET)', 'Central (CT)', 'Western Europe (CET)', 'India (IST)', 'Australia (AEST)']
 const AVATARS     = ['🧠', '😊', '⚕️', '🌟', '💙', '🌿', '🔬', '🏥', '💊', '🌸', '🌊', '☀️']
 const PLATFORMS   = [
@@ -66,6 +67,8 @@ export function ProviderSignup() {
     meetingPlatform: '',
     meetingLink:     '',
     timezone:        'South Africa (SAST, UTC+2)',
+    city:            '',
+    province:        '',
   })
 
   useEffect(() => {
@@ -197,6 +200,20 @@ export function ProviderSignup() {
               <textarea value={form.bio} onChange={e => set('bio', e.target.value)} rows={4}
                 placeholder="I specialise in ADHD and related conditions, helping clients develop practical strategies…"
                 className={`${inputCls} resize-none`} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-ink-400 mb-1">City</label>
+                <input value={form.city} onChange={e => set('city', e.target.value)}
+                  className={inputCls} placeholder="e.g. Johannesburg" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-ink-400 mb-1">Province</label>
+                <select value={form.province} onChange={e => set('province', e.target.value)} className={inputCls}>
+                  <option value="">Select…</option>
+                  {SA_PROVINCES.map(p => <option key={p}>{p}</option>)}
+                </select>
+              </div>
             </div>
           </Card>
 
