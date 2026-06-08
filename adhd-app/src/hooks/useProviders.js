@@ -96,8 +96,14 @@ export function useProviders() {
   // Returns the download URL on success, null on failure.
   const uploadPhoto = async (uid, file, type = 'provider') => {
     try {
-      const ext = file.name.split('.').pop()
-      const storageRef = ref(storage, `profile-photos/${type}/${uid}.${ext}`)
+      // Derive a safe extension from the MIME type — never trust the filename
+      // (which could contain path separators or a misleading extension).
+      const EXT_BY_TYPE = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif' }
+      const ext = EXT_BY_TYPE[file.type]
+      if (!ext) return null
+      if (file.size > 5 * 1024 * 1024) return null
+      const safeType = type === 'provider' ? 'provider' : 'patient'
+      const storageRef = ref(storage, `profile-photos/${safeType}/${uid}.${ext}`)
       await uploadBytes(storageRef, file)
       const url = await getDownloadURL(storageRef)
       const col = type === 'provider' ? 'providers' : 'patients'
