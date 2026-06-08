@@ -6,14 +6,14 @@ export default {
     extend: {
       colors: {
         primary: {
-          50:  '#eef2ff',
-          100: '#e0e7ff',
-          200: '#c7d2fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
+          50:  '#f0fdfa',
+          100: '#ccfbf1',
+          200: '#99f6e4',
+          300: '#5eead4',
+          400: '#2dd4bf',
+          500: '#14b8a6',
+          600: '#0d9488',
+          700: '#0f766e',
         },
         accent: {
           100: '#f3e8ff',
@@ -52,7 +52,7 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        'glow-primary': '0 0 20px -5px rgba(99,102,241,0.4)',
+        'glow-primary': '0 0 20px -5px rgba(20,184,166,0.4)',
         'glow-success': '0 0 20px -5px rgba(34,197,94,0.35)',
         'card':         '0 2px 12px -2px rgba(15,17,23,0.08)',
         'card-dark':    '0 2px 16px -2px rgba(0,0,0,0.4)',
