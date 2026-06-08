@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Search, Clock, Globe, BadgeCheck, Calendar, X, HeartHandshake, Link2, Unlink, Check, Star, MessageSquare, Loader, ClipboardList, Video } from 'lucide-react'
+import { Search, Clock, Globe, BadgeCheck, Calendar, X, HeartHandshake, Link2, Unlink, Check, Star, MessageSquare, Loader, ClipboardList, Video, MapPin } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { PageWrapper } from '../components/layout/PageWrapper'
@@ -10,7 +10,8 @@ import { useProviders } from '../hooks/useProviders'
 import { useAuth } from '../context/AuthContext'
 import { useApp } from '../context/AppContext'
 
-const SPECIALTIES = ['ADHD', 'Anxiety', 'Depression', 'OCD', 'PTSD', 'Autism Spectrum', 'Bipolar Disorder', 'Stress Management', 'Sleep Disorders', 'Trauma']
+const SPECIALTIES  = ['ADHD', 'Anxiety', 'Depression', 'OCD', 'PTSD', 'Autism Spectrum', 'Bipolar Disorder', 'Stress Management', 'Sleep Disorders', 'Trauma']
+const SA_PROVINCES = ['Gauteng', 'Western Cape', 'KwaZulu-Natal', 'Eastern Cape', 'Free State', 'Limpopo', 'Mpumalanga', 'North West', 'Northern Cape']
 
 const DATA_TYPES = [
   { id: 'habits',        label: 'Habit streaks',    emoji: '🔄' },
@@ -183,6 +184,14 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked 
 
         {/* Details */}
         <div className="space-y-2">
+          {(provider.city || provider.province) && (
+            <div className="flex items-center gap-2.5">
+              <MapPin size={14} className="text-ink-400 flex-shrink-0" />
+              <span className="text-sm text-ink-700 dark:text-ink-300">
+                {[provider.city, provider.province].filter(Boolean).join(', ')}
+              </span>
+            </div>
+          )}
           {provider.availability && (
             <div className="flex items-center gap-2.5">
               <Clock size={14} className="text-ink-400 flex-shrink-0" />
@@ -269,6 +278,9 @@ function ProviderCard({ provider, onBook, onLink, linked, onViewProfile }) {
         </div>
 
         <div className="mt-2.5 flex items-center gap-4 text-xs text-ink-400 flex-wrap">
+          {(provider.city || provider.province) && (
+            <span className="flex items-center gap-1"><MapPin size={10} /> {[provider.city, provider.province].filter(Boolean).join(', ')}</span>
+          )}
           {provider.availability && (
             <span className="flex items-center gap-1"><Clock size={10} /> {provider.availability}</span>
           )}
@@ -551,11 +563,14 @@ export function Connect() {
   const { userProfile } = useApp()
   const navigate        = useNavigate()
 
-  const [tab, setTab]               = useState('find')
-  const [search, setSearch]         = useState('')
-  const [typeFilter, setTypeFilter] = useState('All')
-  const [specFilter, setSpecFilter] = useState('')
-  const [booking, setBooking]       = useState(null)
+  const [tab, setTab]                   = useState('find')
+  const [search, setSearch]             = useState('')
+  const [typeFilter, setTypeFilter]     = useState('All')
+  const [specFilter, setSpecFilter]     = useState('')
+  const [provinceFilter, setProvinceFilter] = useState('')
+  const [userProvince, setUserProvince] = useState('')
+  const [locationLoading, setLocationLoading] = useState(false)
+  const [booking, setBooking]           = useState(null)
 
   const [linkedDoctor, setLinkedDoctor]     = useState(undefined)
   const [linkLoading, setLinkLoading]       = useState(true)
@@ -605,6 +620,31 @@ export function Connect() {
     else setSearchResult(result)
   }
 
+  const handleNearMe = () => {
+    if (!navigator.geolocation) return
+    setLocationLoading(true)
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${coords.latitude}&lon=${coords.longitude}&format=json`,
+            { headers: { 'Accept-Language': 'en' } }
+          )
+          const data = await res.json()
+          const state = data.address?.state || ''
+          const matched = SA_PROVINCES.find(p => state.toLowerCase().includes(p.toLowerCase()) || p.toLowerCase().includes(state.toLowerCase()))
+          if (matched) {
+            setUserProvince(matched)
+            setProvinceFilter(matched)
+          }
+        } catch {}
+        setLocationLoading(false)
+      },
+      () => setLocationLoading(false),
+      { timeout: 8000 }
+    )
+  }
+
   const handleLink = async (provider) => {
     await linkDoctor(user.uid, provider.id)
     setLinkedDoctor(provider)
@@ -631,12 +671,15 @@ export function Connect() {
   const filtered = providers.filter(p => {
     if (typeFilter !== 'All' && p.type !== typeFilter) return false
     if (specFilter && !(p.specialties || []).includes(specFilter)) return false
+    if (provinceFilter && p.province !== provinceFilter) return false
     if (search) {
       const q = search.toLowerCase()
       return p.name?.toLowerCase().includes(q) ||
              (p.specialties || []).some(s => s.toLowerCase().includes(q)) ||
              p.bio?.toLowerCase().includes(q) ||
-             p.hpcsa?.toLowerCase().includes(q)
+             p.hpcsa?.toLowerCase().includes(q) ||
+             p.city?.toLowerCase().includes(q) ||
+             p.province?.toLowerCase().includes(q)
     }
     return true
   })
@@ -697,6 +740,39 @@ export function Connect() {
             ))}
           </div>
 
+          {/* Province / location filter */}
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex gap-1.5 overflow-x-auto flex-1 pb-0.5" style={{ scrollbarWidth: 'none' }}>
+              <button onClick={() => setProvinceFilter('')}
+                className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  !provinceFilter ? 'bg-primary-500 text-white' : 'bg-surface-100 dark:bg-surface-800 text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
+                }`}>
+                All provinces
+              </button>
+              {SA_PROVINCES.map(prov => (
+                <button key={prov} onClick={() => setProvinceFilter(prov === provinceFilter ? '' : prov)}
+                  className={`flex-shrink-0 flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                    provinceFilter === prov
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-surface-100 dark:bg-surface-800 text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
+                  }`}>
+                  {userProvince === prov && <MapPin size={9} className="flex-shrink-0" />}
+                  {prov}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={handleNearMe}
+              disabled={locationLoading}
+              title="Use my location"
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-surface-200 dark:border-surface-700 text-ink-400 hover:text-primary-500 hover:border-primary-300 transition-colors disabled:opacity-50">
+              {locationLoading
+                ? <Loader size={12} className="animate-spin" />
+                : <MapPin size={12} />}
+              Near me
+            </button>
+          </div>
+
           <div className="flex gap-2 mb-5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
             {['', ...SPECIALTIES].map((s, i) => (
               <button key={i} onClick={() => setSpecFilter(s === specFilter ? '' : s)}
@@ -725,7 +801,7 @@ export function Connect() {
                   : 'No providers match your filters.'}
               </p>
               {providers.length > 0 && (
-                <button onClick={() => { setSearch(''); setTypeFilter('All'); setSpecFilter('') }}
+                <button onClick={() => { setSearch(''); setTypeFilter('All'); setSpecFilter(''); setProvinceFilter('') }}
                   className="mt-3 text-xs text-primary-500 hover:underline">Clear filters</button>
               )}
             </div>
