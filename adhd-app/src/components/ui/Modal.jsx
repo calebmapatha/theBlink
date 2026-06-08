@@ -5,14 +5,20 @@ import { X } from 'lucide-react'
 export function Modal({ open, onClose, title, children }) {
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape') onClose() }
-    if (open) document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
+    if (open) {
+      document.addEventListener('keydown', handler)
+      document.body.style.overflow = 'hidden'
+    }
+    return () => {
+      document.removeEventListener('keydown', handler)
+      document.body.style.overflow = ''
+    }
   }, [open, onClose])
 
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -21,19 +27,26 @@ export function Modal({ open, onClose, title, children }) {
             onClick={onClose}
           />
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 8 }}
-            transition={{ duration: 0.2 }}
-            className="relative z-10 w-full max-w-md bg-white dark:bg-surface-800 rounded-2xl shadow-2xl border border-surface-200 dark:border-surface-700 p-5"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
+            transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
+            className="relative z-10 w-full sm:max-w-md bg-white dark:bg-surface-800
+                       rounded-t-2xl sm:rounded-2xl shadow-2xl border border-surface-200
+                       dark:border-surface-700 flex flex-col max-h-[92dvh] sm:max-h-[90vh]"
           >
-            <div className="flex items-center justify-between mb-4">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pt-5 pb-3 flex-shrink-0">
               <h3 className="text-base font-semibold text-ink-900 dark:text-ink-100">{title}</h3>
               <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 text-ink-400 transition-colors">
                 <X size={16} />
               </button>
             </div>
-            {children}
+
+            {/* Scrollable body */}
+            <div className="overflow-y-auto overscroll-contain px-5 pb-5" style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom))' }}>
+              {children}
+            </div>
           </motion.div>
         </div>
       )}
