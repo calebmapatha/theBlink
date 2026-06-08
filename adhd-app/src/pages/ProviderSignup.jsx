@@ -225,6 +225,14 @@ export function ProviderSignup() {
                 <input type="number" value={form.sessionFee} onChange={e => set('sessionFee', e.target.value)}
                   min="0" className={`${inputCls} pl-7`} placeholder="800" />
               </div>
+              {form.sessionFee && Number(form.sessionFee) > 0 && (
+                <div className="mt-2 rounded-xl bg-primary-50 dark:bg-primary-700/10 px-3 py-2.5 text-xs space-y-0.5">
+                  <p className="font-semibold text-primary-700 dark:text-primary-300">Platform fee: 10% per confirmed session</p>
+                  <p className="text-ink-500 dark:text-ink-400">
+                    MentisFlow earns R{Math.round(Number(form.sessionFee) * 0.1)} · You receive R{Math.round(Number(form.sessionFee) * 0.9)} per session
+                  </p>
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-xs font-medium text-ink-400 mb-1">Availability</label>
@@ -298,6 +306,10 @@ export function ProviderSignup() {
               </ul>
             </button>
           ))}
+
+          <div className="rounded-xl bg-surface-50 dark:bg-surface-800 px-3 py-2.5 text-xs text-ink-500 dark:text-ink-400">
+            In addition to your monthly plan, MentisFlow charges a <span className="font-semibold text-ink-700 dark:text-ink-300">10% platform fee</span> per confirmed client session (R{Math.round(Number(form.sessionFee || 0) * 0.1)}/session at your current rate).
+          </div>
 
           <Card className="p-4 space-y-3">
             <div className="flex items-center justify-between">

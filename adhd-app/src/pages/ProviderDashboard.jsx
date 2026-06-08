@@ -535,6 +535,36 @@ export function ProviderDashboard() {
         </Card>
       </div>
 
+      {/* Revenue estimate */}
+      {confirmed.length > 0 && profile?.sessionFee && (
+        <Card className="p-4 mb-5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">Revenue estimate</p>
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div>
+              <p className="text-[10px] text-ink-400 mb-0.5">Gross revenue</p>
+              <p className="text-lg font-bold text-ink-900 dark:text-ink-100">
+                R{(confirmed.length * Number(profile.sessionFee)).toLocaleString()}
+              </p>
+              <p className="text-[10px] text-ink-400">{confirmed.length} session{confirmed.length !== 1 ? 's' : ''}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-ink-400 mb-0.5">Platform fee (10%)</p>
+              <p className="text-lg font-bold text-amber-500">
+                R{Math.round(confirmed.length * Number(profile.sessionFee) * 0.1).toLocaleString()}
+              </p>
+              <p className="text-[10px] text-ink-400">R{Math.round(Number(profile.sessionFee) * 0.1)}/session</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-ink-400 mb-0.5">Your earnings</p>
+              <p className="text-lg font-bold text-success-600 dark:text-success-400">
+                R{Math.round(confirmed.length * Number(profile.sessionFee) * 0.9).toLocaleString()}
+              </p>
+              <p className="text-[10px] text-ink-400">R{Math.round(Number(profile.sessionFee) * 0.9)}/session</p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* Rating breakdown */}
       {ratingCount > 0 && ratingAvg && (
         <Card className="p-4 mb-5">

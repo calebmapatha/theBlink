@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { User, Moon, Sun, LogOut, Trash2, Check, ChevronRight, Bell, BellOff, RotateCcw, Camera, Loader } from 'lucide-react'
+import { User, Moon, Sun, LogOut, Trash2, Check, ChevronRight, Bell, BellOff, RotateCcw, Camera, Loader, Database } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -7,6 +7,7 @@ import { Modal } from '../components/ui/Modal'
 import { useApp } from '../context/AppContext'
 import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
+import { seedDemoProviders } from '../utils/seedProviders'
 
 const AVATAR_OPTIONS = ['🧠','😊','⚡','🎯','🦁','🐢','🦊','🌟','🔥','💎','🏔️','🌊','🎨','🎥','🚀']
 
@@ -209,6 +210,23 @@ export function Settings() {
   const [resetOpen, setResetOpen]     = useState(false)
   const [clearOpen, setClearOpen]     = useState(false)
   const [photoURL, setPhotoURL]       = useState(null)
+  const [seeding, setSeeding]         = useState(false)
+  const [seedMsg, setSeedMsg]         = useState('')
+
+  const handleSeedProviders = async () => {
+    setSeeding(true)
+    setSeedMsg('')
+    try {
+      const results = await seedDemoProviders()
+      const ok  = results.filter(r => r.success).length
+      const fail = results.filter(r => !r.success).length
+      setSeedMsg(fail === 0 ? `${ok} demo providers seeded successfully.` : `${ok} seeded, ${fail} failed.`)
+    } catch (e) {
+      setSeedMsg(`Error: ${e.message}`)
+    } finally {
+      setSeeding(false)
+    }
+  }
 
   useEffect(() => {
     if (!user) return
@@ -279,6 +297,22 @@ export function Settings() {
         <SettingsRow icon={RotateCcw} label="Reset to defaults" onClick={() => setResetOpen(true)} />
         <SettingsRow icon={Trash2} label="Clear all data" danger onClick={() => setClearOpen(true)} />
       </Section>
+
+      {user?.email === 'calebmapatha@gmail.com' && (
+        <Section title="Admin">
+          <div className="px-4 py-3.5 space-y-2">
+            <div className="flex items-center gap-3">
+              <Database size={17} className="text-ink-400" />
+              <span className="flex-1 text-sm font-medium text-ink-900 dark:text-ink-100">Seed test providers</span>
+              <Button size="sm" variant="soft" onClick={handleSeedProviders} disabled={seeding}>
+                {seeding ? <Loader size={13} className="animate-spin" /> : null}
+                {seeding ? 'Seeding…' : 'Seed 6 doctors'}
+              </Button>
+            </div>
+            {seedMsg && <p className="text-xs text-primary-500 pl-8">{seedMsg}</p>}
+          </div>
+        </Section>
+      )}
 
       <p className="text-center text-xs text-ink-400 mt-4">MentisFlow v1.0.0 · Your data stays on your device</p>
 
