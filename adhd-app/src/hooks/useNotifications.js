@@ -34,11 +34,11 @@ export function useNotifications() {
     timersRef.current = []
     if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return
     if (prefs.habitReminder?.enabled) {
-      const id = scheduleForTime(prefs.habitReminder.time, 'FocusBlink — Habit time!', 'Check in on your habits for today 🌱')
+      const id = scheduleForTime(prefs.habitReminder.time, 'FocusBlink: Habit time!', 'Check in on your habits for today 🌱')
       if (id) timersRef.current.push(id)
     }
     if (prefs.focusReminder?.enabled) {
-      const id = scheduleForTime(prefs.focusReminder.time, 'FocusBlink — Focus session', "Time to start a focus session. You've got this! 🎯")
+      const id = scheduleForTime(prefs.focusReminder.time, 'FocusBlink: Focus session', "Time to start a focus session. You've got this! 🎯")
       if (id) timersRef.current.push(id)
     }
     return () => timersRef.current.forEach(clearTimeout)

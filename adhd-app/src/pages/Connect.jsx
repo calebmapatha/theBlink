@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Search, Clock, Globe, BadgeCheck, Calendar, X, HeartHandshake, Link2, Unlink, Check, Star, MessageSquare, Loader } from 'lucide-react'
+import { Search, Clock, Globe, BadgeCheck, Calendar, X, HeartHandshake, Link2, Unlink, Check, Star, MessageSquare, Loader, ClipboardList } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { PageWrapper } from '../components/layout/PageWrapper'
@@ -13,9 +13,10 @@ import { useApp } from '../context/AppContext'
 const SPECIALTIES = ['ADHD', 'Anxiety', 'Depression', 'OCD', 'PTSD', 'Autism Spectrum', 'Bipolar Disorder', 'Stress Management', 'Sleep Disorders', 'Trauma']
 
 const DATA_TYPES = [
-  { id: 'habits',  label: 'Habit streaks',  emoji: '🔄' },
-  { id: 'checkin', label: 'Mood & energy',   emoji: '😊' },
-  { id: 'tasks',   label: 'Task completion', emoji: '✅' },
+  { id: 'habits',        label: 'Habit streaks',    emoji: '🔄' },
+  { id: 'checkin',       label: 'Mood & energy',     emoji: '😊' },
+  { id: 'tasks',         label: 'Task completion',   emoji: '✅' },
+  { id: 'treatmentPlan', label: 'Treatment plan',    emoji: '📋' },
 ]
 
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
@@ -60,6 +61,17 @@ function buildDataSnapshot(uid, types) {
       const recent = raw.filter(t => new Date(t.createdAt) >= cutoff)
       const completed = recent.filter(t => t.completedAt).length
       snapshot.tasks = { total: recent.length, completed, rate: recent.length > 0 ? Math.round(completed / recent.length * 100) : 0 }
+    }
+    if (types.includes('treatmentPlan')) {
+      const raw = JSON.parse(localStorage.getItem(`u_${uid}_treatment_plan`) || 'null')
+      if (raw) {
+        snapshot.treatmentPlan = {
+          goals:        (raw.goals || []).filter(g => g.status === 'active'),
+          medications:  (raw.medications || []).filter(m => m.active),
+          recentNotes:  (raw.sessionNotes || []).slice(0, 2),
+          symptoms:     raw.symptoms || [],
+        }
+      }
     }
   } catch {}
   return snapshot
@@ -339,7 +351,7 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
                 <p className="text-xs text-ink-400">Loading slots…</p>
               ) : availableSlots.length === 0 ? (
                 <p className="text-xs text-ink-400 bg-surface-50 dark:bg-surface-900 px-3 py-2 rounded-xl">
-                  No slots available for this day — try another date or contact the provider directly.
+                  No slots available for this day. Try another date or contact the provider directly.
                 </p>
               ) : (
                 <div className="flex flex-wrap gap-2">
@@ -584,7 +596,7 @@ export function Connect() {
               <p className="text-4xl mb-3">{providers.length === 0 ? '🌱' : '🔍'}</p>
               <p className="text-sm text-ink-400">
                 {providers.length === 0
-                  ? 'No providers have joined yet — check back soon.'
+                  ? 'No providers have joined yet. Check back soon.'
                   : 'No providers match your filters.'}
               </p>
               {providers.length > 0 && (
@@ -778,7 +790,7 @@ export function Connect() {
                 {!loading && providers.length === 0 && (
                   <div className="py-10 text-center">
                     <p className="text-3xl mb-2">🌱</p>
-                    <p className="text-sm text-ink-400">No providers yet — check back soon.</p>
+                    <p className="text-sm text-ink-400">No providers yet. Check back soon.</p>
                   </div>
                 )}
               </div>

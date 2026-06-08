@@ -219,7 +219,7 @@ export function ProviderSignup() {
           <Card className="p-4 space-y-4">
             <div>
               <label className="block text-xs font-medium text-ink-400 mb-1">Session fee (ZAR)</label>
-              <p className="text-xs text-ink-400 mb-1">Charged directly to patients — you set the price.</p>
+              <p className="text-xs text-ink-400 mb-1">Charged directly to patients. You set the price.</p>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 text-sm">R</span>
                 <input type="number" value={form.sessionFee} onChange={e => set('sessionFee', e.target.value)}
@@ -229,7 +229,7 @@ export function ProviderSignup() {
             <div>
               <label className="block text-xs font-medium text-ink-400 mb-1">Availability</label>
               <input value={form.availability} onChange={e => set('availability', e.target.value)}
-                className={inputCls} placeholder="Mon–Fri, 8 am–5 pm SAST" />
+                className={inputCls} placeholder="Mon to Fri, 8am to 5pm SAST" />
             </div>
             <div>
               <label className="block text-xs font-medium text-ink-400 mb-1">Timezone</label>
@@ -254,7 +254,7 @@ export function ProviderSignup() {
             </div>
             <div>
               <label className="block text-xs font-medium text-ink-400 mb-1">
-                Meeting link <span className="text-ink-400 font-normal">(optional — can be added later)</span>
+                Meeting link <span className="text-ink-400 font-normal">(optional, can be added later)</span>
               </label>
               <p className="text-xs text-ink-400 mb-1">Shared with patients only after you confirm their appointment.</p>
               <input value={form.meetingLink} onChange={e => set('meetingLink', e.target.value)}
@@ -322,7 +322,7 @@ export function ProviderSignup() {
               </div>
             </div>
             <p className="text-[10px] text-ink-400 bg-surface-50 dark:bg-surface-900 px-2.5 py-1.5 rounded-lg">
-              🔒 Demo mode — no real charge. Full Stripe billing enabled at launch.
+              🔒 Demo mode. No real charge. Full Stripe billing enabled at launch.
             </p>
           </Card>
 

@@ -27,7 +27,7 @@ export function BrainDump() {
     <PageWrapper>
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-ink-900 dark:text-ink-100">Brain Dump</h1>
-        <p className="text-sm text-ink-400 mt-0.5">Clear your head — get it out of your brain</p>
+        <p className="text-sm text-ink-400 mt-0.5">Clear your head, get it out of your brain</p>
       </div>
 
       {/* Editor */}
@@ -58,7 +58,7 @@ export function BrainDump() {
       {dump.entries.length === 0 ? (
         <div className="py-12 text-center">
           <p className="text-4xl mb-3">🧠</p>
-          <p className="text-sm text-ink-400">Your brain dump will appear here. Nothing to judge here — just dump!</p>
+          <p className="text-sm text-ink-400">Your brain dump will appear here. Nothing to judge, just dump!</p>
         </div>
       ) : (
         <div className="space-y-3">

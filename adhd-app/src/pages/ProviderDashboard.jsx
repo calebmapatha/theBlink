@@ -27,7 +27,7 @@ const RATING_METRICS = [
   { key: 'overall',         label: 'Overall',         desc: 'Would patients recommend?' },
 ]
 
-const DATA_LABELS = { habits: '🔄 Habits', checkin: '😊 Mood', focus: '⏱️ Focus', tasks: '✅ Tasks' }
+const DATA_LABELS = { habits: '🔄 Habits', checkin: '😊 Mood', focus: '⏱️ Focus', tasks: '✅ Tasks', treatmentPlan: '📋 Treatment plan' }
 const MOOD_LABELS   = { 1: 'Very low', 2: 'Low', 3: 'Neutral', 4: 'Good',   5: 'Great' }
 const ENERGY_LABELS = { 1: 'Depleted', 2: 'Low', 3: 'Moderate', 4: 'High', 5: 'Peak' }
 
@@ -104,6 +104,52 @@ function DataSnapshot({ snapshot }) {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {snapshot.treatmentPlan && (
+        <div className="space-y-2 pt-1">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Treatment plan</p>
+          {snapshot.treatmentPlan.goals?.length > 0 && (
+            <div>
+              <p className="text-[10px] text-ink-400 mb-1">Active goals</p>
+              {snapshot.treatmentPlan.goals.map((g, i) => (
+                <div key={i} className="flex items-center gap-2 mb-1">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] text-ink-700 dark:text-ink-200 truncate">{g.text}</p>
+                  </div>
+                  <span className="text-[10px] text-primary-500 font-semibold flex-shrink-0">{g.progress}%</span>
+                  <div className="w-12 h-1 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden flex-shrink-0">
+                    <div className="h-full rounded-full bg-primary-500" style={{ width: `${g.progress}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {snapshot.treatmentPlan.medications?.length > 0 && (
+            <div>
+              <p className="text-[10px] text-ink-400 mb-1">Medications</p>
+              <div className="flex flex-wrap gap-1">
+                {snapshot.treatmentPlan.medications.map((m, i) => (
+                  <span key={i} className="text-[10px] px-1.5 py-0.5 rounded-md bg-surface-100 dark:bg-surface-800 text-ink-600 dark:text-ink-300">
+                    {m.name} {m.dosage}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {snapshot.treatmentPlan.symptoms?.length > 0 && (
+            <div>
+              <p className="text-[10px] text-ink-400 mb-1">Reported symptoms</p>
+              <div className="flex flex-wrap gap-1">
+                {snapshot.treatmentPlan.symptoms.map((s, i) => (
+                  <span key={i} className="text-[10px] px-1.5 py-0.5 rounded-md bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400">
+                    {s.name} ({s.severity}/5)
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -553,7 +599,7 @@ export function ProviderDashboard() {
         <div className="py-14 text-center mb-6">
           <p className="text-4xl mb-3">💭</p>
           <p className="text-sm text-ink-400">No appointment requests yet.</p>
-          <p className="text-xs text-ink-400 mt-1">Your profile is live — patients can book you from the Connect page.</p>
+          <p className="text-xs text-ink-400 mt-1">Your profile is live. Patients can book you from the Connect page.</p>
         </div>
       ) : (
         <>

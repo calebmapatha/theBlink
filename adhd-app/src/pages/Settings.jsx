@@ -123,7 +123,7 @@ function ResetModal({ open, onClose, onConfirm }) {
     <Modal open={open} onClose={onClose} title="Reset to Defaults">
       <div className="space-y-4">
         <p className="text-sm text-ink-700 dark:text-ink-300">
-          This will clear all tasks, habits, brain dumps, check-ins, and rewards — and restore the original default habits. Your profile and theme will be kept.
+          This will clear all tasks, habits, brain dumps, check-ins, and rewards. The original default habits will be restored. Your profile and theme will be kept.
         </p>
         <div className="flex gap-2">
           <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
