@@ -152,16 +152,16 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
     try {
       const snapshot = sharedTypes.length > 0 ? buildDataSnapshot(user.uid, sharedTypes) : {}
       await bookAppointment({
-        providerUid:          provider.id,
-        providerName:         provider.name,
-        patientUid:           user.uid,
-        patientName:          userProfile?.profile?.displayName || user?.displayName || user?.email,
-        patientEmail:         user?.email,
+        providerUid:         provider.id,
+        providerName:        provider.name,
+        patientUid:          user.uid,
+        patientName:         userProfile?.profile?.displayName || user?.displayName || user?.email,
+        patientEmail:        user?.email,
         date,
         timeSlot,
         notes,
-        sharedDataTypes:     sharedTypes,
-        sharedDataSnapshot:  snapshot,
+        sharedDataTypes:    sharedTypes,
+        sharedDataSnapshot: snapshot,
       })
       setDone(true)
     } finally {
@@ -271,6 +271,7 @@ export function Connect() {
     providers, loading, bookAppointment,
     getDiary, linkDoctor, getLinkedDoctor, unlinkDoctor,
     searchProviderByHPCSA, getPatientAppointments,
+    incrementProfileViews,
   } = useProviders()
   const { user }        = useAuth()
   const { userProfile } = useApp()
@@ -300,6 +301,11 @@ export function Connect() {
       setLinkLoading(false)
     })
   }, [user])
+
+  const handleBookClick = (provider) => {
+    incrementProfileViews(provider.id)
+    setBooking(provider)
+  }
 
   const handleHpcsaSearch = async () => {
     setSearchError('')
@@ -345,7 +351,6 @@ export function Connect() {
 
   return (
     <PageWrapper>
-      {/* Hero */}
       <div className="mb-5 p-4 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white">
         <div className="flex items-center gap-2 mb-1">
           <HeartHandshake size={16} className="opacity-80" />
@@ -355,7 +360,6 @@ export function Connect() {
         <p className="text-sm opacity-80">Certified HPCSA-registered psychiatrists &amp; psychologists, available online.</p>
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-2 mb-5">
         {[
           { key: 'find',      label: 'Find a Doctor' },
@@ -372,7 +376,6 @@ export function Connect() {
         ))}
       </div>
 
-      {/* Find a Doctor tab */}
       {tab === 'find' && (
         <>
           <div className="relative mb-4">
@@ -443,7 +446,7 @@ export function Connect() {
                     transition={{ delay: i * 0.04 }}>
                     <ProviderCard
                       provider={p}
-                      onBook={setBooking}
+                      onBook={handleBookClick}
                       onLink={handleLink}
                       linked={linkedDoctor?.id === p.id}
                     />
@@ -455,7 +458,7 @@ export function Connect() {
 
           <div className="mt-10 p-4 rounded-2xl border border-dashed border-primary-200 dark:border-primary-700/40 bg-primary-50/50 dark:bg-primary-700/10">
             <p className="text-sm font-semibold text-ink-900 dark:text-ink-100 mb-1">Are you a psychiatrist or psychologist?</p>
-            <p className="text-xs text-ink-400 mb-3">List your practice and connect with ADHD clients who need your expertise.</p>
+            <p className="text-xs text-ink-400 mb-3">List your practice and connect with mental health clients who need your expertise.</p>
             <Button variant="soft" size="sm" onClick={() => navigate('/provider/signup')}>
               Join as a provider →
             </Button>
@@ -463,7 +466,6 @@ export function Connect() {
         </>
       )}
 
-      {/* My Doctor tab */}
       {tab === 'my-doctor' && (
         <div className="space-y-5">
           {linkLoading ? (
@@ -490,7 +492,7 @@ export function Connect() {
                   </div>
                 </div>
                 <div className="flex gap-2 mt-4">
-                  <Button className="flex-1" size="sm" onClick={() => setBooking(linkedDoctor)}>
+                  <Button className="flex-1" size="sm" onClick={() => handleBookClick(linkedDoctor)}>
                     <Calendar size={13} /> Book session
                   </Button>
                   <button onClick={handleUnlink}
@@ -581,7 +583,7 @@ export function Connect() {
                 {loading ? (
                   [1, 2].map(i => <div key={i} className="h-36 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />)
                 ) : providers.slice(0, 5).map(p => (
-                  <ProviderCard key={p.id} provider={p} onBook={setBooking} onLink={handleLink} linked={false} />
+                  <ProviderCard key={p.id} provider={p} onBook={handleBookClick} onLink={handleLink} linked={false} />
                 ))}
                 {!loading && providers.length === 0 && (
                   <div className="py-10 text-center">

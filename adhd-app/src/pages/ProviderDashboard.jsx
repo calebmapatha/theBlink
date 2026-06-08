@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, X } from 'lucide-react'
+import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, X, Eye, TrendingUp } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -9,6 +9,15 @@ import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
 
 const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400'
+
+const PLATFORMS = [
+  { value: 'zoom',    label: 'Zoom' },
+  { value: 'meet',    label: 'Google Meet' },
+  { value: 'teams',   label: 'MS Teams' },
+  { value: 'whereby', label: 'Whereby' },
+  { value: 'skype',   label: 'Skype' },
+  { value: 'other',   label: 'Other' },
+]
 
 const DATA_LABELS = { habits: '🔄 Habits', checkin: '😊 Mood', focus: '⏱️ Focus', tasks: '✅ Tasks' }
 
@@ -94,10 +103,11 @@ const DAYS = [
 
 function EditModal({ open, onClose, profile, onSave }) {
   const [form, setForm] = useState({
-    bio:          profile?.bio || '',
-    sessionFee:   profile?.sessionFee || '',
-    availability: profile?.availability || '',
-    meetingLink:  profile?.meetingLink || '',
+    bio:             profile?.bio || '',
+    sessionFee:      profile?.sessionFee || '',
+    availability:    profile?.availability || '',
+    meetingPlatform: profile?.meetingPlatform || '',
+    meetingLink:     profile?.meetingLink || '',
   })
   const [saving, setSaving] = useState(false)
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
@@ -128,8 +138,25 @@ function EditModal({ open, onClose, profile, onSave }) {
           <input value={form.availability} onChange={e => set('availability', e.target.value)} className={inputCls} />
         </div>
         <div>
-          <label className="block text-xs font-medium text-ink-400 mb-1">Meeting link</label>
-          <input value={form.meetingLink} onChange={e => set('meetingLink', e.target.value)} className={inputCls} placeholder="https://zoom.us/j/…" />
+          <label className="block text-xs font-medium text-ink-400 mb-2">Video platform</label>
+          <div className="grid grid-cols-3 gap-2">
+            {PLATFORMS.map(p => (
+              <button key={p.value} type="button" onClick={() => set('meetingPlatform', p.value)}
+                className={`py-2 rounded-xl text-xs font-medium border transition-colors ${
+                  form.meetingPlatform === p.value
+                    ? 'border-primary-400 bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400'
+                    : 'border-surface-200 dark:border-surface-700 text-ink-400 hover:border-surface-300'
+                }`}>
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-ink-400 mb-1">
+            Meeting link <span className="text-ink-400 font-normal">(optional)</span>
+          </label>
+          <input value={form.meetingLink} onChange={e => set('meetingLink', e.target.value)} className={inputCls} placeholder="https://…" />
         </div>
         <div className="flex gap-2">
           <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
@@ -196,11 +223,11 @@ function AppointmentCard({ appt, onConfirm, onDecline }) {
 }
 
 function DiaryManager({ providerUid, getDiary, saveDiary }) {
-  const [diary, setDiary]             = useState({})
+  const [diary, setDiary]               = useState({})
   const [diaryLoading, setDiaryLoading] = useState(true)
-  const [selectedDay, setSelectedDay] = useState('mon')
-  const [newTime, setNewTime]         = useState('09:00')
-  const [saving, setSaving]           = useState(false)
+  const [selectedDay, setSelectedDay]   = useState('mon')
+  const [newTime, setNewTime]           = useState('09:00')
+  const [saving, setSaving]             = useState(false)
 
   useEffect(() => {
     getDiary(providerUid).then(d => { setDiary(d || {}); setDiaryLoading(false) })
@@ -306,9 +333,16 @@ export function ProviderDashboard() {
     </PageWrapper>
   )
 
-  const pending   = appointments.filter(a => a.status === 'pending')
-  const confirmed = appointments.filter(a => a.status === 'confirmed')
-  const planLabel = profile?.subscriptionPlan === 'featured' ? '⭐ Featured' : '✓ Standard'
+  const pending        = appointments.filter(a => a.status === 'pending')
+  const confirmed      = appointments.filter(a => a.status === 'confirmed')
+  const resolved       = appointments.filter(a => a.status !== 'pending')
+  const acceptanceRate = resolved.length > 0
+    ? Math.round((confirmed.length / resolved.length) * 100)
+    : null
+  const uniquePatients = new Set(appointments.map(a => a.patientUid)).size
+  const profileViews   = profile?.profileViews || 0
+  const planLabel      = profile?.subscriptionPlan === 'featured' ? '⭐ Featured' : '✓ Standard'
+  const platformLabel  = PLATFORMS.find(p => p.value === profile?.meetingPlatform)?.label || null
 
   return (
     <PageWrapper>
@@ -343,8 +377,11 @@ export function ProviderDashboard() {
         {profile?.meetingLink && (
           <a href={profile.meetingLink} target="_blank" rel="noopener noreferrer"
             className="mt-2 flex items-center gap-1.5 text-xs text-primary-500 hover:underline w-fit">
-            <ExternalLink size={10} /> Your meeting room
+            <ExternalLink size={10} /> {platformLabel ? `${platformLabel} meeting room` : 'Your meeting room'}
           </a>
+        )}
+        {!profile?.meetingLink && platformLabel && (
+          <p className="mt-2 text-xs text-ink-400">Platform: {platformLabel} · <button onClick={() => setEditOpen(true)} className="text-primary-500 hover:underline">Add meeting link</button></p>
         )}
         <div className="flex flex-wrap gap-1 mt-3">
           {(profile?.specialties || []).map(s => (
@@ -352,6 +389,26 @@ export function ProviderDashboard() {
           ))}
         </div>
       </Card>
+
+      <div className="grid grid-cols-3 gap-3 mb-5">
+        <Card className="p-3 text-center">
+          <Eye size={17} className="text-primary-500 mx-auto mb-1" />
+          <p className="text-xl font-bold text-ink-900 dark:text-ink-100">{profileViews}</p>
+          <p className="text-xs text-ink-400">Profile views</p>
+        </Card>
+        <Card className="p-3 text-center">
+          <Users size={17} className="text-success-500 mx-auto mb-1" />
+          <p className="text-xl font-bold text-ink-900 dark:text-ink-100">{uniquePatients}</p>
+          <p className="text-xs text-ink-400">Unique patients</p>
+        </Card>
+        <Card className="p-3 text-center">
+          <TrendingUp size={17} className="text-warm-500 mx-auto mb-1" />
+          <p className="text-xl font-bold text-ink-900 dark:text-ink-100">
+            {acceptanceRate !== null ? `${acceptanceRate}%` : '—'}
+          </p>
+          <p className="text-xs text-ink-400">Accept rate</p>
+        </Card>
+      </div>
 
       <div className="grid grid-cols-3 gap-3 mb-6">
         {[
@@ -369,7 +426,7 @@ export function ProviderDashboard() {
 
       {appointments.length === 0 ? (
         <div className="py-14 text-center mb-6">
-          <p className="text-4xl mb-3">📭</p>
+          <p className="text-4xl mb-3">💭</p>
           <p className="text-sm text-ink-400">No appointment requests yet.</p>
           <p className="text-xs text-ink-400 mt-1">Your profile is live — patients can book you from the Connect page.</p>
         </div>
