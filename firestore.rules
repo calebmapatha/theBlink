@@ -38,6 +38,27 @@ service cloud.firestore {
       );
 
       allow delete: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+
+      // Pre-screening documents (T&Cs, intake consent…) the provider uploads
+      // for patients to sign before booking. Any signed-in user may read them
+      // (patients must review before signing); only the owner or admin writes.
+      match /screeningDocs/{docId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      }
+    }
+
+    // Signed pre-screening consents: created by the signing patient, readable
+    // by the patient, the provider concerned, and admin. Immutable once made.
+    match /consents/{id} {
+      allow create: if isSignedIn() &&
+        request.resource.data.patientUid == request.auth.uid;
+      allow read: if isSignedIn() && (
+        isAdmin() ||
+        request.auth.uid == resource.data.patientUid ||
+        request.auth.uid == resource.data.providerUid
+      );
+      allow update, delete: if false;
     }
 
     // Appointments: created by the patient; readable/updatable by either party.

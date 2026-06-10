@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Search, Clock, Globe, BadgeCheck, Calendar, X, HeartHandshake, Link2, Unlink, Check, Star, MessageSquare, Loader, ClipboardList, Video, MapPin } from 'lucide-react'
+import { Search, Clock, Globe, BadgeCheck, Calendar, X, HeartHandshake, Link2, Unlink, Check, Star, MessageSquare, Loader, ClipboardList, Video, MapPin, FileText, FileSignature } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { PageWrapper } from '../components/layout/PageWrapper'
@@ -12,6 +12,7 @@ import { useApp } from '../context/AppContext'
 import { AddToCalendar } from '../components/ui/AddToCalendar'
 import { availableSlotsForDate } from '../utils/availability'
 import { submitReport } from '../hooks/useAdmin'
+import { getScreeningDocs, signScreeningDocs, openScreeningPDF } from '../utils/screeningDocs'
 
 const SPECIALTIES  = ['ADHD', 'Anxiety', 'Depression', 'OCD', 'PTSD', 'Autism Spectrum', 'Bipolar Disorder', 'Stress Management', 'Sleep Disorders', 'Trauma']
 const SA_PROVINCES = ['Gauteng', 'Western Cape', 'KwaZulu-Natal', 'Eastern Cape', 'Free State', 'Limpopo', 'Mpumalanga', 'North West', 'Northern Cape']
@@ -487,15 +488,28 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
   const [diaryLoading, setDiaryLoading] = useState(false)
   const [sharedTypes, setSharedTypes] = useState([])
   const [consentGiven, setConsentGiven] = useState(false)
+  const [screeningDocs, setScreeningDocs] = useState([])
+  const [agreedDocs, setAgreedDocs]       = useState([])
+  const [signatureName, setSignatureName] = useState('')
+  const [viewingDoc, setViewingDoc]       = useState(null)
 
   useEffect(() => {
     if (!provider || !open) return
     setDiaryLoading(true)
-    getBookingInfo(provider.id).then(info => {
+    Promise.all([getBookingInfo(provider.id), getScreeningDocs(provider.id)]).then(([info, docs]) => {
       setBookingInfo(info)
+      setScreeningDocs(docs)
       setDiaryLoading(false)
     })
   }, [provider?.id, open])
+
+  // The doctor may require pre-screening documents to be read and signed
+  // before a request can be sent.
+  const screeningOk = screeningDocs.length === 0 ||
+    (agreedDocs.length === screeningDocs.length && signatureName.trim().length >= 2)
+
+  const toggleAgreed = (id) =>
+    setAgreedDocs(prev => prev.includes(id) ? prev.filter(d => d !== id) : [...prev, id])
 
   // Open-by-default: weekday default hours unless the provider customised or
   // closed the day, minus slots already confirmed for that date.
@@ -508,12 +522,12 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
     setSharedTypes(prev => prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id])
 
   const handleBook = async () => {
-    if (!date || !timeSlot) return
+    if (!date || !timeSlot || !screeningOk) return
     setLoading(true)
     try {
       const sharing = sharedTypes.length > 0
       const snapshot = sharing ? buildDataSnapshot(user.uid, sharedTypes) : {}
-      await bookAppointment({
+      const apptRef = await bookAppointment({
         providerUid:         provider.id,
         providerName:        provider.name,
         patientUid:          user.uid,
@@ -527,7 +541,21 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
         // POPIA: record explicit consent when health data is shared.
         consentGiven:       sharing ? consentGiven : false,
         consentTimestamp:   sharing && consentGiven ? new Date().toISOString() : null,
+        // Pre-screening: the doctor sees at a glance that documents were signed.
+        screeningSigned:        screeningDocs.length > 0,
+        screeningSignatureName: screeningDocs.length > 0 ? signatureName.trim() : null,
       })
+      if (screeningDocs.length > 0) {
+        // One immutable consent record per signed document.
+        await signScreeningDocs({
+          appointmentId: apptRef.id,
+          providerUid:   provider.id,
+          patientUid:    user.uid,
+          patientName:   userProfile?.profile?.displayName || user?.displayName || user?.email,
+          signatureName,
+          docs:          screeningDocs,
+        })
+      }
       setDone(true)
     } finally {
       setLoading(false)
@@ -536,13 +564,15 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
 
   const handleClose = () => {
     setDone(false); setDate(''); setNotes(''); setTimeSlot(null); setSharedTypes([]); setConsentGiven(false)
+    setAgreedDocs([]); setSignatureName(''); setViewingDoc(null)
     onClose()
   }
 
   if (!provider) return null
 
   return (
-    <Modal open={open} onClose={handleClose} title={`Book with ${provider.name}`}>
+    <>
+    <Modal open={open && !viewingDoc} onClose={handleClose} title={`Book with ${provider.name}`}>
       {done ? (
         <div className="text-center py-6 space-y-3">
           <p className="text-5xl">✅</p>
@@ -622,19 +652,78 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
             )}
           </div>
 
+          {screeningDocs.length > 0 && (
+            <div className="p-3 rounded-xl border border-primary-200 dark:border-primary-700/40 bg-primary-50/50 dark:bg-primary-700/10 space-y-2.5">
+              <p className="text-xs font-semibold text-ink-800 dark:text-ink-200 flex items-center gap-1.5">
+                <FileSignature size={13} className="text-primary-500" />
+                Pre-screening documents
+              </p>
+              <p className="text-[11px] text-ink-400 leading-relaxed">
+                {provider.name} requires you to read and sign the following before booking:
+              </p>
+              {screeningDocs.map(d => (
+                <div key={d.id} className="flex items-start gap-2.5">
+                  <input type="checkbox" checked={agreedDocs.includes(d.id)} onChange={() => toggleAgreed(d.id)}
+                    className="mt-0.5 w-4 h-4 rounded accent-primary-500 flex-shrink-0" />
+                  <span className="text-[11px] text-ink-700 dark:text-ink-300 leading-relaxed">
+                    I have read and agree to{' '}
+                    <button
+                      onClick={() => d.kind === 'pdf' ? openScreeningPDF(d) : setViewingDoc(d)}
+                      className="text-primary-500 font-medium underline inline-flex items-center gap-0.5">
+                      <FileText size={9} className="flex-shrink-0" />{d.title}
+                    </button>
+                  </span>
+                </div>
+              ))}
+              <div>
+                <label className="block text-[11px] font-medium text-ink-400 mb-1">
+                  Type your full name to sign
+                </label>
+                <input value={signatureName} onChange={e => setSignatureName(e.target.value)}
+                  placeholder="Your full legal name"
+                  className="w-full px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
+                <p className="text-[10px] text-ink-400 mt-1">
+                  Your signature is recorded with this booking and shared with {provider.name}.
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="px-3 py-2 rounded-xl bg-surface-50 dark:bg-surface-900 text-xs text-ink-400">
             Session fee: <strong className="text-ink-700 dark:text-ink-300">R{provider.sessionFee}</strong> · Payment arranged directly with the provider after confirmation.
           </div>
 
           <div className="flex gap-2">
             <Button variant="ghost" className="flex-1" onClick={handleClose}>Cancel</Button>
-            <Button className="flex-1" disabled={!date || !timeSlot || loading || (sharedTypes.length > 0 && !consentGiven)} onClick={handleBook}>
+            <Button className="flex-1" disabled={!date || !timeSlot || loading || (sharedTypes.length > 0 && !consentGiven) || !screeningOk} onClick={handleBook}>
               {loading ? 'Sending…' : 'Send Request'}
             </Button>
           </div>
+          {screeningDocs.length > 0 && !screeningOk && date && timeSlot && (
+            <p className="text-[10px] text-ink-400 text-center -mt-2">
+              Tick each document and sign with your full name to continue.
+            </p>
+          )}
         </div>
       )}
     </Modal>
+
+    {/* Sibling modal (not nested) so fixed positioning isn't broken by the
+        outer modal's transform. The booking modal hides while this is open. */}
+    <Modal open={!!viewingDoc} onClose={() => setViewingDoc(null)} title={viewingDoc?.title || ''}>
+      <div className="space-y-3">
+        <p className="text-xs text-ink-700 dark:text-ink-300 leading-relaxed whitespace-pre-wrap max-h-[55vh] overflow-y-auto">
+          {viewingDoc?.text}
+        </p>
+        <Button className="w-full" onClick={() => {
+          if (viewingDoc && !agreedDocs.includes(viewingDoc.id)) toggleAgreed(viewingDoc.id)
+          setViewingDoc(null)
+        }}>
+          I have read this — agree &amp; close
+        </Button>
+      </div>
+    </Modal>
+    </>
   )
 }
 
