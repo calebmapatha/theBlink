@@ -1,11 +1,11 @@
-name: Deploy FocusBlink to GitHub Pages
+name: Deploy MentisFlow to GitHub Pages
 
 on:
   push:
     branches: [main, master]
     paths:
-      - 'adhd-app/**'
-      - '.github/workflows/deploy-adhd-app.yml'
+      - 'mentisflow/**'
+      - '.github/workflows/deploy-mentisflow.yml'
   workflow_dispatch:
 
 permissions:
@@ -30,15 +30,15 @@ jobs:
         with:
           node-version: '20'
           cache: npm
-          cache-dependency-path: adhd-app/package-lock.json
+          cache-dependency-path: mentisflow/package-lock.json
 
       - name: Install dependencies
         run: npm ci
-        working-directory: adhd-app
+        working-directory: mentisflow
 
       - name: Build
         run: npm run build
-        working-directory: adhd-app
+        working-directory: mentisflow
         env:
           VITE_BASE_URL: /theBlink/
           VITE_FIREBASE_API_KEY:            ${{ secrets.VITE_FIREBASE_API_KEY }}
@@ -53,7 +53,7 @@ jobs:
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: adhd-app/dist
+          path: mentisflow/dist
 
       - uses: actions/deploy-pages@v4
         id: deployment
