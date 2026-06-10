@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Search, Clock, Globe, BadgeCheck, Calendar, X, HeartHandshake, Link2, Unlink, Check, Star, MessageSquare, Loader, ClipboardList, Video, MapPin } from 'lucide-react'
+import { Search, Clock, Globe, BadgeCheck, Calendar, X, HeartHandshake, Link2, Unlink, Check, Star, MessageSquare, Loader, ClipboardList, Video, MapPin, FileText, FileSignature } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { PageWrapper } from '../components/layout/PageWrapper'
@@ -12,6 +12,8 @@ import { useApp } from '../context/AppContext'
 import { AddToCalendar } from '../components/ui/AddToCalendar'
 import { availableSlotsForDate } from '../utils/availability'
 import { submitReport } from '../hooks/useAdmin'
+import { getScreeningDocs, signScreeningDocs, openScreeningPDF } from '../utils/screeningDocs'
+import { SignatureField } from '../components/ui/SignatureField'
 
 const SPECIALTIES  = ['ADHD', 'Anxiety', 'Depression', 'OCD', 'PTSD', 'Autism Spectrum', 'Bipolar Disorder', 'Stress Management', 'Sleep Disorders', 'Trauma']
 const SA_PROVINCES = ['Gauteng', 'Western Cape', 'KwaZulu-Natal', 'Eastern Cape', 'Free State', 'Limpopo', 'Mpumalanga', 'North West', 'Northern Cape']
@@ -487,12 +489,16 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
   const [diaryLoading, setDiaryLoading] = useState(false)
   const [sharedTypes, setSharedTypes] = useState([])
   const [consentGiven, setConsentGiven] = useState(false)
+  // Loaded only to tell the patient up-front that signing will be required
+  // if the doctor accepts — the actual signing happens after confirmation.
+  const [screeningDocs, setScreeningDocs] = useState([])
 
   useEffect(() => {
     if (!provider || !open) return
     setDiaryLoading(true)
-    getBookingInfo(provider.id).then(info => {
+    Promise.all([getBookingInfo(provider.id), getScreeningDocs(provider.id)]).then(([info, docs]) => {
       setBookingInfo(info)
+      setScreeningDocs(docs)
       setDiaryLoading(false)
     })
   }, [provider?.id, open])
@@ -622,6 +628,17 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
             )}
           </div>
 
+          {screeningDocs.length > 0 && (
+            <div className="px-3 py-2.5 rounded-xl border border-primary-200 dark:border-primary-700/40 bg-primary-50/50 dark:bg-primary-700/10 flex items-start gap-2">
+              <FileSignature size={13} className="text-primary-500 flex-shrink-0 mt-0.5" />
+              <p className="text-[11px] text-ink-700 dark:text-ink-300 leading-relaxed">
+                If {provider.name} accepts your request, you'll be asked to digitally sign{' '}
+                {screeningDocs.length === 1 ? '1 document' : `${screeningDocs.length} documents`}{' '}
+                ({screeningDocs.map(d => d.title).join(', ')}) before your session.
+              </p>
+            </div>
+          )}
+
           <div className="px-3 py-2 rounded-xl bg-surface-50 dark:bg-surface-900 text-xs text-ink-400">
             Session fee: <strong className="text-ink-700 dark:text-ink-300">R{provider.sessionFee}</strong> · Payment arranged directly with the provider after confirmation.
           </div>
@@ -638,12 +655,152 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
   )
 }
 
+// After the doctor accepts, their pre-screening / consultation agreement
+// documents land here for the patient to read and digitally sign — drawn
+// signature (signature_pad) plus typed full name.
+function SignDocumentsModal({ appt, open, onClose, user, userProfile, onSigned, onNothingToSign }) {
+  const [docs, setDocs]             = useState(null)
+  const [agreed, setAgreed]         = useState([])
+  const [sigImage, setSigImage]     = useState(null)
+  const [sigName, setSigName]       = useState('')
+  const [viewingDoc, setViewingDoc] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError]           = useState('')
+
+  useEffect(() => {
+    if (!appt || !open) return
+    setDocs(null); setAgreed([]); setSigImage(null); setSigName(''); setError('')
+    getScreeningDocs(appt.providerUid).then(setDocs)
+  }, [appt?.id, open])
+
+  const toggleAgreed = (id) =>
+    setAgreed(prev => prev.includes(id) ? prev.filter(d => d !== id) : [...prev, id])
+
+  const canSign = docs?.length > 0 && agreed.length === docs.length &&
+    !!sigImage && sigName.trim().length >= 2
+
+  const handleSign = async () => {
+    if (!canSign) return
+    setSubmitting(true); setError('')
+    try {
+      await signScreeningDocs({
+        appointmentId:  appt.id,
+        providerUid:    appt.providerUid,
+        patientUid:     user.uid,
+        patientName:    userProfile?.profile?.displayName || user?.displayName || user?.email,
+        signatureName:  sigName,
+        signatureImage: sigImage,
+        docs,
+      })
+      onSigned(appt.id)
+      onClose()
+    } catch {
+      setError('Could not save your signature. Please check your connection and try again.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (!appt) return null
+
+  return (
+    <>
+    <Modal open={open && !viewingDoc} onClose={onClose} title="Sign documents">
+      {docs === null ? (
+        <div className="py-8 text-center"><Loader size={18} className="animate-spin text-primary-500 mx-auto" /></div>
+      ) : docs.length === 0 ? (
+        <div className="space-y-3 text-center py-4">
+          <p className="text-sm text-ink-700 dark:text-ink-300">
+            {appt.providerName} no longer requires any documents for this appointment.
+          </p>
+          <Button className="w-full" onClick={() => { onNothingToSign(appt.id); onClose() }}>OK</Button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <p className="text-xs text-ink-400 leading-relaxed">
+            {appt.providerName} accepted your appointment for{' '}
+            <strong className="text-ink-700 dark:text-ink-300">{appt.date} at {appt.timeSlot}</strong>.
+            Please read and sign the following before your session.
+          </p>
+
+          <div className="space-y-2">
+            {docs.map(d => (
+              <div key={d.id} className="p-3 rounded-xl border border-surface-200 dark:border-surface-700 flex items-start gap-2.5">
+                <input type="checkbox" checked={agreed.includes(d.id)} onChange={() => toggleAgreed(d.id)}
+                  className="mt-0.5 w-4 h-4 rounded accent-primary-500 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-ink-900 dark:text-ink-100">{d.title}</p>
+                  <button
+                    onClick={() => d.kind === 'pdf' ? openScreeningPDF(d) : setViewingDoc(d)}
+                    className="text-[11px] text-primary-500 font-medium underline inline-flex items-center gap-1 mt-0.5">
+                    <FileText size={10} className="flex-shrink-0" />
+                    {d.kind === 'pdf' ? 'Open PDF' : 'Read document'}
+                  </button>
+                  <p className="text-[10px] text-ink-400 mt-0.5">Tick the box to confirm you've read and agree.</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-ink-400 mb-1.5">Your signature</label>
+            <SignatureField onChange={setSigImage} />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-ink-400 mb-1">Full legal name</label>
+            <input value={sigName} onChange={e => setSigName(e.target.value)}
+              placeholder="Type your full name"
+              className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
+          </div>
+
+          <p className="text-[10px] text-ink-400 leading-relaxed">
+            By signing you agree to the documents above. Your signature and name are stored
+            securely and shared only with {appt.providerName}.
+          </p>
+
+          {error && <p className="text-xs text-red-500 text-center">{error}</p>}
+
+          <div className="flex gap-2">
+            <Button variant="ghost" className="flex-1" onClick={onClose}>Later</Button>
+            <Button className="flex-1" disabled={!canSign || submitting} onClick={handleSign}>
+              {submitting ? <Loader size={14} className="animate-spin" /> : 'Sign & submit'}
+            </Button>
+          </div>
+          {!canSign && (
+            <p className="text-[10px] text-ink-400 text-center -mt-1">
+              Tick every document, draw your signature and type your full name to submit.
+            </p>
+          )}
+        </div>
+      )}
+    </Modal>
+
+    {/* Sibling modal (not nested) so its fixed positioning isn't trapped by
+        the outer modal's transform; the signing modal hides while reading. */}
+    <Modal open={!!viewingDoc} onClose={() => setViewingDoc(null)} title={viewingDoc?.title || ''}>
+      <div className="space-y-3">
+        <p className="text-xs text-ink-700 dark:text-ink-300 leading-relaxed whitespace-pre-wrap max-h-[55vh] overflow-y-auto">
+          {viewingDoc?.text}
+        </p>
+        <Button className="w-full" onClick={() => {
+          if (viewingDoc && !agreed.includes(viewingDoc.id)) toggleAgreed(viewingDoc.id)
+          setViewingDoc(null)
+        }}>
+          I have read this — agree &amp; close
+        </Button>
+      </div>
+    </Modal>
+    </>
+  )
+}
+
 export function Connect() {
   const {
     providers, loading, loadMore, hasMore, bookAppointment,
     getBookingInfo, linkDoctor, getLinkedDoctor, unlinkDoctor,
     searchProviderByHPCSA, getPatientAppointments,
-    incrementProfileViews, submitRating, getRating,
+    incrementProfileViews, submitRating, getRating, updateAppointment,
   } = useProviders()
   const { user }        = useAuth()
   const { userProfile } = useApp()
@@ -668,6 +825,7 @@ export function Connect() {
   const [ratingAppt, setRatingAppt]         = useState(null)
   const [viewingProvider, setViewingProvider] = useState(null)
   const [reportingProvider, setReportingProvider] = useState(null)
+  const [signingAppt, setSigningAppt]       = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -1023,6 +1181,18 @@ export function Connect() {
                             )}
                           </div>
                         </div>
+                        {a.status === 'confirmed' && a.screeningRequired && !a.screeningSigned && (
+                          <button onClick={() => setSigningAppt(a)}
+                            className="mt-2.5 w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/40 text-amber-700 dark:text-amber-400 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors">
+                            <FileSignature size={14} className="flex-shrink-0" />
+                            Documents ready to sign — tap to review &amp; sign
+                          </button>
+                        )}
+                        {a.screeningSigned && (
+                          <p className="mt-2 text-[10px] text-success-600 dark:text-success-400 flex items-center gap-1">
+                            <Check size={10} className="flex-shrink-0" /> Documents signed
+                          </p>
+                        )}
                         {a.status === 'confirmed' && (
                           <AddToCalendar
                             appt={{ ...a, meetingLink: linkedDoctor?.meetingLink }}
@@ -1120,6 +1290,21 @@ export function Connect() {
         open={!!reportingProvider}
         onClose={() => setReportingProvider(null)}
         user={user}
+      />
+
+      <SignDocumentsModal
+        appt={signingAppt}
+        open={!!signingAppt}
+        onClose={() => setSigningAppt(null)}
+        user={user}
+        userProfile={userProfile}
+        onSigned={(id) => setMyAppointments(prev => prev.map(a => a.id === id ? { ...a, screeningSigned: true } : a))}
+        onNothingToSign={(id) => {
+          // Doctor removed their documents after confirming — clear the flag
+          // so the patient isn't prompted again.
+          updateAppointment(id, { screeningRequired: false }).catch(() => {})
+          setMyAppointments(prev => prev.map(a => a.id === id ? { ...a, screeningRequired: false } : a))
+        }}
       />
 
       <BookingModal
