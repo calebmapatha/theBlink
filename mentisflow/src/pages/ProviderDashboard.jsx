@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
 import { AddToCalendar } from '../components/ui/AddToCalendar'
 import { slotsForDay, dayMode, DEFAULT_HOURS } from '../utils/availability'
-import { getScreeningDocs, addScreeningDocPDF, addScreeningDocText, deleteScreeningDoc, openScreeningPDF, MAX_PDF_BYTES, MAX_DOCS } from '../utils/screeningDocs'
+import { getScreeningDocs, addScreeningDocPDF, addScreeningDocText, deleteScreeningDoc, openScreeningPDF, getConsentsForAppointment, MAX_PDF_BYTES, MAX_DOCS } from '../utils/screeningDocs'
 
 const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400'
 
@@ -454,7 +454,7 @@ function EditModal({ open, onClose, profile, onSave }) {
   )
 }
 
-function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink }) {
+function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, onViewConsents }) {
   const todayStr = new Date().toISOString().split('T')[0]
   const isPast = appt.date && appt.date < todayStr
   return (
@@ -483,12 +483,20 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink })
             </div>
           )}
           <DataSnapshot snapshot={appt.sharedDataSnapshot} />
-          {appt.screeningSigned && (
+          {appt.screeningSigned ? (
             <p className="text-[10px] text-success-600 dark:text-success-400 mt-1.5 flex items-center gap-1">
               <FileSignature size={10} className="flex-shrink-0" />
-              Pre-screening signed{appt.screeningSignatureName ? ` — ${appt.screeningSignatureName}` : ''}
+              Documents signed{appt.screeningSignatureName ? ` — ${appt.screeningSignatureName}` : ''}
+              {onViewConsents && (
+                <button onClick={() => onViewConsents(appt)} className="text-primary-500 underline ml-1">View</button>
+              )}
             </p>
-          )}
+          ) : appt.screeningRequired && appt.status === 'confirmed' ? (
+            <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1.5 flex items-center gap-1">
+              <FileSignature size={10} className="flex-shrink-0" />
+              Awaiting document signature from patient
+            </p>
+          ) : null}
           {appt.status === 'confirmed' && (
             <AddToCalendar
               appt={{ ...appt, meetingLink }}
@@ -649,8 +657,53 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
   )
 }
 
-// Optional pre-screening documents (T&Cs, intake consent…) patients must
-// read and sign before sending a booking request. Stored in Firestore as
+// The signed consent records for one appointment — document titles, typed
+// name, drawn signature image and timestamp.
+function ConsentsModal({ appt, onClose }) {
+  const [consents, setConsents] = useState(null)
+
+  useEffect(() => {
+    if (!appt) return
+    setConsents(null)
+    getConsentsForAppointment(appt.id).then(setConsents)
+  }, [appt?.id])
+
+  return (
+    <Modal open={!!appt} onClose={onClose} title="Signed documents">
+      {consents === null ? (
+        <div className="py-8 text-center"><Loader size={18} className="animate-spin text-primary-500 mx-auto" /></div>
+      ) : consents.length === 0 ? (
+        <p className="text-sm text-ink-400 text-center py-6">No signed records found for this appointment.</p>
+      ) : (
+        <div className="space-y-3">
+          <p className="text-xs text-ink-400">
+            Signed by <strong className="text-ink-700 dark:text-ink-300">{appt?.patientName}</strong> for
+            the session on {appt?.date} at {appt?.timeSlot}.
+          </p>
+          {consents.map(c => (
+            <div key={c.id} className="p-3 rounded-xl border border-surface-200 dark:border-surface-700 space-y-2">
+              <div className="flex items-center gap-2">
+                <FileText size={13} className="text-primary-500 flex-shrink-0" />
+                <p className="text-xs font-medium text-ink-900 dark:text-ink-100 flex-1">{c.docTitle}</p>
+              </div>
+              <p className="text-[10px] text-ink-400">
+                Signed as <strong className="text-ink-600 dark:text-ink-300">{c.signatureName}</strong>
+                {c.signedAt?.seconds ? ` · ${new Date(c.signedAt.seconds * 1000).toLocaleString('en-ZA')}` : ''}
+              </p>
+              {c.signatureImage && (
+                <img src={c.signatureImage} alt={`Signature of ${c.signatureName}`}
+                  className="h-16 rounded-lg border border-surface-200 dark:border-surface-700 bg-white" />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </Modal>
+  )
+}
+
+// Optional pre-screening documents (T&Cs, intake consent…) the patient is
+// asked to sign after the doctor accepts a booking. Stored in Firestore as
 // small PDFs (base64) or plain text — no Cloud Storage needed.
 function DocumentsManager({ providerUid }) {
   const [docs, setDocs]         = useState([])
@@ -713,9 +766,10 @@ function DocumentsManager({ providerUid }) {
   return (
     <div className="space-y-3">
       <p className="text-xs text-ink-400 leading-relaxed">
-        Optional. Upload documents — terms &amp; conditions, intake consent, practice policies — that
-        patients must read and sign <strong className="text-ink-600 dark:text-ink-300">before</strong> they
-        can send you a booking request. Signatures are stored with each appointment.
+        Optional. Upload documents — terms &amp; conditions, consultation agreements, practice policies —
+        for patients to sign. When you <strong className="text-ink-600 dark:text-ink-300">accept</strong> a
+        booking request, the documents are sent to the patient to read and digitally sign before the
+        session. Signatures are stored with each appointment.
       </p>
 
       {docs.length === 0 ? (
@@ -798,6 +852,7 @@ export function ProviderDashboard() {
   const [loading, setLoading]           = useState(true)
   const [editOpen, setEditOpen]         = useState(false)
   const [statModal, setStatModal]       = useState(null)
+  const [consentAppt, setConsentAppt]   = useState(null)
   const [photoUploading, setPhotoUploading] = useState(false)
   const fileRef                         = useRef()
 
@@ -821,14 +876,17 @@ export function ProviderDashboard() {
 
   const handleAction = async (id, status) => {
     const appt = appointments.find(a => a.id === id)
+    let extra = {}
     if (status === 'confirmed' && appt) {
       // Also records the slot in the provider's bookedSlots map so it
-      // disappears from patients' booking views.
-      await confirmAppointment(appt)
+      // disappears from patients' booking views, and flags the appointment
+      // if pre-screening documents must be signed.
+      const res = await confirmAppointment(appt)
+      extra = { screeningRequired: res?.screeningRequired || false }
     } else {
       await updateAppointment(id, { status })
     }
-    setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a))
+    setAppointments(prev => prev.map(a => a.id === id ? { ...a, status, ...extra } : a))
   }
 
   const handleSave = async (updates) => {
@@ -1127,7 +1185,8 @@ export function ProviderDashboard() {
                 {confirmed.map(a => (
                   <AppointmentCard key={a.id} appt={a} onConfirm={() => {}} onDecline={() => {}}
                     onOutcome={(id, status) => handleAction(id, status)}
-                    meetingLink={profile?.meetingLink} />
+                    meetingLink={profile?.meetingLink}
+                    onViewConsents={setConsentAppt} />
                 ))}
               </div>
             </div>
@@ -1145,6 +1204,7 @@ export function ProviderDashboard() {
         <DocumentsManager providerUid={user.uid} />
       </div>
 
+      <ConsentsModal appt={consentAppt} onClose={() => setConsentAppt(null)} />
       <EditModal open={editOpen} onClose={() => setEditOpen(false)} profile={profile} onSave={handleSave} />
       <StatDetailModal kind={statModal} onClose={() => setStatModal(null)}
         stats={{ appointments, pending, confirmed, sessions, declined, patientList, profileViews, uniquePatients, acceptanceRate, sessionFee: profile?.sessionFee }} />
