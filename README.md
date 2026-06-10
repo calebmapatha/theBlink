@@ -44,7 +44,7 @@ MentisFlow is a dual-role web app for patients and mental health providers.
 
 ```
 theBlink/
-├── adhd-app/               # React PWA
+├── mentisflow/               # React PWA
 │   ├── src/
 │   │   ├── pages/          # Route-level components
 │   │   ├── components/     # Shared UI and layout
@@ -190,7 +190,7 @@ Log in with the admin account (`calebmapatha@gmail.com`), go to **Settings → A
 ## Scripts
 
 ```bash
-# adhd-app/
+# mentisflow/
 npm run dev       # Start dev server
 npm run build     # Production build
 npm run preview   # Preview production build locally
