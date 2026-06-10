@@ -8,6 +8,10 @@ const DEFAULT_PLAN = {
   symptoms:     [],
 }
 
+// Collision-proof id: time-ordered prefix + random suffix, so rapid
+// successive adds within the same millisecond never share an id.
+const uid = () => `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+
 export function useTreatmentPlan(userId) {
   const [plan, setPlan] = useUserLocalStorage(userId, 'treatment_plan', DEFAULT_PLAN)
 
@@ -15,7 +19,7 @@ export function useTreatmentPlan(userId) {
   const addGoal = useCallback((goal) => {
     setPlan(p => ({
       ...p,
-      goals: [...p.goals, { id: Date.now(), progress: 0, status: 'active', createdAt: new Date().toISOString(), ...goal }],
+      goals: [...p.goals, { id: uid(), progress: 0, status: 'active', createdAt: new Date().toISOString(), ...goal }],
     }))
   }, [setPlan])
 
@@ -31,7 +35,7 @@ export function useTreatmentPlan(userId) {
   const addMedication = useCallback((med) => {
     setPlan(p => ({
       ...p,
-      medications: [...p.medications, { id: Date.now(), active: true, startDate: new Date().toISOString().split('T')[0], ...med }],
+      medications: [...p.medications, { id: uid(), active: true, startDate: new Date().toISOString().split('T')[0], ...med }],
     }))
   }, [setPlan])
 
@@ -47,7 +51,7 @@ export function useTreatmentPlan(userId) {
   const addNote = useCallback((note) => {
     setPlan(p => ({
       ...p,
-      sessionNotes: [{ id: Date.now(), date: new Date().toISOString().split('T')[0], ...note }, ...p.sessionNotes],
+      sessionNotes: [{ id: uid(), date: new Date().toISOString().split('T')[0], ...note }, ...p.sessionNotes],
     }))
   }, [setPlan])
 
@@ -59,7 +63,7 @@ export function useTreatmentPlan(userId) {
   const addSymptom = useCallback((symptom) => {
     setPlan(p => ({
       ...p,
-      symptoms: [...p.symptoms, { id: Date.now(), ...symptom }],
+      symptoms: [...p.symptoms, { id: uid(), ...symptom }],
     }))
   }, [setPlan])
 

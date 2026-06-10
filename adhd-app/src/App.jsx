@@ -21,6 +21,7 @@ import { TreatmentPlan } from './pages/TreatmentPlan'
 import { ProviderSignup } from './pages/ProviderSignup'
 import { ProviderDashboard } from './pages/ProviderDashboard'
 import { Login } from './pages/Login'
+import { Privacy } from './pages/Privacy'
 import { useApp } from './context/AppContext'
 import { HeartHandshake } from 'lucide-react'
 
@@ -28,6 +29,7 @@ function AppShell({ isProvider }) {
   const location = useLocation()
   const navigate  = useNavigate()
   const { toast } = useApp()
+  const [syncError, setSyncError] = useState(false)
 
   useEffect(() => {
     if (!isProvider && localStorage.getItem('mf_role') === 'provider') {
@@ -35,8 +37,21 @@ function AppShell({ isProvider }) {
     }
   }, [isProvider])
 
+  // Warn the user if a Firestore sync ultimately fails, so data loss is visible.
+  useEffect(() => {
+    const onSyncError = () => setSyncError(true)
+    window.addEventListener('mf-sync-error', onSyncError)
+    return () => window.removeEventListener('mf-sync-error', onSyncError)
+  }, [])
+
   return (
     <div className="flex h-screen bg-surface-50 dark:bg-surface-950 text-ink-900 dark:text-ink-100">
+      {syncError && (
+        <div className="fixed top-0 inset-x-0 z-50 bg-amber-500 text-white text-xs font-medium px-4 py-2 flex items-center justify-center gap-3">
+          <span>Some changes couldn’t be saved to the cloud. Check your connection — your data is safe on this device.</span>
+          <button onClick={() => setSyncError(false)} className="underline flex-shrink-0">Dismiss</button>
+        </div>
+      )}
       <Sidebar isProvider={isProvider} />
       <main className="flex-1 min-w-0 h-full pb-16 md:pb-0 overflow-y-auto">
         <AnimatePresence mode="wait">
@@ -97,6 +112,10 @@ function AuthGate() {
       .then(snap => setIsProvider(!!(snap.exists() && snap.data()?.subscriptionActive)))
       .catch(() => setIsProvider(false))
   }, [user?.uid])
+
+  // Privacy policy is public — viewable without authentication. Robust to the
+  // deploy base path (/theBlink/) since we match on the path suffix.
+  if (window.location.pathname.replace(/\/$/, '').endsWith('/privacy')) return <Privacy />
 
   if (user === undefined || (user !== null && isProvider === undefined)) return <LoadingScreen />
   if (!user) return <Login />

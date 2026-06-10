@@ -250,6 +250,9 @@ export function Settings() {
     Object.keys(localStorage)
       .filter(k => k.startsWith(prefix) && !KEEP_KEYS.some(s => k.endsWith(s)))
       .forEach(k => localStorage.removeItem(k))
+    // Reminder preferences are device-global; reset them too so a reset never
+    // leaves behind evidence of prior health-related reminders.
+    localStorage.removeItem('adhd_notifications')
     window.location.reload()
   }
 

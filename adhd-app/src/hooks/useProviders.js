@@ -1,23 +1,45 @@
 import { useState, useEffect, useCallback } from 'react'
-import { collection, doc, getDoc, getDocs, setDoc, addDoc, query, where, updateDoc, deleteField, serverTimestamp, increment, runTransaction } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, setDoc, addDoc, query, where, orderBy, limit, startAfter, updateDoc, deleteField, serverTimestamp, increment } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../lib/firebase'
+
+const PAGE_SIZE = 10
 
 export function useProviders() {
   const [providers, setProviders] = useState([])
   const [loading, setLoading] = useState(true)
+  const [lastDoc, setLastDoc] = useState(null)
+  const [hasMore, setHasMore] = useState(false)
 
-  const reload = useCallback(async () => {
+  // Cursor-based pagination: load PAGE_SIZE active providers at a time.
+  // Pass the previous page's last document to fetch the next page.
+  const loadProviders = useCallback(async (afterDoc = null) => {
     setLoading(true)
     try {
-      const snap = await getDocs(query(collection(db, 'providers'), where('subscriptionActive', '==', true)))
-      setProviders(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      let q = query(
+        collection(db, 'providers'),
+        where('subscriptionActive', '==', true),
+        orderBy('__name__'),
+        limit(PAGE_SIZE),
+      )
+      if (afterDoc) q = query(q, startAfter(afterDoc))
+      const snap = await getDocs(q)
+      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      setProviders(prev => afterDoc ? [...prev, ...docs] : docs)
+      setLastDoc(snap.docs[snap.docs.length - 1] ?? null)
+      setHasMore(snap.docs.length === PAGE_SIZE)
     } catch {
-      setProviders([])
+      if (!afterDoc) setProviders([])
+      setHasMore(false)
     } finally {
       setLoading(false)
     }
   }, [])
+
+  const reload   = useCallback(() => loadProviders(null), [loadProviders])
+  const loadMore = useCallback(() => {
+    if (lastDoc && hasMore && !loading) loadProviders(lastDoc)
+  }, [lastDoc, hasMore, loading, loadProviders])
 
   useEffect(() => { reload() }, [reload])
 
@@ -123,31 +145,16 @@ export function useProviders() {
   }
 
   // Submit a patient rating for a completed appointment.
-  // Atomically updates the provider's aggregate rating fields.
+  // The provider's aggregate rating fields (ratingCount / ratingAvg) are
+  // recomputed server-side by the `aggregateRating` Cloud Function, which is
+  // the only writer trusted to touch them. Throws on failure so the caller
+  // can surface an error to the patient.
   const submitRating = async ({ appointmentId, providerId, patientUid, communication, empathy, professionalism, treatmentPlan, overall, comment }) => {
     await setDoc(doc(db, 'ratings', appointmentId), {
       appointmentId, providerId, patientUid,
       communication, empathy, professionalism, treatmentPlan, overall,
       comment: comment || '',
       createdAt: serverTimestamp(),
-    })
-
-    await runTransaction(db, async (tx) => {
-      const provRef = doc(db, 'providers', providerId)
-      const snap = await tx.get(provRef)
-      if (!snap.exists()) return
-      const data = snap.data()
-      const count = (data.ratingCount || 0) + 1
-      const prev = data.ratingAvg || {}
-      const n = count - 1
-      const newAvg = {
-        communication:  +((((prev.communication  || 0) * n) + communication)  / count).toFixed(2),
-        empathy:        +((((prev.empathy        || 0) * n) + empathy)        / count).toFixed(2),
-        professionalism:+((((prev.professionalism|| 0) * n) + professionalism)/ count).toFixed(2),
-        treatmentPlan:  +((((prev.treatmentPlan  || 0) * n) + treatmentPlan)  / count).toFixed(2),
-        overall:        +((((prev.overall        || 0) * n) + overall)        / count).toFixed(2),
-      }
-      tx.update(provRef, { ratingCount: count, ratingAvg: newAvg })
     })
   }
 
@@ -168,7 +175,7 @@ export function useProviders() {
   }
 
   return {
-    providers, loading, reload,
+    providers, loading, reload, loadMore, hasMore,
     getProvider, saveProvider,
     getDiary, saveDiary,
     bookAppointment, getAppointments, getPatientAppointments, updateAppointment,

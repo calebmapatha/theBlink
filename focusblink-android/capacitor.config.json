@@ -1,8 +1,0 @@
-{
-  "appId": "io.focusblink.app",
-  "appName": "FocusBlink",
-  "webDir": "dist",
-  "android": {
-    "backgroundColor": "#0d0f1a"
-  }
-}

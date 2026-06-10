@@ -31,6 +31,10 @@ const RATING_METRICS = [
 ]
 
 function buildDataSnapshot(uid, types) {
+  // Guard: only ever read the authenticated user's own data. The caller must
+  // pass the current user's uid; bail otherwise so we never read another
+  // account's locally-cached health data.
+  if (!uid) return {}
   const last30 = Array.from({ length: 30 }, (_, i) => {
     const d = new Date(); d.setDate(d.getDate() - i)
     return d.toISOString().split('T')[0]
@@ -323,6 +327,7 @@ function RatingModal({ open, onClose, appointment, providerName, onSubmit }) {
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
+  const [error, setError] = useState('')
 
   const setScore = (key, val) => setScores(s => ({ ...s, [key]: val }))
   const allFilled = Object.values(scores).every(v => v > 0)
@@ -330,15 +335,22 @@ function RatingModal({ open, onClose, appointment, providerName, onSubmit }) {
   const handleSubmit = async () => {
     if (!allFilled) return
     setSubmitting(true)
-    await onSubmit({ ...scores, comment })
-    setDone(true)
-    setSubmitting(false)
+    setError('')
+    try {
+      await onSubmit({ ...scores, comment })
+      setDone(true)
+    } catch {
+      setError('Could not submit your rating. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const handleClose = () => {
     setDone(false)
     setScores({ communication: 0, empathy: 0, professionalism: 0, treatmentPlan: 0, overall: 0 })
     setComment('')
+    setError('')
     onClose()
   }
 
@@ -391,6 +403,9 @@ function RatingModal({ open, onClose, appointment, providerName, onSubmit }) {
           {!allFilled && (
             <p className="text-xs text-ink-400 text-center">Please rate all 5 areas to submit.</p>
           )}
+          {error && (
+            <p className="text-xs text-red-500 text-center">{error}</p>
+          )}
 
           <div className="flex gap-2">
             <Button variant="ghost" className="flex-1" onClick={handleClose}>Cancel</Button>
@@ -413,6 +428,7 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
   const [diary, setDiary]             = useState({})
   const [diaryLoading, setDiaryLoading] = useState(false)
   const [sharedTypes, setSharedTypes] = useState([])
+  const [consentGiven, setConsentGiven] = useState(false)
 
   useEffect(() => {
     if (!provider || !open) return
@@ -425,7 +441,10 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
 
   const availableSlots = useMemo(() => {
     if (!date) return []
-    const dayKey = DAY_KEYS[new Date(date + 'T12:00:00').getDay()]
+    // Parse the YYYY-MM-DD as a local date explicitly (no UTC shift) so the
+    // weekday is always correct regardless of the user's timezone.
+    const [y, mo, d] = date.split('-').map(Number)
+    const dayKey = DAY_KEYS[new Date(y, mo - 1, d).getDay()]
     return (diary[dayKey] || []).slice().sort()
   }, [date, diary])
 
@@ -436,7 +455,8 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
     if (!date || !timeSlot) return
     setLoading(true)
     try {
-      const snapshot = sharedTypes.length > 0 ? buildDataSnapshot(user.uid, sharedTypes) : {}
+      const sharing = sharedTypes.length > 0
+      const snapshot = sharing ? buildDataSnapshot(user.uid, sharedTypes) : {}
       await bookAppointment({
         providerUid:         provider.id,
         providerName:        provider.name,
@@ -448,6 +468,9 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
         notes,
         sharedDataTypes:    sharedTypes,
         sharedDataSnapshot: snapshot,
+        // POPIA: record explicit consent when health data is shared.
+        consentGiven:       sharing ? consentGiven : false,
+        consentTimestamp:   sharing && consentGiven ? new Date().toISOString() : null,
       })
       setDone(true)
     } finally {
@@ -456,7 +479,7 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
   }
 
   const handleClose = () => {
-    setDone(false); setDate(''); setNotes(''); setTimeSlot(null); setSharedTypes([])
+    setDone(false); setDate(''); setNotes(''); setTimeSlot(null); setSharedTypes([]); setConsentGiven(false)
     onClose()
   }
 
@@ -530,9 +553,16 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
               ))}
             </div>
             {sharedTypes.length > 0 && (
-              <p className="text-[10px] text-ink-400 mt-1.5">
-                Your selected data will be visible to {provider.name} before the session.
-              </p>
+              <label className="flex items-start gap-2.5 mt-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 cursor-pointer">
+                <input type="checkbox" checked={consentGiven} onChange={() => setConsentGiven(v => !v)}
+                  className="mt-0.5 w-4 h-4 rounded accent-primary-500 flex-shrink-0" />
+                <span className="text-[11px] text-ink-700 dark:text-ink-300 leading-relaxed">
+                  I consent to sharing the selected health data with {provider.name} for the purpose of my
+                  mental health consultation. I understand I can withdraw this consent at any time. See our{' '}
+                  <a href={`${import.meta.env.BASE_URL}privacy`} target="_blank" rel="noopener noreferrer"
+                    className="text-primary-500 underline" onClick={e => e.stopPropagation()}>Privacy Policy</a>.
+                </span>
+              </label>
             )}
           </div>
 
@@ -542,7 +572,7 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
 
           <div className="flex gap-2">
             <Button variant="ghost" className="flex-1" onClick={handleClose}>Cancel</Button>
-            <Button className="flex-1" disabled={!date || !timeSlot || loading} onClick={handleBook}>
+            <Button className="flex-1" disabled={!date || !timeSlot || loading || (sharedTypes.length > 0 && !consentGiven)} onClick={handleBook}>
               {loading ? 'Sending…' : 'Send Request'}
             </Button>
           </div>
@@ -554,7 +584,7 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
 
 export function Connect() {
   const {
-    providers, loading, bookAppointment,
+    providers, loading, loadMore, hasMore, bookAppointment,
     getDiary, linkDoctor, getLinkedDoctor, unlinkDoctor,
     searchProviderByHPCSA, getPatientAppointments,
     incrementProfileViews, submitRating, getRating,
@@ -807,7 +837,10 @@ export function Connect() {
             </div>
           ) : (
             <div className="space-y-3">
-              <p className="text-xs text-ink-400">{filtered.length} provider{filtered.length !== 1 ? 's' : ''} available</p>
+              <p className="text-xs text-ink-400">
+                {filtered.length} provider{filtered.length !== 1 ? 's' : ''}
+                {filtered.length !== providers.length && ` of ${providers.length} loaded`}
+              </p>
               <AnimatePresence>
                 {filtered.map((p, i) => (
                   <motion.div key={p.id}
@@ -824,6 +857,11 @@ export function Connect() {
                   </motion.div>
                 ))}
               </AnimatePresence>
+              {hasMore && (
+                <Button variant="ghost" className="w-full" onClick={loadMore} disabled={loading}>
+                  {loading ? <Loader size={14} className="animate-spin" /> : 'Load more providers'}
+                </Button>
+              )}
             </div>
           )}
 

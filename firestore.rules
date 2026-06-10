@@ -21,18 +21,25 @@ service cloud.firestore {
       allow read: if isSignedIn() &&
         (resource == null || resource.data.subscriptionActive == true || request.auth.uid == uid);
 
-      // Owner (or admin) may create their profile.
-      allow create: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      // Owner (or admin) may create their profile. Only admins may set
+      // subscriptionActive on create — for everyone else it is granted
+      // exclusively by trusted server code (activateProvider / Stripe webhook).
+      allow create: if isSignedIn() && (
+        isAdmin() ||
+        (request.auth.uid == uid &&
+          !request.resource.data.keys().hasAny(['subscriptionActive', 'ratingCount', 'ratingAvg']))
+      );
 
       allow update: if isSignedIn() && (
         // Admin (seeding / moderation) — unrestricted.
         isAdmin() ||
-        // Owner editing their own profile, but NOT the rating aggregates.
+        // Owner editing their own profile, but NOT the rating aggregates or
+        // subscription state (those are owned by Cloud Functions / Admin SDK).
         (request.auth.uid == uid &&
-          !changedKeys().hasAny(['ratingCount', 'ratingAvg'])) ||
-        // Anyone else may only bump rating aggregates / view counts
-        // (used by patient rating submission + profile-view tracking).
-        changedKeys().hasOnly(['ratingCount', 'ratingAvg', 'profileViews'])
+          !changedKeys().hasAny(['ratingCount', 'ratingAvg', 'subscriptionActive'])) ||
+        // Anyone else may only bump the profile-view counter (not fraud-
+        // sensitive). Rating aggregates are written server-side only.
+        changedKeys().hasOnly(['profileViews'])
       );
 
       allow delete: if isSignedIn() && (request.auth.uid == uid || isAdmin());
