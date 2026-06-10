@@ -21,6 +21,7 @@ import { TreatmentPlan } from './pages/TreatmentPlan'
 import { ProviderSignup } from './pages/ProviderSignup'
 import { ProviderDashboard } from './pages/ProviderDashboard'
 import { Login } from './pages/Login'
+import { Privacy } from './pages/Privacy'
 import { useApp } from './context/AppContext'
 import { HeartHandshake } from 'lucide-react'
 
@@ -97,6 +98,10 @@ function AuthGate() {
       .then(snap => setIsProvider(!!(snap.exists() && snap.data()?.subscriptionActive)))
       .catch(() => setIsProvider(false))
   }, [user?.uid])
+
+  // Privacy policy is public — viewable without authentication. Robust to the
+  // deploy base path (/theBlink/) since we match on the path suffix.
+  if (window.location.pathname.replace(/\/$/, '').endsWith('/privacy')) return <Privacy />
 
   if (user === undefined || (user !== null && isProvider === undefined)) return <LoadingScreen />
   if (!user) return <Login />

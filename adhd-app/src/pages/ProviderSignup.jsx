@@ -4,8 +4,12 @@ import { useNavigate } from 'react-router-dom'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
+import { httpsCallable } from 'firebase/functions'
+import { functions } from '../lib/firebase'
 import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
+
+const activateProvider = httpsCallable(functions, 'activateProvider')
 
 const SPECIALTIES = ['ADHD', 'Anxiety', 'Depression', 'OCD', 'PTSD', 'Autism Spectrum', 'Bipolar Disorder', 'Stress Management', 'Sleep Disorders', 'Trauma', 'Life Transitions', 'Executive Function']
 const LANGUAGES   = ['English', 'Zulu', 'Xhosa', 'Afrikaans', 'Sotho', 'Tswana', 'Venda', 'Tsonga', 'Spanish', 'French', 'Portuguese', 'Mandarin']
@@ -52,6 +56,7 @@ export function ProviderSignup() {
   const [checking, setChecking]       = useState(true)
   const [plan, setPlan]               = useState('standard')
   const [saving, setSaving]           = useState(false)
+  const [activateError, setActivateError] = useState('')
 
   const [form, setForm] = useState({
     name:            '',
@@ -87,16 +92,19 @@ export function ProviderSignup() {
   const handleActivate = async () => {
     setSaving(true)
     try {
+      // Save the profile WITHOUT subscriptionActive — that field is granted
+      // only by the trusted activateProvider Cloud Function (which, in demo
+      // mode, activates immediately; in production it follows Stripe payment).
       await saveProvider(user.uid, {
         ...form,
-        email:               user.email,
-        subscriptionActive:  true,
-        subscriptionPlan:    plan,
-        subscriptionStarted: new Date().toISOString(),
-        profileViews:        0,
+        email:        user.email,
+        profileViews: 0,
       })
+      await activateProvider({ plan })
       localStorage.setItem('mf_role', 'provider')
       window.location.reload()
+    } catch (e) {
+      setActivateError('Could not activate your subscription. Please try again.')
     } finally {
       setSaving(false)
     }
@@ -355,6 +363,9 @@ export function ProviderSignup() {
             </p>
           </Card>
 
+          {activateError && (
+            <p className="text-xs text-red-500 text-center">{activateError}</p>
+          )}
           <Button className="w-full" disabled={saving} onClick={handleActivate}>
             {saving ? 'Activating…' : `Activate for R${PLANS.find(p => p.id === plan)?.price}/month`}
           </Button>

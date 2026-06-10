@@ -1,0 +1,37 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "providers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "subscriptionActive", "order": "ASCENDING" },
+        { "fieldPath": "__name__",            "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "providers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "hpcsa",              "order": "ASCENDING" },
+        { "fieldPath": "subscriptionActive", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "appointments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "providerUid", "order": "ASCENDING" },
+        { "fieldPath": "status",      "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "appointments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "patientUid", "order": "ASCENDING" },
+        { "fieldPath": "status",     "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
