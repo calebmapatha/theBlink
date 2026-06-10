@@ -9,6 +9,9 @@ import { Modal } from '../components/ui/Modal'
 import { useProviders } from '../hooks/useProviders'
 import { useAuth } from '../context/AuthContext'
 import { useApp } from '../context/AppContext'
+import { AddToCalendar } from '../components/ui/AddToCalendar'
+import { availableSlotsForDate } from '../utils/availability'
+import { submitReport } from '../hooks/useAdmin'
 
 const SPECIALTIES  = ['ADHD', 'Anxiety', 'Depression', 'OCD', 'PTSD', 'Autism Spectrum', 'Bipolar Disorder', 'Stress Management', 'Sleep Disorders', 'Trauma']
 const SA_PROVINCES = ['Gauteng', 'Western Cape', 'KwaZulu-Natal', 'Eastern Cape', 'Free State', 'Limpopo', 'Mpumalanga', 'North West', 'Northern Cape']
@@ -19,8 +22,6 @@ const DATA_TYPES = [
   { id: 'tasks',         label: 'Task completion',   emoji: '✅' },
   { id: 'treatmentPlan', label: 'Treatment plan',    emoji: '📋' },
 ]
-
-const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 
 const RATING_METRICS = [
   { key: 'communication',   label: 'Communication',   desc: 'Explains clearly & listens well' },
@@ -118,7 +119,57 @@ function StarDisplay({ value, count }) {
 
 const PLATFORM_LABELS = { zoom: 'Zoom', meet: 'Google Meet', teams: 'MS Teams', whereby: 'Whereby', skype: 'Skype', other: 'Video call' }
 
-function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked }) {
+function ReportModal({ provider, open, onClose, user }) {
+  const [reason, setReason] = useState('')
+  const [busy, setBusy]     = useState(false)
+  const [done, setDone]     = useState(false)
+  const send = async () => {
+    if (!reason.trim()) return
+    setBusy(true)
+    try {
+      await submitReport({
+        reporterUid:   user.uid,
+        reporterEmail: user.email || '',
+        providerUid:   provider.id,
+        providerName:  provider.name,
+        reason:        reason.trim(),
+      })
+      setDone(true)
+    } finally { setBusy(false) }
+  }
+  const close = () => { setReason(''); setDone(false); onClose() }
+  if (!provider) return null
+  return (
+    <Modal open={open} onClose={close} title="Report this provider">
+      {done ? (
+        <div className="text-center py-5 space-y-3">
+          <p className="text-4xl">🛡️</p>
+          <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">Report received</p>
+          <p className="text-xs text-ink-400">Our team will review it. Thank you for keeping the platform safe.</p>
+          <Button className="w-full" onClick={close}>Done</Button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <p className="text-xs text-ink-400">
+            Reporting <strong className="text-ink-700 dark:text-ink-200">{provider.name}</strong>. Your report is
+            confidential and reviewed by the platform team.
+          </p>
+          <textarea value={reason} onChange={e => setReason(e.target.value)} rows={4}
+            placeholder="What happened?"
+            className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-sm text-ink-900 dark:text-ink-100 focus:outline-none focus:ring-2 focus:ring-red-400 resize-none" />
+          <div className="flex gap-2">
+            <Button variant="ghost" className="flex-1" onClick={close}>Cancel</Button>
+            <Button className="flex-1 bg-red-500 hover:bg-red-600" disabled={!reason.trim() || busy} onClick={send}>
+              {busy ? <Loader size={13} className="animate-spin" /> : 'Submit report'}
+            </Button>
+          </div>
+        </div>
+      )}
+    </Modal>
+  )
+}
+
+function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked, onReport }) {
   if (!provider) return null
   const rating     = provider.ratingAvg
   const ratingCnt  = provider.ratingCount || 0
@@ -239,6 +290,13 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked 
             <Calendar size={13} /> Book appointment
           </Button>
         </div>
+
+        {onReport && (
+          <button onClick={() => { onClose(); onReport(provider) }}
+            className="w-full text-center text-[11px] text-ink-400 hover:text-red-500 transition-colors">
+            Report this provider
+          </button>
+        )}
       </div>
     </Modal>
   )
@@ -419,13 +477,13 @@ function RatingModal({ open, onClose, appointment, providerName, onSubmit }) {
   )
 }
 
-function BookingModal({ provider, open, onClose, bookAppointment, user, userProfile, getDiary }) {
+function BookingModal({ provider, open, onClose, bookAppointment, user, userProfile, getBookingInfo }) {
   const [date, setDate]               = useState('')
   const [timeSlot, setTimeSlot]       = useState(null)
   const [notes, setNotes]             = useState('')
   const [loading, setLoading]         = useState(false)
   const [done, setDone]               = useState(false)
-  const [diary, setDiary]             = useState({})
+  const [bookingInfo, setBookingInfo] = useState({ diary: {}, bookedSlots: {} })
   const [diaryLoading, setDiaryLoading] = useState(false)
   const [sharedTypes, setSharedTypes] = useState([])
   const [consentGiven, setConsentGiven] = useState(false)
@@ -433,20 +491,18 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
   useEffect(() => {
     if (!provider || !open) return
     setDiaryLoading(true)
-    getDiary(provider.id).then(d => {
-      setDiary(d || {})
+    getBookingInfo(provider.id).then(info => {
+      setBookingInfo(info)
       setDiaryLoading(false)
     })
   }, [provider?.id, open])
 
-  const availableSlots = useMemo(() => {
-    if (!date) return []
-    // Parse the YYYY-MM-DD as a local date explicitly (no UTC shift) so the
-    // weekday is always correct regardless of the user's timezone.
-    const [y, mo, d] = date.split('-').map(Number)
-    const dayKey = DAY_KEYS[new Date(y, mo - 1, d).getDay()]
-    return (diary[dayKey] || []).slice().sort()
-  }, [date, diary])
+  // Open-by-default: weekday default hours unless the provider customised or
+  // closed the day, minus slots already confirmed for that date.
+  const availableSlots = useMemo(
+    () => availableSlotsForDate(bookingInfo.diary, bookingInfo.bookedSlots, date),
+    [date, bookingInfo],
+  )
 
   const toggleType = (id) =>
     setSharedTypes(prev => prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id])
@@ -510,7 +566,7 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
                 <p className="text-xs text-ink-400">Loading slots…</p>
               ) : availableSlots.length === 0 ? (
                 <p className="text-xs text-ink-400 bg-surface-50 dark:bg-surface-900 px-3 py-2 rounded-xl">
-                  No slots available for this day. Try another date or contact the provider directly.
+                  No open slots for this day — it may be fully booked or the provider is unavailable. Try another date.
                 </p>
               ) : (
                 <div className="flex flex-wrap gap-2">
@@ -585,7 +641,7 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
 export function Connect() {
   const {
     providers, loading, loadMore, hasMore, bookAppointment,
-    getDiary, linkDoctor, getLinkedDoctor, unlinkDoctor,
+    getBookingInfo, linkDoctor, getLinkedDoctor, unlinkDoctor,
     searchProviderByHPCSA, getPatientAppointments,
     incrementProfileViews, submitRating, getRating,
   } = useProviders()
@@ -611,6 +667,7 @@ export function Connect() {
   const [ratedSet, setRatedSet]             = useState(new Set())
   const [ratingAppt, setRatingAppt]         = useState(null)
   const [viewingProvider, setViewingProvider] = useState(null)
+  const [reportingProvider, setReportingProvider] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -623,9 +680,9 @@ export function Connect() {
       setMyAppointments(sorted)
       setLinkLoading(false)
 
-      // Check which confirmed appointments already have a rating
-      const confirmed = sorted.filter(a => a.status === 'confirmed')
-      const checks = await Promise.all(confirmed.map(a => getRating(a.id).then(r => r ? a.id : null)))
+      // Check which held sessions already have a rating
+      const ratable = sorted.filter(a => ['confirmed', 'completed'].includes(a.status))
+      const checks = await Promise.all(ratable.map(a => getRating(a.id).then(r => r ? a.id : null)))
       setRatedSet(new Set(checks.filter(Boolean)))
     })
   }, [user])
@@ -945,11 +1002,13 @@ export function Connect() {
                           <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                             <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                               a.status === 'confirmed' ? 'bg-success-100 dark:bg-success-500/20 text-success-700 dark:text-success-400'
+                              : a.status === 'completed' ? 'bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400'
                               : a.status === 'pending' ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400'
+                              : a.status === 'no-show' ? 'bg-red-50 dark:bg-red-500/10 text-red-500'
                               : 'bg-surface-100 dark:bg-surface-700 text-ink-400'
-                            }`}>{a.status}</span>
+                            }`}>{a.status === 'no-show' ? 'missed' : a.status}</span>
 
-                            {a.status === 'confirmed' && !ratedSet.has(a.id) && (
+                            {['confirmed', 'completed'].includes(a.status) && !ratedSet.has(a.id) && (
                               <button
                                 onClick={() => setRatingAppt(a)}
                                 className="flex items-center gap-1 text-[10px] text-primary-500 hover:text-primary-600 font-medium"
@@ -964,6 +1023,13 @@ export function Connect() {
                             )}
                           </div>
                         </div>
+                        {a.status === 'confirmed' && (
+                          <AddToCalendar
+                            appt={{ ...a, meetingLink: linkedDoctor?.meetingLink }}
+                            role="patient"
+                            className="mt-2.5 pt-2.5 border-t border-surface-100 dark:border-surface-800"
+                          />
+                        )}
                       </Card>
                     ))}
                   </div>
@@ -1046,6 +1112,14 @@ export function Connect() {
         onBook={(p) => { setViewingProvider(null); handleBookClick(p) }}
         onLink={handleLink}
         linked={linkedDoctor?.id === viewingProvider?.id}
+        onReport={setReportingProvider}
+      />
+
+      <ReportModal
+        provider={reportingProvider}
+        open={!!reportingProvider}
+        onClose={() => setReportingProvider(null)}
+        user={user}
       />
 
       <BookingModal
@@ -1055,7 +1129,7 @@ export function Connect() {
         bookAppointment={bookAppointment}
         user={user}
         userProfile={userProfile}
-        getDiary={getDiary}
+        getBookingInfo={getBookingInfo}
       />
 
       <RatingModal

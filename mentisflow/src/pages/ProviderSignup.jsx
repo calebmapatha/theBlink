@@ -100,6 +100,8 @@ export function ProviderSignup() {
         email:        user.email,
         profileViews: 0,
       })
+      // activateProvider also queues the doctor for Super Admin approval
+      // (approvalStatus: 'pending') — set server-side so it can't be forged.
       await activateProvider({ plan })
       localStorage.setItem('mf_role', 'provider')
       window.location.reload()

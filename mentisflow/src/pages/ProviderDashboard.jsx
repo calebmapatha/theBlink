@@ -7,6 +7,8 @@ import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
+import { AddToCalendar } from '../components/ui/AddToCalendar'
+import { slotsForDay, dayMode, DEFAULT_HOURS } from '../utils/availability'
 
 const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400'
 
@@ -159,9 +161,11 @@ function DataSnapshot({ snapshot }) {
 const STATUS_STYLES = {
   pending:   'bg-warm-50 dark:bg-warm-500/10 text-warm-600 dark:text-warm-400',
   confirmed: 'bg-success-50 dark:bg-success-500/10 text-success-600 dark:text-success-400',
+  completed: 'bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400',
+  'no-show': 'bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400',
   cancelled: 'bg-surface-100 dark:bg-surface-700 text-ink-400',
 }
-const STATUS_LABELS = { pending: 'Pending', confirmed: 'Confirmed', cancelled: 'Declined' }
+const STATUS_LABELS = { pending: 'Pending', confirmed: 'Confirmed', completed: 'Completed', 'no-show': 'No-show', cancelled: 'Declined' }
 
 function StatusBadge({ status }) {
   return (
@@ -199,11 +203,11 @@ function MetricRow({ label, value, sub }) {
 
 function StatDetailModal({ kind, onClose, stats }) {
   if (!kind) return null
-  const { appointments, pending, confirmed, declined, patientList, profileViews,
+  const { appointments, pending, confirmed, sessions, declined, patientList, profileViews,
           uniquePatients, acceptanceRate, sessionFee } = stats
 
   const fee     = Number(sessionFee) || 0
-  const gross   = confirmed.length * fee
+  const gross   = sessions.length * fee
   const byDateDesc = (a, b) => (b.date || '').localeCompare(a.date || '')
 
   const config = {
@@ -284,7 +288,7 @@ function StatDetailModal({ kind, onClose, stats }) {
       body: (
         <div className="space-y-2">
           <MetricRow label="Gross revenue" value={`R${gross.toLocaleString()}`}
-            sub={`${confirmed.length} confirmed session${confirmed.length !== 1 ? 's' : ''} × R${fee.toLocaleString()}`} />
+            sub={`${sessions.length} session${sessions.length !== 1 ? 's' : ''} × R${fee.toLocaleString()}`} />
           <MetricRow label="Platform fee (10%)" value={`R${Math.round(gross * 0.1).toLocaleString()}`}
             sub={`R${Math.round(fee * 0.1).toLocaleString()} per session`} />
           <MetricRow label="Your earnings" value={`R${Math.round(gross * 0.9).toLocaleString()}`}
@@ -293,11 +297,11 @@ function StatDetailModal({ kind, onClose, stats }) {
             <MetricRow label="Potential (pending)" value={`R${Math.round(pending.length * fee * 0.9).toLocaleString()}`}
               sub={`${pending.length} pending request${pending.length !== 1 ? 's' : ''} if confirmed`} />
           )}
-          {confirmed.length > 0 && (
+          {sessions.length > 0 && (
             <div className="pt-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-2">Confirmed sessions</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-2">Sessions</p>
               <div className="space-y-1.5">
-                {[...confirmed].sort(byDateDesc).map((a, i) => (
+                {[...sessions].sort(byDateDesc).map((a, i) => (
                   <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl bg-surface-50 dark:bg-surface-900">
                     <div className="min-w-0">
                       <p className="text-xs text-ink-800 dark:text-ink-200 truncate">{a.patientName}</p>
@@ -449,7 +453,9 @@ function EditModal({ open, onClose, profile, onSave }) {
   )
 }
 
-function AppointmentCard({ appt, onConfirm, onDecline }) {
+function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink }) {
+  const todayStr = new Date().toISOString().split('T')[0]
+  const isPast = appt.date && appt.date < todayStr
   return (
     <Card className="p-4">
       <div className="flex items-start justify-between gap-3">
@@ -476,6 +482,13 @@ function AppointmentCard({ appt, onConfirm, onDecline }) {
             </div>
           )}
           <DataSnapshot snapshot={appt.sharedDataSnapshot} />
+          {appt.status === 'confirmed' && (
+            <AddToCalendar
+              appt={{ ...appt, meetingLink }}
+              role="provider"
+              className="mt-2.5 pt-2.5 border-t border-surface-100 dark:border-surface-800"
+            />
+          )}
         </div>
         {appt.status === 'pending' && (
           <div className="flex gap-1.5 flex-shrink-0">
@@ -489,13 +502,29 @@ function AppointmentCard({ appt, onConfirm, onDecline }) {
             </button>
           </div>
         )}
-        {appt.status === 'confirmed' && (
+        {appt.status === 'confirmed' && !isPast && (
           <span className="flex items-center gap-1 text-xs text-success-600 dark:text-success-400 font-medium flex-shrink-0">
             <CheckCircle size={13} /> Confirmed
           </span>
         )}
-        {appt.status === 'cancelled' && (
-          <span className="text-xs text-ink-400 flex-shrink-0">Declined</span>
+        {appt.status === 'confirmed' && isPast && onOutcome && (
+          // Past session not yet closed out — record the outcome for
+          // attendance analytics.
+          <div className="flex flex-col gap-1.5 flex-shrink-0">
+            <button onClick={() => onOutcome(appt.id, 'completed')}
+              className="text-[10px] font-medium px-2 py-1 rounded-lg bg-success-50 dark:bg-success-500/10 text-success-600 dark:text-success-400 hover:bg-success-100 transition-colors">
+              ✓ Completed
+            </button>
+            <button onClick={() => onOutcome(appt.id, 'no-show')}
+              className="text-[10px] font-medium px-2 py-1 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-500 hover:bg-red-100 transition-colors">
+              No-show
+            </button>
+          </div>
+        )}
+        {['completed', 'no-show', 'cancelled'].includes(appt.status) && (
+          <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md flex-shrink-0 ${STATUS_STYLES[appt.status]}`}>
+            {STATUS_LABELS[appt.status]}
+          </span>
         )}
       </div>
     </Card>
@@ -513,27 +542,51 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
     getDiary(providerUid).then(d => { setDiary(d || {}); setDiaryLoading(false) })
   }, [providerUid])
 
-  const addSlot = async () => {
-    if (!newTime) return
-    const slots = diary[selectedDay] || []
-    if (slots.includes(newTime)) return
-    const updated = { ...diary, [selectedDay]: [...slots, newTime].sort() }
+  const persist = async (updated) => {
     setSaving(true)
     setDiary(updated)
     await saveDiary(providerUid, updated)
     setSaving(false)
   }
 
+  // Adding/removing a slot on a default-hours day first materialises the
+  // defaults as a custom list, then applies the change.
+  const addSlot = async () => {
+    if (!newTime) return
+    const base = slotsForDay(diary, selectedDay)
+    if (base.includes(newTime)) return
+    await persist({ ...diary, [selectedDay]: [...base, newTime].sort() })
+  }
+
   const removeSlot = async (day, time) => {
-    const updated = { ...diary, [day]: (diary[day] || []).filter(t => t !== time) }
-    setDiary(updated)
-    await saveDiary(providerUid, updated)
+    const base = slotsForDay(diary, day)
+    await persist({ ...diary, [day]: base.filter(t => t !== time) })
+  }
+
+  const closeDay = (day) => persist({ ...diary, [day]: [] })
+
+  const resetDay = (day) => {
+    const updated = { ...diary }
+    delete updated[day]
+    return persist(updated)
   }
 
   if (diaryLoading) return <div className="h-20 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />
 
+  const MODE_BADGES = {
+    default: { label: 'Default hours', cls: 'bg-surface-100 dark:bg-surface-700 text-ink-400' },
+    custom:  { label: 'Custom',        cls: 'bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400' },
+    closed:  { label: 'Closed',        cls: 'bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400' },
+  }
+
   return (
     <div className="space-y-4">
+      <p className="text-xs text-ink-400 leading-relaxed">
+        Weekday slots ({DEFAULT_HOURS[0]}–{DEFAULT_HOURS[DEFAULT_HOURS.length - 1]}, hourly) are{' '}
+        <strong className="text-ink-600 dark:text-ink-300">open by default</strong>. Add or remove times to
+        customise a day, or close it entirely. Confirmed bookings hide their slot automatically.
+      </p>
+
       <Card className="p-4">
         <p className="text-xs font-medium text-ink-400 mb-3">Add availability slot</p>
         <div className="flex gap-2">
@@ -547,27 +600,43 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
         </div>
       </Card>
 
-      <div className="space-y-2.5">
-        {DAYS.map(({ key, label }) => (
-          <div key={key} className="flex items-start gap-3">
-            <p className="text-xs font-medium text-ink-400 w-8 flex-shrink-0 pt-1.5">{label.slice(0, 3)}</p>
-            <div className="flex-1 flex flex-wrap gap-1.5">
-              {(diary[key] || []).length === 0 ? (
-                <span className="text-xs text-ink-400 italic">—</span>
-              ) : (
-                (diary[key] || []).map(time => (
-                  <span key={time}
-                    className="flex items-center gap-1 text-xs bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400 px-2 py-1 rounded-lg">
-                    {time}
-                    <button onClick={() => removeSlot(key, time)} className="hover:text-red-500 transition-colors">
-                      <X size={9} />
-                    </button>
-                  </span>
-                ))
-              )}
+      <div className="space-y-3">
+        {DAYS.map(({ key, label }) => {
+          const mode  = dayMode(diary, key)
+          const slots = slotsForDay(diary, key)
+          const badge = MODE_BADGES[mode]
+          return (
+            <div key={key} className="rounded-xl border border-surface-100 dark:border-surface-800 p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <p className="text-xs font-semibold text-ink-700 dark:text-ink-200 flex-1">{label}</p>
+                <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${badge.cls}`}>{badge.label}</span>
+                {mode !== 'closed' && (
+                  <button onClick={() => closeDay(key)} disabled={saving}
+                    className="text-[10px] text-ink-400 hover:text-red-500 transition-colors">Close day</button>
+                )}
+                {mode !== 'default' && (
+                  <button onClick={() => resetDay(key)} disabled={saving}
+                    className="text-[10px] text-ink-400 hover:text-primary-500 transition-colors">Reset to default</button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {slots.length === 0 ? (
+                  <span className="text-xs text-ink-400 italic">No slots — patients can't book this day</span>
+                ) : (
+                  slots.map(time => (
+                    <span key={time}
+                      className="flex items-center gap-1 text-xs bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400 px-2 py-1 rounded-lg">
+                      {time}
+                      <button onClick={() => removeSlot(key, time)} disabled={saving} className="hover:text-red-500 transition-colors">
+                        <X size={9} />
+                      </button>
+                    </span>
+                  ))
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
@@ -575,7 +644,7 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
 
 export function ProviderDashboard() {
   const { user }                                                                                                    = useAuth()
-  const { getProvider, getAppointments, updateAppointment, saveProvider, getDiary, saveDiary, uploadPhoto, getProviderRatings } = useProviders()
+  const { getProvider, getAppointments, updateAppointment, confirmAppointment, saveProvider, getDiary, saveDiary, uploadPhoto, getProviderRatings } = useProviders()
   const navigate                                                                                                    = useNavigate()
   const [profile, setProfile]           = useState(null)
   const [appointments, setAppointments] = useState([])
@@ -605,7 +674,14 @@ export function ProviderDashboard() {
   }, [user])
 
   const handleAction = async (id, status) => {
-    await updateAppointment(id, { status })
+    const appt = appointments.find(a => a.id === id)
+    if (status === 'confirmed' && appt) {
+      // Also records the slot in the provider's bookedSlots map so it
+      // disappears from patients' booking views.
+      await confirmAppointment(appt)
+    } else {
+      await updateAppointment(id, { status })
+    }
     setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a))
   }
 
@@ -633,10 +709,13 @@ export function ProviderDashboard() {
 
   const pending        = appointments.filter(a => a.status === 'pending')
   const confirmed      = appointments.filter(a => a.status === 'confirmed')
+  // Revenue-bearing sessions: still-upcoming confirmed + held (completed).
+  const sessions       = appointments.filter(a => ['confirmed', 'completed'].includes(a.status))
+  const accepted       = appointments.filter(a => ['confirmed', 'completed', 'no-show'].includes(a.status))
   const declined       = appointments.filter(a => a.status === 'cancelled')
   const resolved       = appointments.filter(a => a.status !== 'pending')
   const acceptanceRate = resolved.length > 0
-    ? Math.round((confirmed.length / resolved.length) * 100)
+    ? Math.round((accepted.length / resolved.length) * 100)
     : null
   const uniquePatients = new Set(appointments.map(a => a.patientUid)).size
 
@@ -680,6 +759,25 @@ export function ProviderDashboard() {
           <Edit2 size={13} /> Edit profile
         </Button>
       </div>
+
+      {profile?.approvalStatus === 'pending' && (
+        <div className="mb-5 p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30">
+          <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-0.5">⏳ Awaiting approval</p>
+          <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 leading-relaxed">
+            Your profile is being reviewed and isn't visible to patients yet. You can set up your diary
+            and profile in the meantime — you'll go live as soon as you're approved.
+          </p>
+        </div>
+      )}
+      {profile?.suspended && (
+        <div className="mb-5 p-3.5 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30">
+          <p className="text-xs font-semibold text-red-600 dark:text-red-400 mb-0.5">🚫 Account suspended</p>
+          <p className="text-[11px] text-red-600/80 dark:text-red-400/80 leading-relaxed">
+            Your profile has been suspended and is hidden from patients.
+            {profile.suspensionReason ? ` Reason: ${profile.suspensionReason}` : ''} Contact support to resolve this.
+          </p>
+        </div>
+      )}
 
       {/* Profile card */}
       <Card className="p-4 mb-5">
@@ -760,7 +858,7 @@ export function ProviderDashboard() {
       </div>
 
       {/* Revenue estimate — tap for per-session breakdown */}
-      {confirmed.length > 0 && profile?.sessionFee && (
+      {sessions.length > 0 && profile?.sessionFee && (
         <Card role="button" tabIndex={0} onClick={() => setStatModal('revenue')}
           onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setStatModal('revenue') } }}
           className="p-4 mb-5 cursor-pointer transition-all hover:border-primary-300 dark:hover:border-primary-600 active:scale-[0.98]">
@@ -772,21 +870,21 @@ export function ProviderDashboard() {
             <div>
               <p className="text-[10px] text-ink-400 mb-0.5">Gross revenue</p>
               <p className="text-lg font-bold text-ink-900 dark:text-ink-100">
-                R{(confirmed.length * Number(profile.sessionFee)).toLocaleString()}
+                R{(sessions.length * Number(profile.sessionFee)).toLocaleString()}
               </p>
-              <p className="text-[10px] text-ink-400">{confirmed.length} session{confirmed.length !== 1 ? 's' : ''}</p>
+              <p className="text-[10px] text-ink-400">{sessions.length} session{sessions.length !== 1 ? 's' : ''}</p>
             </div>
             <div>
               <p className="text-[10px] text-ink-400 mb-0.5">Platform fee (10%)</p>
               <p className="text-lg font-bold text-amber-500">
-                R{Math.round(confirmed.length * Number(profile.sessionFee) * 0.1).toLocaleString()}
+                R{Math.round(sessions.length * Number(profile.sessionFee) * 0.1).toLocaleString()}
               </p>
               <p className="text-[10px] text-ink-400">R{Math.round(Number(profile.sessionFee) * 0.1)}/session</p>
             </div>
             <div>
               <p className="text-[10px] text-ink-400 mb-0.5">Your earnings</p>
               <p className="text-lg font-bold text-success-600 dark:text-success-400">
-                R{Math.round(confirmed.length * Number(profile.sessionFee) * 0.9).toLocaleString()}
+                R{Math.round(sessions.length * Number(profile.sessionFee) * 0.9).toLocaleString()}
               </p>
               <p className="text-[10px] text-ink-400">R{Math.round(Number(profile.sessionFee) * 0.9)}/session</p>
             </div>
@@ -881,7 +979,9 @@ export function ProviderDashboard() {
               <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">Confirmed ({confirmed.length})</p>
               <div className="space-y-3">
                 {confirmed.map(a => (
-                  <AppointmentCard key={a.id} appt={a} onConfirm={() => {}} onDecline={() => {}} />
+                  <AppointmentCard key={a.id} appt={a} onConfirm={() => {}} onDecline={() => {}}
+                    onOutcome={(id, status) => handleAction(id, status)}
+                    meetingLink={profile?.meetingLink} />
                 ))}
               </div>
             </div>
@@ -896,7 +996,7 @@ export function ProviderDashboard() {
 
       <EditModal open={editOpen} onClose={() => setEditOpen(false)} profile={profile} onSave={handleSave} />
       <StatDetailModal kind={statModal} onClose={() => setStatModal(null)}
-        stats={{ appointments, pending, confirmed, declined, patientList, profileViews, uniquePatients, acceptanceRate, sessionFee: profile?.sessionFee }} />
+        stats={{ appointments, pending, confirmed, sessions, declined, patientList, profileViews, uniquePatients, acceptanceRate, sessionFee: profile?.sessionFee }} />
     </PageWrapper>
   )
 }

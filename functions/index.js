@@ -81,13 +81,18 @@ export const activateProvider = onCall(async (request) => {
   const snap = await provRef.get()
   if (!snap.exists) throw new HttpsError('failed-precondition', 'Create your provider profile first.')
 
+  // New providers enter the Super Admin approval queue: the subscription is
+  // active, but the profile stays hidden from patients until approvalStatus
+  // is set to 'approved' by an admin. Re-activations keep their status.
+  const existingStatus = snap.data()?.approvalStatus
   await provRef.set({
     subscriptionActive:  true,
     subscriptionPlan:    plan,
     subscriptionStarted: new Date().toISOString(),
+    approvalStatus:      existingStatus || 'pending',
   }, { merge: true })
 
-  logger.info('activateProvider: activated', { uid, plan })
+  logger.info('activateProvider: activated', { uid, plan, approvalStatus: existingStatus || 'pending' })
   return { activated: true }
 })
 

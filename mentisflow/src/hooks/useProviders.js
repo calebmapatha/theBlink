@@ -24,7 +24,12 @@ export function useProviders() {
       )
       if (afterDoc) q = query(q, startAfter(afterDoc))
       const snap = await getDocs(q)
-      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      const docs = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        // Hide doctors awaiting/denied admin approval or suspended by
+        // moderation. Docs without approvalStatus predate the approval
+        // system and are grandfathered in.
+        .filter(p => !p.suspended && p.approvalStatus !== 'pending' && p.approvalStatus !== 'rejected')
       setProviders(prev => afterDoc ? [...prev, ...docs] : docs)
       setLastDoc(snap.docs[snap.docs.length - 1] ?? null)
       setHasMore(snap.docs.length === PAGE_SIZE)
@@ -58,8 +63,35 @@ export function useProviders() {
     return snap.exists() ? (snap.data().diary || {}) : {}
   }
 
+  // Diary + confirmed-booking map in one read, for the booking flow.
+  const getBookingInfo = async (providerUid) => {
+    const snap = await getDoc(doc(db, 'providers', providerUid))
+    if (!snap.exists()) return { diary: {}, bookedSlots: {} }
+    const d = snap.data()
+    return { diary: d.diary || {}, bookedSlots: d.bookedSlots || {} }
+  }
+
   const saveDiary = async (providerUid, diary) => {
     await updateDoc(doc(db, 'providers', providerUid), { diary, updatedAt: serverTimestamp() })
+  }
+
+  // Confirm an appointment and mark its slot as booked on the provider's own
+  // doc so the slot disappears from every patient's booking view. Must be
+  // called by the provider (only the owner may write their provider doc).
+  const confirmAppointment = async (appt) => {
+    await updateDoc(doc(db, 'appointments', appt.id), { status: 'confirmed' })
+    try {
+      const snap = await getDoc(doc(db, 'providers', appt.providerUid))
+      const current = snap.exists() ? (snap.data().bookedSlots || {}) : {}
+      const { addBookedSlot } = await import('../utils/availability')
+      await updateDoc(doc(db, 'providers', appt.providerUid), {
+        bookedSlots: addBookedSlot(current, appt.date, appt.timeSlot),
+      })
+    } catch (e) {
+      // The appointment is confirmed even if the slot-map write fails;
+      // the worst case is a double-request the provider can decline.
+      console.warn('bookedSlots update failed', e)
+    }
   }
 
   const bookAppointment = (data) =>
@@ -177,7 +209,7 @@ export function useProviders() {
   return {
     providers, loading, reload, loadMore, hasMore,
     getProvider, saveProvider,
-    getDiary, saveDiary,
+    getDiary, saveDiary, getBookingInfo, confirmAppointment,
     bookAppointment, getAppointments, getPatientAppointments, updateAppointment,
     linkDoctor, getLinkedDoctor, unlinkDoctor, searchProviderByHPCSA,
     incrementProfileViews,

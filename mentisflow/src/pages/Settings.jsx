@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { User, Moon, Sun, LogOut, Trash2, Check, ChevronRight, Bell, BellOff, RotateCcw, Camera, Loader, Database, Send } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { User, Moon, Sun, LogOut, Trash2, Check, ChevronRight, Bell, BellOff, RotateCcw, Camera, Loader, Database, Send, Shield } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -242,6 +243,7 @@ function RemindersSection({ notifications }) {
 export function Settings() {
   const { theme, userProfile, userId, notifications } = useApp()
   const { user, signOut }    = useAuth()
+  const navigate             = useNavigate()
   const { uploadPhoto, getPatientProfile } = useProviders()
   const [profileOpen, setProfileOpen] = useState(false)
   const [resetOpen, setResetOpen]     = useState(false)
@@ -340,6 +342,7 @@ export function Settings() {
 
       {user?.email === 'calebmapatha@gmail.com' && (
         <Section title="Admin">
+          <SettingsRow icon={Shield} label="Open Admin Portal" onClick={() => navigate('/admin')} />
           <div className="px-4 py-3.5 space-y-2">
             <div className="flex items-center gap-3">
               <Database size={17} className="text-ink-400" />
