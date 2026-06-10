@@ -621,9 +621,9 @@ export function Connect() {
       setMyAppointments(sorted)
       setLinkLoading(false)
 
-      // Check which confirmed appointments already have a rating
-      const confirmed = sorted.filter(a => a.status === 'confirmed')
-      const checks = await Promise.all(confirmed.map(a => getRating(a.id).then(r => r ? a.id : null)))
+      // Check which held sessions already have a rating
+      const ratable = sorted.filter(a => ['confirmed', 'completed'].includes(a.status))
+      const checks = await Promise.all(ratable.map(a => getRating(a.id).then(r => r ? a.id : null)))
       setRatedSet(new Set(checks.filter(Boolean)))
     })
   }, [user])
@@ -943,11 +943,13 @@ export function Connect() {
                           <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                             <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                               a.status === 'confirmed' ? 'bg-success-100 dark:bg-success-500/20 text-success-700 dark:text-success-400'
+                              : a.status === 'completed' ? 'bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400'
                               : a.status === 'pending' ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400'
+                              : a.status === 'no-show' ? 'bg-red-50 dark:bg-red-500/10 text-red-500'
                               : 'bg-surface-100 dark:bg-surface-700 text-ink-400'
-                            }`}>{a.status}</span>
+                            }`}>{a.status === 'no-show' ? 'missed' : a.status}</span>
 
-                            {a.status === 'confirmed' && !ratedSet.has(a.id) && (
+                            {['confirmed', 'completed'].includes(a.status) && !ratedSet.has(a.id) && (
                               <button
                                 onClick={() => setRatingAppt(a)}
                                 className="flex items-center gap-1 text-[10px] text-primary-500 hover:text-primary-600 font-medium"

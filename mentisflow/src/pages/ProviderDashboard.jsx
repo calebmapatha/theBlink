@@ -161,9 +161,11 @@ function DataSnapshot({ snapshot }) {
 const STATUS_STYLES = {
   pending:   'bg-warm-50 dark:bg-warm-500/10 text-warm-600 dark:text-warm-400',
   confirmed: 'bg-success-50 dark:bg-success-500/10 text-success-600 dark:text-success-400',
+  completed: 'bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400',
+  'no-show': 'bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400',
   cancelled: 'bg-surface-100 dark:bg-surface-700 text-ink-400',
 }
-const STATUS_LABELS = { pending: 'Pending', confirmed: 'Confirmed', cancelled: 'Declined' }
+const STATUS_LABELS = { pending: 'Pending', confirmed: 'Confirmed', completed: 'Completed', 'no-show': 'No-show', cancelled: 'Declined' }
 
 function StatusBadge({ status }) {
   return (
@@ -201,11 +203,11 @@ function MetricRow({ label, value, sub }) {
 
 function StatDetailModal({ kind, onClose, stats }) {
   if (!kind) return null
-  const { appointments, pending, confirmed, declined, patientList, profileViews,
+  const { appointments, pending, confirmed, sessions, declined, patientList, profileViews,
           uniquePatients, acceptanceRate, sessionFee } = stats
 
   const fee     = Number(sessionFee) || 0
-  const gross   = confirmed.length * fee
+  const gross   = sessions.length * fee
   const byDateDesc = (a, b) => (b.date || '').localeCompare(a.date || '')
 
   const config = {
@@ -286,7 +288,7 @@ function StatDetailModal({ kind, onClose, stats }) {
       body: (
         <div className="space-y-2">
           <MetricRow label="Gross revenue" value={`R${gross.toLocaleString()}`}
-            sub={`${confirmed.length} confirmed session${confirmed.length !== 1 ? 's' : ''} × R${fee.toLocaleString()}`} />
+            sub={`${sessions.length} session${sessions.length !== 1 ? 's' : ''} × R${fee.toLocaleString()}`} />
           <MetricRow label="Platform fee (10%)" value={`R${Math.round(gross * 0.1).toLocaleString()}`}
             sub={`R${Math.round(fee * 0.1).toLocaleString()} per session`} />
           <MetricRow label="Your earnings" value={`R${Math.round(gross * 0.9).toLocaleString()}`}
@@ -295,11 +297,11 @@ function StatDetailModal({ kind, onClose, stats }) {
             <MetricRow label="Potential (pending)" value={`R${Math.round(pending.length * fee * 0.9).toLocaleString()}`}
               sub={`${pending.length} pending request${pending.length !== 1 ? 's' : ''} if confirmed`} />
           )}
-          {confirmed.length > 0 && (
+          {sessions.length > 0 && (
             <div className="pt-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-2">Confirmed sessions</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-2">Sessions</p>
               <div className="space-y-1.5">
-                {[...confirmed].sort(byDateDesc).map((a, i) => (
+                {[...sessions].sort(byDateDesc).map((a, i) => (
                   <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl bg-surface-50 dark:bg-surface-900">
                     <div className="min-w-0">
                       <p className="text-xs text-ink-800 dark:text-ink-200 truncate">{a.patientName}</p>
@@ -451,7 +453,9 @@ function EditModal({ open, onClose, profile, onSave }) {
   )
 }
 
-function AppointmentCard({ appt, onConfirm, onDecline, meetingLink }) {
+function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink }) {
+  const todayStr = new Date().toISOString().split('T')[0]
+  const isPast = appt.date && appt.date < todayStr
   return (
     <Card className="p-4">
       <div className="flex items-start justify-between gap-3">
@@ -498,13 +502,29 @@ function AppointmentCard({ appt, onConfirm, onDecline, meetingLink }) {
             </button>
           </div>
         )}
-        {appt.status === 'confirmed' && (
+        {appt.status === 'confirmed' && !isPast && (
           <span className="flex items-center gap-1 text-xs text-success-600 dark:text-success-400 font-medium flex-shrink-0">
             <CheckCircle size={13} /> Confirmed
           </span>
         )}
-        {appt.status === 'cancelled' && (
-          <span className="text-xs text-ink-400 flex-shrink-0">Declined</span>
+        {appt.status === 'confirmed' && isPast && onOutcome && (
+          // Past session not yet closed out — record the outcome for
+          // attendance analytics.
+          <div className="flex flex-col gap-1.5 flex-shrink-0">
+            <button onClick={() => onOutcome(appt.id, 'completed')}
+              className="text-[10px] font-medium px-2 py-1 rounded-lg bg-success-50 dark:bg-success-500/10 text-success-600 dark:text-success-400 hover:bg-success-100 transition-colors">
+              ✓ Completed
+            </button>
+            <button onClick={() => onOutcome(appt.id, 'no-show')}
+              className="text-[10px] font-medium px-2 py-1 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-500 hover:bg-red-100 transition-colors">
+              No-show
+            </button>
+          </div>
+        )}
+        {['completed', 'no-show', 'cancelled'].includes(appt.status) && (
+          <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md flex-shrink-0 ${STATUS_STYLES[appt.status]}`}>
+            {STATUS_LABELS[appt.status]}
+          </span>
         )}
       </div>
     </Card>
@@ -689,10 +709,13 @@ export function ProviderDashboard() {
 
   const pending        = appointments.filter(a => a.status === 'pending')
   const confirmed      = appointments.filter(a => a.status === 'confirmed')
+  // Revenue-bearing sessions: still-upcoming confirmed + held (completed).
+  const sessions       = appointments.filter(a => ['confirmed', 'completed'].includes(a.status))
+  const accepted       = appointments.filter(a => ['confirmed', 'completed', 'no-show'].includes(a.status))
   const declined       = appointments.filter(a => a.status === 'cancelled')
   const resolved       = appointments.filter(a => a.status !== 'pending')
   const acceptanceRate = resolved.length > 0
-    ? Math.round((confirmed.length / resolved.length) * 100)
+    ? Math.round((accepted.length / resolved.length) * 100)
     : null
   const uniquePatients = new Set(appointments.map(a => a.patientUid)).size
 
@@ -816,7 +839,7 @@ export function ProviderDashboard() {
       </div>
 
       {/* Revenue estimate — tap for per-session breakdown */}
-      {confirmed.length > 0 && profile?.sessionFee && (
+      {sessions.length > 0 && profile?.sessionFee && (
         <Card role="button" tabIndex={0} onClick={() => setStatModal('revenue')}
           onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setStatModal('revenue') } }}
           className="p-4 mb-5 cursor-pointer transition-all hover:border-primary-300 dark:hover:border-primary-600 active:scale-[0.98]">
@@ -828,21 +851,21 @@ export function ProviderDashboard() {
             <div>
               <p className="text-[10px] text-ink-400 mb-0.5">Gross revenue</p>
               <p className="text-lg font-bold text-ink-900 dark:text-ink-100">
-                R{(confirmed.length * Number(profile.sessionFee)).toLocaleString()}
+                R{(sessions.length * Number(profile.sessionFee)).toLocaleString()}
               </p>
-              <p className="text-[10px] text-ink-400">{confirmed.length} session{confirmed.length !== 1 ? 's' : ''}</p>
+              <p className="text-[10px] text-ink-400">{sessions.length} session{sessions.length !== 1 ? 's' : ''}</p>
             </div>
             <div>
               <p className="text-[10px] text-ink-400 mb-0.5">Platform fee (10%)</p>
               <p className="text-lg font-bold text-amber-500">
-                R{Math.round(confirmed.length * Number(profile.sessionFee) * 0.1).toLocaleString()}
+                R{Math.round(sessions.length * Number(profile.sessionFee) * 0.1).toLocaleString()}
               </p>
               <p className="text-[10px] text-ink-400">R{Math.round(Number(profile.sessionFee) * 0.1)}/session</p>
             </div>
             <div>
               <p className="text-[10px] text-ink-400 mb-0.5">Your earnings</p>
               <p className="text-lg font-bold text-success-600 dark:text-success-400">
-                R{Math.round(confirmed.length * Number(profile.sessionFee) * 0.9).toLocaleString()}
+                R{Math.round(sessions.length * Number(profile.sessionFee) * 0.9).toLocaleString()}
               </p>
               <p className="text-[10px] text-ink-400">R{Math.round(Number(profile.sessionFee) * 0.9)}/session</p>
             </div>
@@ -938,6 +961,7 @@ export function ProviderDashboard() {
               <div className="space-y-3">
                 {confirmed.map(a => (
                   <AppointmentCard key={a.id} appt={a} onConfirm={() => {}} onDecline={() => {}}
+                    onOutcome={(id, status) => handleAction(id, status)}
                     meetingLink={profile?.meetingLink} />
                 ))}
               </div>
@@ -953,7 +977,7 @@ export function ProviderDashboard() {
 
       <EditModal open={editOpen} onClose={() => setEditOpen(false)} profile={profile} onSave={handleSave} />
       <StatDetailModal kind={statModal} onClose={() => setStatModal(null)}
-        stats={{ appointments, pending, confirmed, declined, patientList, profileViews, uniquePatients, acceptanceRate, sessionFee: profile?.sessionFee }} />
+        stats={{ appointments, pending, confirmed, sessions, declined, patientList, profileViews, uniquePatients, acceptanceRate, sessionFee: profile?.sessionFee }} />
     </PageWrapper>
   )
 }

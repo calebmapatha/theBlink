@@ -20,6 +20,7 @@ import { Connect } from './pages/Connect'
 import { TreatmentPlan } from './pages/TreatmentPlan'
 import { ProviderSignup } from './pages/ProviderSignup'
 import { ProviderDashboard } from './pages/ProviderDashboard'
+import { ProviderAnalytics } from './pages/ProviderAnalytics'
 import { Login } from './pages/Login'
 import { Privacy } from './pages/Privacy'
 import { useApp } from './context/AppContext'
@@ -60,6 +61,7 @@ function AppShell({ isProvider }) {
               <>
                 <Route path="/"                   element={<ProviderDashboard />} />
                 <Route path="/provider/dashboard" element={<ProviderDashboard />} />
+                <Route path="/provider/analytics" element={<ProviderAnalytics />} />
                 <Route path="/settings"           element={<Settings />} />
                 <Route path="*"                   element={<Navigate to="/" replace />} />
               </>

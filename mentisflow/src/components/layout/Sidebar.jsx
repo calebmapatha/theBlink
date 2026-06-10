@@ -25,8 +25,9 @@ const SETTINGS_NAV = [
 ]
 
 const PROVIDER_NAV = [
-  { to: '/',         icon: LayoutDashboard, label: 'Dashboard', end: true },
-  { to: '/settings', icon: Settings,        label: 'Settings' },
+  { to: '/',                   icon: LayoutDashboard, label: 'Dashboard', end: true },
+  { to: '/provider/analytics', icon: BarChart2,       label: 'Analytics' },
+  { to: '/settings',           icon: Settings,        label: 'Settings' },
 ]
 
 const PATIENT_MOBILE_NAV = [
@@ -47,8 +48,9 @@ const PATIENT_MORE_NAV = [
 ]
 
 const PROVIDER_MOBILE_NAV = [
-  { to: '/',         icon: LayoutDashboard, label: 'Dashboard', end: true },
-  { to: '/settings', icon: Settings,        label: 'Settings' },
+  { to: '/',                   icon: LayoutDashboard, label: 'Dashboard', end: true },
+  { to: '/provider/analytics', icon: BarChart2,       label: 'Analytics' },
+  { to: '/settings',           icon: Settings,        label: 'Settings' },
 ]
 
 function NavItem({ to, icon: Icon, label, end }) {
