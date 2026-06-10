@@ -4,32 +4,70 @@
       "collectionGroup": "providers",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "subscriptionActive", "order": "ASCENDING" },
-        { "fieldPath": "__name__",            "order": "ASCENDING" }
+        {
+          "fieldPath": "subscriptionActive",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "providers",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "hpcsa",              "order": "ASCENDING" },
-        { "fieldPath": "subscriptionActive", "order": "ASCENDING" }
+        {
+          "fieldPath": "hpcsa",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "subscriptionActive",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "providers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "subscriptionStatus",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "trialEndsAt",
+          "order": "ASCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "appointments",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "providerUid", "order": "ASCENDING" },
-        { "fieldPath": "status",      "order": "ASCENDING" }
+        {
+          "fieldPath": "providerUid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "appointments",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "patientUid", "order": "ASCENDING" },
-        { "fieldPath": "status",     "order": "ASCENDING" }
+        {
+          "fieldPath": "patientUid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        }
       ]
     }
   ],

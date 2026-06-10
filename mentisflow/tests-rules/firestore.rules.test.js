@@ -95,6 +95,8 @@ describe('providers', () => {
     await assertFails(setDoc(doc(provider(), 'providers/provider1'), { name: 'Dr X', subscriptionActive: true }))
     await assertFails(setDoc(doc(provider(), 'providers/provider1'), { name: 'Dr X', ratingAvg: { overall: 5 } }))
     await assertFails(setDoc(doc(provider(), 'providers/provider1'), { name: 'Dr X', approvalStatus: 'approved' }))
+    await assertFails(setDoc(doc(provider(), 'providers/provider1'), { name: 'Dr X', subscriptionStatus: 'active' }))
+    await assertFails(setDoc(doc(provider(), 'providers/provider1'), { name: 'Dr X', trialEndsAt: '2099-01-01T00:00:00Z' }))
   })
 
   it('owner cannot approve, un-suspend or activate themselves via update', async () => {
@@ -103,6 +105,17 @@ describe('providers', () => {
     await assertFails(updateDoc(doc(provider(), 'providers/provider1'), { suspended: false }))
     await assertFails(updateDoc(doc(provider(), 'providers/provider1'), { subscriptionActive: true }))
     await assertSucceeds(updateDoc(doc(provider(), 'providers/provider1'), { bio: 'hello' }))
+  })
+
+  it('owner cannot extend, reset or fake their trial/subscription state', async () => {
+    await seed('providers/provider1', {
+      name: 'Dr X', subscriptionActive: true, subscriptionStatus: 'trialing',
+      trialUsed: true, trialEndsAt: '2026-07-10T00:00:00Z',
+    })
+    await assertFails(updateDoc(doc(provider(), 'providers/provider1'), { trialEndsAt: '2099-01-01T00:00:00Z' }))
+    await assertFails(updateDoc(doc(provider(), 'providers/provider1'), { trialUsed: false }))
+    await assertFails(updateDoc(doc(provider(), 'providers/provider1'), { subscriptionStatus: 'active' }))
+    await assertFails(updateDoc(doc(provider(), 'providers/provider1'), { subscriptionPlan: 'featured' }))
   })
 
   it('anyone signed in may bump profileViews by exactly one — nothing else', async () => {

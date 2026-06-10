@@ -85,7 +85,8 @@ export function kpis(appts, windowKey, fee, now = new Date()) {
   const cur  = appts.filter(a => inRange(a, start, end))
   const prev = appts.filter(a => inRange(a, prevStart, start))
   const sessions  = (list) => list.filter(isSession).length
-  const earnings  = (list) => Math.round(sessions(list) * fee * 0.9)
+  // No per-session commission — doctors keep 100% of their session fee.
+  const earnings  = (list) => Math.round(sessions(list) * fee)
   const delta = (c, p) => p > 0 ? Math.round(((c - p) / p) * 100) : (c > 0 ? 100 : 0)
   return {
     requests:       { value: cur.length,        delta: delta(cur.length, prev.length) },

@@ -64,7 +64,7 @@ describe('series', () => {
 })
 
 describe('kpis', () => {
-  it('computes requests, sessions and 90% earnings with deltas', () => {
+  it('computes requests, sessions and full-fee earnings with deltas', () => {
     const appts = [
       appt({ date: '2026-06-09' }),                       // current window, session
       appt({ date: '2026-06-09', status: 'pending' }),    // current window, not a session
@@ -73,8 +73,8 @@ describe('kpis', () => {
     const k = kpis(appts, '7d', 1000, NOW)
     expect(k.requests.value).toBe(2)
     expect(k.sessions.value).toBe(1)
-    expect(k.earnings.value).toBe(900) // 1 session × 1000 × 0.9
-    expect(k.sessions.delta).toBe(0)   // 1 vs 1
+    expect(k.earnings.value).toBe(1000) // 1 session × 1000 — no commission
+    expect(k.sessions.delta).toBe(0)    // 1 vs 1
   })
 
   it('delta is 100 when previous window is empty but current is not', () => {

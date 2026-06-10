@@ -13,9 +13,17 @@ service cloud.firestore {
     }
 
     // Keys on a provider doc that only trusted code may write:
-    //  - subscriptionActive / rating aggregates: Cloud Functions + admin
+    //  - subscription/trial state + rating aggregates: Cloud Functions + admin
+    //    (a doctor must not grant themselves a subscription or reset a trial)
     //  - approvalStatus / suspended: Super Admin moderation only
     //    (a provider must never approve or un-suspend themselves)
+    function touchesProviderTrustedKeys(keys) {
+      return keys.hasAny([
+        'subscriptionActive', 'subscriptionStatus', 'subscriptionPlan', 'subscriptionStarted',
+        'trialUsed', 'trialStarted', 'trialEndsAt',
+        'ratingCount', 'ratingAvg', 'suspended'
+      ]);
+    }
 
     // Providers: any authed user can read ACTIVE profiles (or their own).
     // Admin can read everything for moderation.
@@ -26,14 +34,15 @@ service cloud.firestore {
       allow create: if isSignedIn() && (
         isAdmin() ||
         (request.auth.uid == uid &&
-          !request.resource.data.keys().hasAny(['subscriptionActive', 'ratingCount', 'ratingAvg', 'suspended']) &&
+          !touchesProviderTrustedKeys(request.resource.data.keys()) &&
           (!('approvalStatus' in request.resource.data) || request.resource.data.approvalStatus == 'pending'))
       );
 
       allow update: if isSignedIn() && (
         isAdmin() ||
         (request.auth.uid == uid &&
-          !changedKeys().hasAny(['ratingCount', 'ratingAvg', 'subscriptionActive', 'approvalStatus', 'suspended'])) ||
+          !touchesProviderTrustedKeys(changedKeys()) &&
+          !changedKeys().hasAny(['approvalStatus'])) ||
         // Any signed-in user may bump the view counter — but only by exactly
         // one, so it can't be reset or inflated arbitrarily.
         (changedKeys().hasOnly(['profileViews']) &&

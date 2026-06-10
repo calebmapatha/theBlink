@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
 import { AddToCalendar } from '../components/ui/AddToCalendar'
 import { slotsForDay, dayMode, DEFAULT_HOURS } from '../utils/availability'
+import { trialDaysLeft } from '../utils/pricing'
 
 const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400'
 
@@ -287,14 +288,10 @@ function StatDetailModal({ kind, onClose, stats }) {
       title: 'Revenue breakdown',
       body: (
         <div className="space-y-2">
-          <MetricRow label="Gross revenue" value={`R${gross.toLocaleString()}`}
-            sub={`${sessions.length} session${sessions.length !== 1 ? 's' : ''} × R${fee.toLocaleString()}`} />
-          <MetricRow label="Platform fee (10%)" value={`R${Math.round(gross * 0.1).toLocaleString()}`}
-            sub={`R${Math.round(fee * 0.1).toLocaleString()} per session`} />
-          <MetricRow label="Your earnings" value={`R${Math.round(gross * 0.9).toLocaleString()}`}
-            sub={`R${Math.round(fee * 0.9).toLocaleString()} per session`} />
+          <MetricRow label="Your earnings" value={`R${gross.toLocaleString()}`}
+            sub={`${sessions.length} session${sessions.length !== 1 ? 's' : ''} × R${fee.toLocaleString()} — no commission, you keep 100%`} />
           {pending.length > 0 && (
-            <MetricRow label="Potential (pending)" value={`R${Math.round(pending.length * fee * 0.9).toLocaleString()}`}
+            <MetricRow label="Potential (pending)" value={`R${Math.round(pending.length * fee).toLocaleString()}`}
               sub={`${pending.length} pending request${pending.length !== 1 ? 's' : ''} if confirmed`} />
           )}
           {sessions.length > 0 && (
@@ -308,7 +305,7 @@ function StatDetailModal({ kind, onClose, stats }) {
                       <p className="text-[10px] text-ink-400">{a.date} · {a.timeSlot}</p>
                     </div>
                     <p className="text-xs font-semibold text-success-600 dark:text-success-400 flex-shrink-0">
-                      +R{Math.round(fee * 0.9).toLocaleString()}
+                      +R{fee.toLocaleString()}
                     </p>
                   </div>
                 ))}
@@ -732,6 +729,12 @@ export function ProviderDashboard() {
   const profileViews   = profile?.profileViews || 0
   const planLabel      = profile?.subscriptionPlan === 'featured' ? '⭐ Featured' : '✓ Standard'
   const platformLabel  = PLATFORMS.find(p => p.value === profile?.meetingPlatform)?.label || null
+  const trialing       = profile?.subscriptionStatus === 'trialing'
+  const trialDays      = trialing ? trialDaysLeft(profile?.trialEndsAt) : 0
+  const subInactive    = profile && profile.subscriptionActive === false
+  const statusLabel    = trialing
+    ? `Free trial · ${trialDays} day${trialDays === 1 ? '' : 's'} left`
+    : subInactive ? `${planLabel} plan · Inactive` : `${planLabel} plan · Active`
 
   // Prefer live-computed average from loaded ratings if available; fall back to stored aggregate
   const ratingCount = ratings.length || (profile?.ratingCount || 0)
@@ -753,13 +756,35 @@ export function ProviderDashboard() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-ink-900 dark:text-ink-100">Provider Dashboard</h1>
-          <p className="text-sm text-ink-400 mt-0.5">{planLabel} plan · Active</p>
+          <p className="text-sm text-ink-400 mt-0.5">{statusLabel}</p>
         </div>
         <Button variant="soft" size="sm" onClick={() => setEditOpen(true)}>
           <Edit2 size={13} /> Edit profile
         </Button>
       </div>
 
+      {subInactive && (
+        <div className="mb-5 p-3.5 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30">
+          <p className="text-xs font-semibold text-red-600 dark:text-red-400 mb-0.5">Your subscription is inactive</p>
+          <p className="text-[11px] text-red-600/80 dark:text-red-400/80 leading-relaxed mb-2">
+            {profile?.subscriptionStatus === 'trial_expired'
+              ? 'Your free trial has ended — your profile is hidden from patients until you choose a plan. Your data and reviews are safe.'
+              : 'Your profile is hidden from patients until you reactivate your plan.'}
+          </p>
+          <Button size="sm" onClick={() => navigate('/provider/signup')}>Choose a plan</Button>
+        </div>
+      )}
+      {trialing && trialDays <= 7 && (
+        <div className="mb-5 p-3.5 rounded-2xl bg-primary-50 dark:bg-primary-700/15 border border-primary-200 dark:border-primary-600/40">
+          <p className="text-xs font-semibold text-primary-700 dark:text-primary-300 mb-0.5">
+            ⏳ {trialDays === 0 ? 'Your free trial ends today' : `${trialDays} day${trialDays === 1 ? '' : 's'} left in your free trial`}
+          </p>
+          <p className="text-[11px] text-primary-700/80 dark:text-primary-300/80 leading-relaxed mb-2">
+            Pick a plan now to keep your profile visible to patients without interruption.
+          </p>
+          <Button size="sm" variant="soft" onClick={() => navigate('/provider/signup')}>Choose a plan</Button>
+        </div>
+      )}
       {profile?.approvalStatus === 'pending' && (
         <div className="mb-5 p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30">
           <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-0.5">⏳ Awaiting approval</p>
@@ -870,25 +895,23 @@ export function ProviderDashboard() {
           </div>
           <div className="grid grid-cols-3 gap-3 text-center">
             <div>
-              <p className="text-[10px] text-ink-400 mb-0.5">Gross revenue</p>
-              <p className="text-lg font-bold text-ink-900 dark:text-ink-100">
-                R{(sessions.length * Number(profile.sessionFee)).toLocaleString()}
-              </p>
-              <p className="text-[10px] text-ink-400">{sessions.length} session{sessions.length !== 1 ? 's' : ''}</p>
+              <p className="text-[10px] text-ink-400 mb-0.5">Sessions</p>
+              <p className="text-lg font-bold text-ink-900 dark:text-ink-100">{sessions.length}</p>
+              <p className="text-[10px] text-ink-400">confirmed + completed</p>
             </div>
             <div>
-              <p className="text-[10px] text-ink-400 mb-0.5">Platform fee (10%)</p>
-              <p className="text-lg font-bold text-amber-500">
-                R{Math.round(sessions.length * Number(profile.sessionFee) * 0.1).toLocaleString()}
+              <p className="text-[10px] text-ink-400 mb-0.5">Per session</p>
+              <p className="text-lg font-bold text-ink-900 dark:text-ink-100">
+                R{Number(profile.sessionFee).toLocaleString()}
               </p>
-              <p className="text-[10px] text-ink-400">R{Math.round(Number(profile.sessionFee) * 0.1)}/session</p>
+              <p className="text-[10px] text-ink-400">no commission</p>
             </div>
             <div>
               <p className="text-[10px] text-ink-400 mb-0.5">Your earnings</p>
               <p className="text-lg font-bold text-success-600 dark:text-success-400">
-                R{Math.round(sessions.length * Number(profile.sessionFee) * 0.9).toLocaleString()}
+                R{(sessions.length * Number(profile.sessionFee)).toLocaleString()}
               </p>
-              <p className="text-[10px] text-ink-400">R{Math.round(Number(profile.sessionFee) * 0.9)}/session</p>
+              <p className="text-[10px] text-ink-400">you keep 100%</p>
             </div>
           </div>
         </Card>
