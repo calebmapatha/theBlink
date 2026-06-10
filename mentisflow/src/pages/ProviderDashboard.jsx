@@ -156,6 +156,204 @@ function DataSnapshot({ snapshot }) {
   )
 }
 
+const STATUS_STYLES = {
+  pending:   'bg-warm-50 dark:bg-warm-500/10 text-warm-600 dark:text-warm-400',
+  confirmed: 'bg-success-50 dark:bg-success-500/10 text-success-600 dark:text-success-400',
+  cancelled: 'bg-surface-100 dark:bg-surface-700 text-ink-400',
+}
+const STATUS_LABELS = { pending: 'Pending', confirmed: 'Confirmed', cancelled: 'Declined' }
+
+function StatusBadge({ status }) {
+  return (
+    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md flex-shrink-0 ${STATUS_STYLES[status] || STATUS_STYLES.cancelled}`}>
+      {STATUS_LABELS[status] || status}
+    </span>
+  )
+}
+
+function ApptRow({ appt }) {
+  return (
+    <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-surface-50 dark:bg-surface-900">
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-medium text-ink-900 dark:text-ink-100 truncate">{appt.patientName}</p>
+        <p className="text-[10px] text-ink-400 flex items-center gap-1 mt-0.5">
+          <Calendar size={9} className="flex-shrink-0" /> {appt.date} · {appt.timeSlot}
+        </p>
+      </div>
+      <StatusBadge status={appt.status} />
+    </div>
+  )
+}
+
+function MetricRow({ label, value, sub }) {
+  return (
+    <div className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-surface-50 dark:bg-surface-900">
+      <div>
+        <p className="text-xs font-medium text-ink-800 dark:text-ink-200">{label}</p>
+        {sub && <p className="text-[10px] text-ink-400 mt-0.5">{sub}</p>}
+      </div>
+      <p className="text-sm font-bold text-ink-900 dark:text-ink-100 flex-shrink-0">{value}</p>
+    </div>
+  )
+}
+
+function StatDetailModal({ kind, onClose, stats }) {
+  if (!kind) return null
+  const { appointments, pending, confirmed, declined, patientList, profileViews,
+          uniquePatients, acceptanceRate, sessionFee } = stats
+
+  const fee     = Number(sessionFee) || 0
+  const gross   = confirmed.length * fee
+  const byDateDesc = (a, b) => (b.date || '').localeCompare(a.date || '')
+
+  const config = {
+    views: {
+      title: 'Profile views',
+      body: (
+        <div className="space-y-2">
+          <MetricRow label="Total profile views" value={profileViews}
+            sub="Counted each time a patient opens your full profile on Connect" />
+          <MetricRow label="Booking requests" value={appointments.length}
+            sub="Appointments requested from your profile" />
+          <MetricRow label="View → booking conversion"
+            value={profileViews > 0 ? `${Math.round((appointments.length / profileViews) * 100)}%` : '—'}
+            sub="Share of profile views that turned into a booking" />
+          <MetricRow label="Unique patients reached" value={uniquePatients} />
+          <p className="text-[11px] text-ink-400 leading-relaxed pt-1">
+            💡 A complete bio, profile photo, and up-to-date diary slots help convert views into bookings.
+          </p>
+        </div>
+      ),
+    },
+    patients: {
+      title: `Unique patients (${patientList.length})`,
+      body: patientList.length === 0 ? (
+        <p className="text-sm text-ink-400 text-center py-6">No patients yet. Your profile is live on Connect.</p>
+      ) : (
+        <div className="space-y-2">
+          {patientList.map((p, i) => (
+            <div key={i} className="px-3 py-2.5 rounded-xl bg-surface-50 dark:bg-surface-900">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs font-medium text-ink-900 dark:text-ink-100 truncate">{p.name}</p>
+                <p className="text-[10px] text-ink-400 flex-shrink-0">
+                  {p.total} booking{p.total !== 1 ? 's' : ''}
+                </p>
+              </div>
+              <p className="text-[10px] text-ink-400 truncate">{p.email}</p>
+              <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                {p.confirmed > 0 && <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${STATUS_STYLES.confirmed}`}>{p.confirmed} confirmed</span>}
+                {p.pending > 0 && <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${STATUS_STYLES.pending}`}>{p.pending} pending</span>}
+                {p.cancelled > 0 && <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${STATUS_STYLES.cancelled}`}>{p.cancelled} declined</span>}
+                {p.lastDate && <span className="text-[10px] text-ink-400 ml-auto">Last: {p.lastDate}</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    acceptRate: {
+      title: 'Accept rate',
+      body: (
+        <div className="space-y-2">
+          <MetricRow label="Accept rate"
+            value={acceptanceRate !== null ? `${acceptanceRate}%` : '—'}
+            sub="Confirmed out of all responded requests (pending excluded)" />
+          <MetricRow label="Confirmed" value={confirmed.length} />
+          <MetricRow label="Declined" value={declined.length} />
+          <MetricRow label="Awaiting your response" value={pending.length} />
+          {(confirmed.length + declined.length) > 0 && (
+            <div className="pt-1">
+              <div className="h-2 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden flex">
+                <div className="h-full bg-success-500" style={{ width: `${acceptanceRate}%` }} />
+                <div className="h-full bg-surface-300 dark:bg-surface-600 flex-1" />
+              </div>
+              <div className="flex justify-between mt-1">
+                <span className="text-[10px] text-success-600 dark:text-success-400">Confirmed {acceptanceRate}%</span>
+                <span className="text-[10px] text-ink-400">Declined {100 - acceptanceRate}%</span>
+              </div>
+            </div>
+          )}
+          <p className="text-[11px] text-ink-400 leading-relaxed pt-1">
+            💡 Responding quickly to pending requests — even declining — keeps patients informed and your profile trustworthy.
+          </p>
+        </div>
+      ),
+    },
+    revenue: {
+      title: 'Revenue breakdown',
+      body: (
+        <div className="space-y-2">
+          <MetricRow label="Gross revenue" value={`R${gross.toLocaleString()}`}
+            sub={`${confirmed.length} confirmed session${confirmed.length !== 1 ? 's' : ''} × R${fee.toLocaleString()}`} />
+          <MetricRow label="Platform fee (10%)" value={`R${Math.round(gross * 0.1).toLocaleString()}`}
+            sub={`R${Math.round(fee * 0.1).toLocaleString()} per session`} />
+          <MetricRow label="Your earnings" value={`R${Math.round(gross * 0.9).toLocaleString()}`}
+            sub={`R${Math.round(fee * 0.9).toLocaleString()} per session`} />
+          {pending.length > 0 && (
+            <MetricRow label="Potential (pending)" value={`R${Math.round(pending.length * fee * 0.9).toLocaleString()}`}
+              sub={`${pending.length} pending request${pending.length !== 1 ? 's' : ''} if confirmed`} />
+          )}
+          {confirmed.length > 0 && (
+            <div className="pt-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-2">Confirmed sessions</p>
+              <div className="space-y-1.5">
+                {[...confirmed].sort(byDateDesc).map((a, i) => (
+                  <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl bg-surface-50 dark:bg-surface-900">
+                    <div className="min-w-0">
+                      <p className="text-xs text-ink-800 dark:text-ink-200 truncate">{a.patientName}</p>
+                      <p className="text-[10px] text-ink-400">{a.date} · {a.timeSlot}</p>
+                    </div>
+                    <p className="text-xs font-semibold text-success-600 dark:text-success-400 flex-shrink-0">
+                      +R{Math.round(fee * 0.9).toLocaleString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          <p className="text-[11px] text-ink-400 leading-relaxed pt-1">
+            Estimate only — based on your current session fee and confirmed bookings. Payments are settled directly between you and the patient.
+          </p>
+        </div>
+      ),
+    },
+    pending: {
+      title: `Pending requests (${pending.length})`,
+      body: pending.length === 0 ? (
+        <p className="text-sm text-ink-400 text-center py-6">No pending requests. You're all caught up. 🎉</p>
+      ) : (
+        <div className="space-y-2">{[...pending].sort(byDateDesc).map((a, i) => <ApptRow key={i} appt={a} />)}</div>
+      ),
+    },
+    confirmedList: {
+      title: `Confirmed appointments (${confirmed.length})`,
+      body: confirmed.length === 0 ? (
+        <p className="text-sm text-ink-400 text-center py-6">No confirmed appointments yet.</p>
+      ) : (
+        <div className="space-y-2">{[...confirmed].sort(byDateDesc).map((a, i) => <ApptRow key={i} appt={a} />)}</div>
+      ),
+    },
+    total: {
+      title: `All appointments (${appointments.length})`,
+      body: appointments.length === 0 ? (
+        <p className="text-sm text-ink-400 text-center py-6">No appointment requests yet.</p>
+      ) : (
+        <div className="space-y-2">
+          {[...appointments].sort(byDateDesc).map((a, i) => <ApptRow key={i} appt={a} />)}
+        </div>
+      ),
+    },
+  }
+
+  const { title, body } = config[kind] || {}
+  if (!title) return null
+  return (
+    <Modal open onClose={onClose} title={title}>
+      {body}
+    </Modal>
+  )
+}
+
 const DAYS = [
   { key: 'mon', label: 'Monday' },
   { key: 'tue', label: 'Tuesday' },
@@ -384,6 +582,7 @@ export function ProviderDashboard() {
   const [ratings, setRatings]           = useState([])
   const [loading, setLoading]           = useState(true)
   const [editOpen, setEditOpen]         = useState(false)
+  const [statModal, setStatModal]       = useState(null)
   const [photoUploading, setPhotoUploading] = useState(false)
   const fileRef                         = useRef()
 
@@ -434,11 +633,23 @@ export function ProviderDashboard() {
 
   const pending        = appointments.filter(a => a.status === 'pending')
   const confirmed      = appointments.filter(a => a.status === 'confirmed')
+  const declined       = appointments.filter(a => a.status === 'cancelled')
   const resolved       = appointments.filter(a => a.status !== 'pending')
   const acceptanceRate = resolved.length > 0
     ? Math.round((confirmed.length / resolved.length) * 100)
     : null
   const uniquePatients = new Set(appointments.map(a => a.patientUid)).size
+
+  // Group appointments per patient for the "Unique patients" detail view
+  const patientList = Object.values(appointments.reduce((map, a) => {
+    const key = a.patientUid || a.patientEmail
+    if (!map[key]) map[key] = { name: a.patientName, email: a.patientEmail, total: 0, pending: 0, confirmed: 0, cancelled: 0, lastDate: '' }
+    const p = map[key]
+    p.total++
+    p[a.status] = (p[a.status] || 0) + 1
+    if ((a.date || '') > p.lastDate) p.lastDate = a.date
+    return map
+  }, {})).sort((a, b) => b.total - a.total)
   const profileViews   = profile?.profileViews || 0
   const planLabel      = profile?.subscriptionPlan === 'featured' ? '⭐ Featured' : '✓ Standard'
   const platformLabel  = PLATFORMS.find(p => p.value === profile?.meetingPlatform)?.label || null
@@ -531,31 +742,32 @@ export function ProviderDashboard() {
         </div>
       </Card>
 
-      {/* Activity stats */}
+      {/* Activity stats — tap any card for a detailed breakdown */}
       <div className="grid grid-cols-3 gap-3 mb-5">
-        <Card className="p-3 text-center">
-          <Eye size={17} className="text-primary-500 mx-auto mb-1" />
-          <p className="text-xl font-bold text-ink-900 dark:text-ink-100">{profileViews}</p>
-          <p className="text-xs text-ink-400">Profile views</p>
-        </Card>
-        <Card className="p-3 text-center">
-          <Users size={17} className="text-success-500 mx-auto mb-1" />
-          <p className="text-xl font-bold text-ink-900 dark:text-ink-100">{uniquePatients}</p>
-          <p className="text-xs text-ink-400">Unique patients</p>
-        </Card>
-        <Card className="p-3 text-center">
-          <TrendingUp size={17} className="text-warm-500 mx-auto mb-1" />
-          <p className="text-xl font-bold text-ink-900 dark:text-ink-100">
-            {acceptanceRate !== null ? `${acceptanceRate}%` : '—'}
-          </p>
-          <p className="text-xs text-ink-400">Accept rate</p>
-        </Card>
+        {[
+          { kind: 'views',      icon: Eye,        color: 'text-primary-500', value: profileViews, label: 'Profile views' },
+          { kind: 'patients',   icon: Users,      color: 'text-success-500', value: uniquePatients, label: 'Unique patients' },
+          { kind: 'acceptRate', icon: TrendingUp, color: 'text-warm-500',    value: acceptanceRate !== null ? `${acceptanceRate}%` : '—', label: 'Accept rate' },
+        ].map(({ kind, icon: Icon, color, value, label }) => (
+          <Card key={kind} role="button" tabIndex={0} onClick={() => setStatModal(kind)}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setStatModal(kind) } }}
+            className="p-3 text-center cursor-pointer transition-all hover:border-primary-300 dark:hover:border-primary-600 active:scale-95">
+            <Icon size={17} className={`${color} mx-auto mb-1`} />
+            <p className="text-xl font-bold text-ink-900 dark:text-ink-100">{value}</p>
+            <p className="text-xs text-ink-400">{label}</p>
+          </Card>
+        ))}
       </div>
 
-      {/* Revenue estimate */}
+      {/* Revenue estimate — tap for per-session breakdown */}
       {confirmed.length > 0 && profile?.sessionFee && (
-        <Card className="p-4 mb-5">
-          <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">Revenue estimate</p>
+        <Card role="button" tabIndex={0} onClick={() => setStatModal('revenue')}
+          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setStatModal('revenue') } }}
+          className="p-4 mb-5 cursor-pointer transition-all hover:border-primary-300 dark:hover:border-primary-600 active:scale-[0.98]">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">Revenue estimate</p>
+            <span className="text-[10px] text-primary-500 font-medium">Tap for breakdown</span>
+          </div>
           <div className="grid grid-cols-3 gap-3 text-center">
             <div>
               <p className="text-[10px] text-ink-400 mb-0.5">Gross revenue</p>
@@ -630,11 +842,13 @@ export function ProviderDashboard() {
 
       <div className="grid grid-cols-3 gap-3 mb-6">
         {[
-          { label: 'Pending',   value: pending.length,      icon: Clock,       color: 'text-warm-500' },
-          { label: 'Confirmed', value: confirmed.length,    icon: CheckCircle, color: 'text-success-500' },
-          { label: 'Total',     value: appointments.length, icon: Users,       color: 'text-primary-500' },
-        ].map(({ label, value, icon: Icon, color }) => (
-          <Card key={label} className="p-3 text-center">
+          { kind: 'pending',       label: 'Pending',   value: pending.length,      icon: Clock,       color: 'text-warm-500' },
+          { kind: 'confirmedList', label: 'Confirmed', value: confirmed.length,    icon: CheckCircle, color: 'text-success-500' },
+          { kind: 'total',         label: 'Total',     value: appointments.length, icon: Users,       color: 'text-primary-500' },
+        ].map(({ kind, label, value, icon: Icon, color }) => (
+          <Card key={label} role="button" tabIndex={0} onClick={() => setStatModal(kind)}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setStatModal(kind) } }}
+            className="p-3 text-center cursor-pointer transition-all hover:border-primary-300 dark:hover:border-primary-600 active:scale-95">
             <Icon size={17} className={`${color} mx-auto mb-1`} />
             <p className="text-xl font-bold text-ink-900 dark:text-ink-100">{value}</p>
             <p className="text-xs text-ink-400">{label}</p>
@@ -681,6 +895,8 @@ export function ProviderDashboard() {
       </div>
 
       <EditModal open={editOpen} onClose={() => setEditOpen(false)} profile={profile} onSave={handleSave} />
+      <StatDetailModal kind={statModal} onClose={() => setStatModal(null)}
+        stats={{ appointments, pending, confirmed, declined, patientList, profileViews, uniquePatients, acceptanceRate, sessionFee: profile?.sessionFee }} />
     </PageWrapper>
   )
 }
