@@ -760,6 +760,25 @@ export function ProviderDashboard() {
         </Button>
       </div>
 
+      {profile?.approvalStatus === 'pending' && (
+        <div className="mb-5 p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30">
+          <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-0.5">⏳ Awaiting approval</p>
+          <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 leading-relaxed">
+            Your profile is being reviewed and isn't visible to patients yet. You can set up your diary
+            and profile in the meantime — you'll go live as soon as you're approved.
+          </p>
+        </div>
+      )}
+      {profile?.suspended && (
+        <div className="mb-5 p-3.5 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30">
+          <p className="text-xs font-semibold text-red-600 dark:text-red-400 mb-0.5">🚫 Account suspended</p>
+          <p className="text-[11px] text-red-600/80 dark:text-red-400/80 leading-relaxed">
+            Your profile has been suspended and is hidden from patients.
+            {profile.suspensionReason ? ` Reason: ${profile.suspensionReason}` : ''} Contact support to resolve this.
+          </p>
+        </div>
+      )}
+
       {/* Profile card */}
       <Card className="p-4 mb-5">
         <div className="flex items-center gap-3">

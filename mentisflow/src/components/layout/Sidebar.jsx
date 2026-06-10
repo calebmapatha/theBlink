@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Home, Timer, CheckSquare, Brain, Repeat, Sun, Trophy, Moon, Zap, LogOut, BarChart2, Settings, HeartHandshake, LayoutDashboard, ClipboardList, MoreHorizontal, X } from 'lucide-react'
+import { Home, Timer, CheckSquare, Brain, Repeat, Sun, Trophy, Moon, Zap, LogOut, BarChart2, Settings, HeartHandshake, LayoutDashboard, ClipboardList, MoreHorizontal, X, Shield } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { useAuth } from '../../context/AuthContext'
+import { isAdminUser } from '../../utils/admin'
 
 const CONNECT_NAV = [
   { to: '/connect',   icon: HeartHandshake, label: 'Connect' },
@@ -120,6 +121,7 @@ export function Sidebar({ isProvider }) {
 
               <div className="pt-1">
                 {SETTINGS_NAV.map(item => <NavItem key={item.to} {...item} />)}
+                {isAdminUser(user) && <NavItem to="/admin" icon={Shield} label="Admin Portal" />}
               </div>
             </div>
           )}

@@ -8,37 +8,32 @@ service cloud.firestore {
     function isAdmin() {
       return request.auth != null && request.auth.token.email == 'calebmapatha@gmail.com';
     }
-    // Keys that hold aggregate rating / view counters on a provider doc.
-    // These must never be writable directly by the provider (anti-fraud),
-    // and are the ONLY keys a non-owner (a patient submitting a rating /
-    // recording a view) may touch.
     function changedKeys() {
       return request.resource.data.diff(resource.data).affectedKeys();
     }
 
+    // Keys on a provider doc that only trusted code may write:
+    //  - subscriptionActive / rating aggregates: Cloud Functions + admin
+    //  - approvalStatus / suspended: Super Admin moderation only
+    //    (a provider must never approve or un-suspend themselves)
+
     // Providers: any authed user can read ACTIVE profiles (or their own).
+    // Admin can read everything for moderation.
     match /providers/{uid} {
       allow read: if isSignedIn() &&
-        (resource == null || resource.data.subscriptionActive == true || request.auth.uid == uid);
+        (isAdmin() || resource == null || resource.data.subscriptionActive == true || request.auth.uid == uid);
 
-      // Owner (or admin) may create their profile. Only admins may set
-      // subscriptionActive on create — for everyone else it is granted
-      // exclusively by trusted server code (activateProvider / Stripe webhook).
       allow create: if isSignedIn() && (
         isAdmin() ||
         (request.auth.uid == uid &&
-          !request.resource.data.keys().hasAny(['subscriptionActive', 'ratingCount', 'ratingAvg']))
+          !request.resource.data.keys().hasAny(['subscriptionActive', 'ratingCount', 'ratingAvg', 'suspended']) &&
+          (!('approvalStatus' in request.resource.data) || request.resource.data.approvalStatus == 'pending'))
       );
 
       allow update: if isSignedIn() && (
-        // Admin (seeding / moderation) — unrestricted.
         isAdmin() ||
-        // Owner editing their own profile, but NOT the rating aggregates or
-        // subscription state (those are owned by Cloud Functions / Admin SDK).
         (request.auth.uid == uid &&
-          !changedKeys().hasAny(['ratingCount', 'ratingAvg', 'subscriptionActive'])) ||
-        // Anyone else may only bump the profile-view counter (not fraud-
-        // sensitive). Rating aggregates are written server-side only.
+          !changedKeys().hasAny(['ratingCount', 'ratingAvg', 'subscriptionActive', 'approvalStatus', 'suspended'])) ||
         changedKeys().hasOnly(['profileViews'])
       );
 
@@ -46,34 +41,39 @@ service cloud.firestore {
     }
 
     // Appointments: created by the patient; readable/updatable by either party.
-    // Patients may delete their own appointments (right to erasure of the
-    // medical snapshot embedded in the doc).
+    // Admin may read for platform analytics and dispute handling.
     match /appointments/{id} {
       allow create: if isSignedIn() &&
         request.resource.data.patientUid == request.auth.uid;
-      allow read, update: if isSignedIn() && (
+      allow read: if isSignedIn() && (
+        isAdmin() ||
         request.auth.uid == resource.data.patientUid ||
         request.auth.uid == resource.data.providerUid
       );
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.patientUid;
+      allow update: if isSignedIn() && (
+        request.auth.uid == resource.data.patientUid ||
+        request.auth.uid == resource.data.providerUid
+      );
+      allow delete: if isSignedIn() && (request.auth.uid == resource.data.patientUid || isAdmin());
     }
 
-    // Patients: readable by the patient themselves and by their linked doctor
-    // only. Writable/deletable only by the patient.
+    // Patients: readable by the patient themselves, their linked doctor, and
+    // admin (account management). Writable/deletable by the patient or admin.
     match /patients/{uid} {
       allow read: if isSignedIn() && (
+        isAdmin() ||
         request.auth.uid == uid ||
         (resource != null && resource.data.linkedDoctorUid == request.auth.uid)
       );
-      allow write:  if isSignedIn() && request.auth.uid == uid;
-      allow delete: if isSignedIn() && request.auth.uid == uid;
+      allow write:  if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      allow delete: if isSignedIn() && (request.auth.uid == uid || isAdmin());
     }
 
-    // Ratings: readable only by the patient who wrote it or the rated provider.
-    // Public-facing scores are exposed via the provider doc's aggregate fields,
-    // so individual ratings never need to be world-readable. Immutable once made.
+    // Ratings: readable only by the patient who wrote it, the rated provider,
+    // or admin. Immutable once made.
     match /ratings/{appointmentId} {
       allow read: if isSignedIn() && (
+        isAdmin() ||
         request.auth.uid == resource.data.patientUid ||
         request.auth.uid == resource.data.providerId
       );
@@ -82,10 +82,37 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // User app data (habits, tasks, brain dump, treatment plan, etc.) —
-    // synced across devices, strictly owner-only.
+    // User app data — strictly owner-only.
     match /users/{uid}/data/{key} {
       allow read, write: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Reports: any signed-in user may report a provider/user; only admin can
+    // read, resolve, or delete reports.
+    match /reports/{id} {
+      allow create: if isSignedIn() &&
+        request.resource.data.reporterUid == request.auth.uid;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Announcements: written by admin, readable by everyone signed in.
+    match /announcements/{id} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Admin audit log: append-only by admin, readable by admin.
+    match /adminLogs/{id} {
+      allow create: if isAdmin();
+      allow read: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // Platform configuration / feature flags: world-readable (signed in),
+    // admin-writable.
+    match /config/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
     }
 
     // Default deny everything else.

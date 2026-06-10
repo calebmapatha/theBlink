@@ -21,6 +21,8 @@ import { TreatmentPlan } from './pages/TreatmentPlan'
 import { ProviderSignup } from './pages/ProviderSignup'
 import { ProviderDashboard } from './pages/ProviderDashboard'
 import { ProviderAnalytics } from './pages/ProviderAnalytics'
+import { AdminPortal } from './pages/AdminPortal'
+import { fetchLatestAnnouncement } from './hooks/useAdmin'
 import { Login } from './pages/Login'
 import { Privacy } from './pages/Privacy'
 import { useApp } from './context/AppContext'
@@ -31,12 +33,28 @@ function AppShell({ isProvider }) {
   const navigate  = useNavigate()
   const { toast } = useApp()
   const [syncError, setSyncError] = useState(false)
+  const [announcement, setAnnouncement] = useState(null)
 
   useEffect(() => {
     if (!isProvider && localStorage.getItem('mf_role') === 'provider') {
       navigate('/provider/signup', { replace: true })
     }
   }, [isProvider])
+
+  // Platform announcements published from the Super Admin portal.
+  useEffect(() => {
+    fetchLatestAnnouncement(isProvider ? 'provider' : 'patient').then(a => {
+      if (!a) return
+      const dismissed = JSON.parse(localStorage.getItem('mf_dismissed_announcements') || '[]')
+      if (!dismissed.includes(a.id)) setAnnouncement(a)
+    })
+  }, [isProvider])
+
+  const dismissAnnouncement = () => {
+    const dismissed = JSON.parse(localStorage.getItem('mf_dismissed_announcements') || '[]')
+    localStorage.setItem('mf_dismissed_announcements', JSON.stringify([...dismissed, announcement.id].slice(-20)))
+    setAnnouncement(null)
+  }
 
   // Warn the user if a Firestore sync ultimately fails, so data loss is visible.
   useEffect(() => {
@@ -53,6 +71,12 @@ function AppShell({ isProvider }) {
           <button onClick={() => setSyncError(false)} className="underline flex-shrink-0">Dismiss</button>
         </div>
       )}
+      {announcement && !syncError && (
+        <div className="fixed top-0 inset-x-0 z-50 bg-primary-600 text-white text-xs px-4 py-2 flex items-center justify-center gap-3">
+          <span><strong>{announcement.title}</strong> — {announcement.body}</span>
+          <button onClick={dismissAnnouncement} className="underline flex-shrink-0">Dismiss</button>
+        </div>
+      )}
       <Sidebar isProvider={isProvider} />
       <main className="flex-1 min-w-0 h-full pb-16 md:pb-0 overflow-y-auto">
         <AnimatePresence mode="wait">
@@ -63,6 +87,7 @@ function AppShell({ isProvider }) {
                 <Route path="/provider/dashboard" element={<ProviderDashboard />} />
                 <Route path="/provider/analytics" element={<ProviderAnalytics />} />
                 <Route path="/settings"           element={<Settings />} />
+                <Route path="/admin"              element={<AdminPortal />} />
                 <Route path="*"                   element={<Navigate to="/" replace />} />
               </>
             ) : (
@@ -79,6 +104,7 @@ function AppShell({ isProvider }) {
                 <Route path="/rewards"            element={<Rewards />} />
                 <Route path="/settings"           element={<Settings />} />
                 <Route path="/provider/signup"    element={<ProviderSignup />} />
+                <Route path="/admin"              element={<AdminPortal />} />
                 <Route path="*"                   element={<Navigate to="/" replace />} />
               </>
             )}

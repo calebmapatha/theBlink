@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext'
 import { useApp } from '../context/AppContext'
 import { AddToCalendar } from '../components/ui/AddToCalendar'
 import { availableSlotsForDate } from '../utils/availability'
+import { submitReport } from '../hooks/useAdmin'
 
 const SPECIALTIES  = ['ADHD', 'Anxiety', 'Depression', 'OCD', 'PTSD', 'Autism Spectrum', 'Bipolar Disorder', 'Stress Management', 'Sleep Disorders', 'Trauma']
 const SA_PROVINCES = ['Gauteng', 'Western Cape', 'KwaZulu-Natal', 'Eastern Cape', 'Free State', 'Limpopo', 'Mpumalanga', 'North West', 'Northern Cape']
@@ -118,7 +119,57 @@ function StarDisplay({ value, count }) {
 
 const PLATFORM_LABELS = { zoom: 'Zoom', meet: 'Google Meet', teams: 'MS Teams', whereby: 'Whereby', skype: 'Skype', other: 'Video call' }
 
-function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked }) {
+function ReportModal({ provider, open, onClose, user }) {
+  const [reason, setReason] = useState('')
+  const [busy, setBusy]     = useState(false)
+  const [done, setDone]     = useState(false)
+  const send = async () => {
+    if (!reason.trim()) return
+    setBusy(true)
+    try {
+      await submitReport({
+        reporterUid:   user.uid,
+        reporterEmail: user.email || '',
+        providerUid:   provider.id,
+        providerName:  provider.name,
+        reason:        reason.trim(),
+      })
+      setDone(true)
+    } finally { setBusy(false) }
+  }
+  const close = () => { setReason(''); setDone(false); onClose() }
+  if (!provider) return null
+  return (
+    <Modal open={open} onClose={close} title="Report this provider">
+      {done ? (
+        <div className="text-center py-5 space-y-3">
+          <p className="text-4xl">🛡️</p>
+          <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">Report received</p>
+          <p className="text-xs text-ink-400">Our team will review it. Thank you for keeping the platform safe.</p>
+          <Button className="w-full" onClick={close}>Done</Button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <p className="text-xs text-ink-400">
+            Reporting <strong className="text-ink-700 dark:text-ink-200">{provider.name}</strong>. Your report is
+            confidential and reviewed by the platform team.
+          </p>
+          <textarea value={reason} onChange={e => setReason(e.target.value)} rows={4}
+            placeholder="What happened?"
+            className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-sm text-ink-900 dark:text-ink-100 focus:outline-none focus:ring-2 focus:ring-red-400 resize-none" />
+          <div className="flex gap-2">
+            <Button variant="ghost" className="flex-1" onClick={close}>Cancel</Button>
+            <Button className="flex-1 bg-red-500 hover:bg-red-600" disabled={!reason.trim() || busy} onClick={send}>
+              {busy ? <Loader size={13} className="animate-spin" /> : 'Submit report'}
+            </Button>
+          </div>
+        </div>
+      )}
+    </Modal>
+  )
+}
+
+function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked, onReport }) {
   if (!provider) return null
   const rating     = provider.ratingAvg
   const ratingCnt  = provider.ratingCount || 0
@@ -239,6 +290,13 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked 
             <Calendar size={13} /> Book appointment
           </Button>
         </div>
+
+        {onReport && (
+          <button onClick={() => { onClose(); onReport(provider) }}
+            className="w-full text-center text-[11px] text-ink-400 hover:text-red-500 transition-colors">
+            Report this provider
+          </button>
+        )}
       </div>
     </Modal>
   )
@@ -609,6 +667,7 @@ export function Connect() {
   const [ratedSet, setRatedSet]             = useState(new Set())
   const [ratingAppt, setRatingAppt]         = useState(null)
   const [viewingProvider, setViewingProvider] = useState(null)
+  const [reportingProvider, setReportingProvider] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -1053,6 +1112,14 @@ export function Connect() {
         onBook={(p) => { setViewingProvider(null); handleBookClick(p) }}
         onLink={handleLink}
         linked={linkedDoctor?.id === viewingProvider?.id}
+        onReport={setReportingProvider}
+      />
+
+      <ReportModal
+        provider={reportingProvider}
+        open={!!reportingProvider}
+        onClose={() => setReportingProvider(null)}
+        user={user}
       />
 
       <BookingModal

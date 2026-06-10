@@ -24,7 +24,12 @@ export function useProviders() {
       )
       if (afterDoc) q = query(q, startAfter(afterDoc))
       const snap = await getDocs(q)
-      const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      const docs = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        // Hide doctors awaiting/denied admin approval or suspended by
+        // moderation. Docs without approvalStatus predate the approval
+        // system and are grandfathered in.
+        .filter(p => !p.suspended && p.approvalStatus !== 'pending' && p.approvalStatus !== 'rejected')
       setProviders(prev => afterDoc ? [...prev, ...docs] : docs)
       setLastDoc(snap.docs[snap.docs.length - 1] ?? null)
       setHasMore(snap.docs.length === PAGE_SIZE)
