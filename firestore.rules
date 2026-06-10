@@ -34,7 +34,10 @@ service cloud.firestore {
         isAdmin() ||
         (request.auth.uid == uid &&
           !changedKeys().hasAny(['ratingCount', 'ratingAvg', 'subscriptionActive', 'approvalStatus', 'suspended'])) ||
-        changedKeys().hasOnly(['profileViews'])
+        // Any signed-in user may bump the view counter — but only by exactly
+        // one, so it can't be reset or inflated arbitrarily.
+        (changedKeys().hasOnly(['profileViews']) &&
+          request.resource.data.profileViews == resource.data.get('profileViews', 0) + 1)
       );
 
       allow delete: if isSignedIn() && (request.auth.uid == uid || isAdmin());
@@ -74,7 +77,12 @@ service cloud.firestore {
       allow update: if isSignedIn() && (
         request.auth.uid == resource.data.patientUid ||
         request.auth.uid == resource.data.providerUid
-      );
+      ) &&
+        // Neither party may reassign the appointment to someone else (which
+        // would leak the embedded health snapshot) or forge its creation time.
+        !changedKeys().hasAny(['patientUid', 'providerUid', 'createdAt']) &&
+        (!changedKeys().hasAny(['status']) ||
+          request.resource.data.status in ['pending', 'confirmed', 'completed', 'no-show', 'cancelled']);
       allow delete: if isSignedIn() && (request.auth.uid == resource.data.patientUid || isAdmin());
     }
 
@@ -92,14 +100,38 @@ service cloud.firestore {
 
     // Ratings: readable only by the patient who wrote it, the rated provider,
     // or admin. Immutable once made.
+    //
+    // A rating may only be created by the patient of the appointment it is
+    // keyed on, for that appointment's provider, once the session was actually
+    // booked (confirmed/completed), and every score must be 1–5. Without these
+    // checks any signed-in user could mass-forge ratings with unbounded values
+    // and destroy (or inflate) any provider's aggregates.
     match /ratings/{appointmentId} {
+      function appt() {
+        return get(/databases/$(database)/documents/appointments/$(appointmentId)).data;
+      }
+      function validScore(key) {
+        return request.resource.data[key] is number &&
+               request.resource.data[key] >= 1 &&
+               request.resource.data[key] <= 5;
+      }
+
       allow read: if isSignedIn() && (
         isAdmin() ||
         request.auth.uid == resource.data.patientUid ||
         request.auth.uid == resource.data.providerId
       );
       allow create: if isSignedIn() &&
-        request.resource.data.patientUid == request.auth.uid;
+        request.resource.data.patientUid == request.auth.uid &&
+        exists(/databases/$(database)/documents/appointments/$(appointmentId)) &&
+        appt().patientUid == request.auth.uid &&
+        appt().providerUid == request.resource.data.providerId &&
+        appt().status in ['confirmed', 'completed'] &&
+        validScore('communication') && validScore('empathy') &&
+        validScore('professionalism') && validScore('treatmentPlan') &&
+        validScore('overall') &&
+        (!('comment' in request.resource.data) ||
+          (request.resource.data.comment is string && request.resource.data.comment.size() <= 2000));
       allow update, delete: if false;
     }
 

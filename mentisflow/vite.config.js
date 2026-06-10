@@ -35,4 +35,8 @@ export default defineConfig({
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },
   },
+  test: {
+    // tests-rules/ needs the Firestore emulator — run via `npm run test:rules`.
+    exclude: ['node_modules/**', 'dist/**', 'tests-rules/**'],
+  },
 })
