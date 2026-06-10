@@ -2,6 +2,28 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 
+// Persist a value to Firestore with retry + backoff. Health data must not be
+// silently lost on a transient network failure. On final failure we log and
+// emit a window event so the UI can warn the user (see App-level listener).
+async function persistWithRetry(ref, value, key, attempts = 3) {
+  for (let i = 0; i < attempts; i++) {
+    try {
+      await setDoc(ref, { value }, { merge: false })
+      return true
+    } catch (err) {
+      if (i === attempts - 1) {
+        console.error(`Sync failed for "${key}" after ${attempts} attempts`, err)
+        try {
+          window.dispatchEvent(new CustomEvent('mf-sync-error', { detail: { key } }))
+        } catch { /* non-browser env */ }
+        return false
+      }
+      await new Promise(r => setTimeout(r, 500 * 2 ** i)) // 500ms, 1s, 2s
+    }
+  }
+  return false
+}
+
 // Plain localStorage hook — used only for non-user-scoped data (theme, notifications)
 export function useLocalStorage(key, initialValue) {
   const [storedValue, setStoredValue] = useState(() => {
@@ -57,11 +79,11 @@ export function useUserLocalStorage(userId, key, initialValue) {
           const raw = window.localStorage.getItem(storageKey)
           if (raw) {
             const parsed = JSON.parse(raw)
-            setDoc(ref, { value: parsed }, { merge: false }).catch(() => {})
+            persistWithRetry(ref, parsed, key)
           }
         } catch {}
       }
-    }).catch(() => {})
+    }).catch(err => console.warn(`Hydrate failed for "${key}"`, err))
   }, [userId, key, storageKey])
 
   const setValue = useCallback((value) => {
@@ -69,7 +91,7 @@ export function useUserLocalStorage(userId, key, initialValue) {
       const v = typeof value === 'function' ? value(prev) : value
       try { window.localStorage.setItem(storageKey, JSON.stringify(v)) } catch {}
       if (userId) {
-        setDoc(doc(db, 'users', userId, 'data', key), { value: v }, { merge: false }).catch(() => {})
+        persistWithRetry(doc(db, 'users', userId, 'data', key), v, key)
       }
       return v
     })

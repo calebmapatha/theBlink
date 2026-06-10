@@ -25,7 +25,9 @@ export function useNotifications() {
     const now = new Date()
     const target = new Date()
     target.setHours(h, m, 0, 0)
-    if (target <= now) return null
+    // If the time has already passed today, schedule for the same time tomorrow
+    // rather than silently dropping the reminder.
+    if (target <= now) target.setDate(target.getDate() + 1)
     return setTimeout(() => notify(title, body), target - now)
   }, [notify])
 

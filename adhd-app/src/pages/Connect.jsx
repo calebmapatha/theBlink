@@ -31,6 +31,10 @@ const RATING_METRICS = [
 ]
 
 function buildDataSnapshot(uid, types) {
+  // Guard: only ever read the authenticated user's own data. The caller must
+  // pass the current user's uid; bail otherwise so we never read another
+  // account's locally-cached health data.
+  if (!uid) return {}
   const last30 = Array.from({ length: 30 }, (_, i) => {
     const d = new Date(); d.setDate(d.getDate() - i)
     return d.toISOString().split('T')[0]
@@ -437,7 +441,10 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
 
   const availableSlots = useMemo(() => {
     if (!date) return []
-    const dayKey = DAY_KEYS[new Date(date + 'T12:00:00').getDay()]
+    // Parse the YYYY-MM-DD as a local date explicitly (no UTC shift) so the
+    // weekday is always correct regardless of the user's timezone.
+    const [y, mo, d] = date.split('-').map(Number)
+    const dayKey = DAY_KEYS[new Date(y, mo - 1, d).getDay()]
     return (diary[dayKey] || []).slice().sort()
   }, [date, diary])
 

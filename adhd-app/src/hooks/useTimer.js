@@ -65,6 +65,11 @@ export function useTimer(onSessionComplete) {
   const intervalRef = useRef(null)
   const onCompleteRef = useRef(onSessionComplete)
   onCompleteRef.current = onSessionComplete
+  // Keep the latest settings in a ref so the completion effect reads current
+  // values without depending on the settings object's identity (which would
+  // let the effect re-run at the wrong moment).
+  const settingsRef = useRef(settings)
+  settingsRef.current = settings
 
   useEffect(() => {
     if (timerState.status === 'running') {
@@ -80,9 +85,9 @@ export function useTimer(onSessionComplete) {
   useEffect(() => {
     if (timerState.status === 'running' && timerState.secondsLeft === 0) {
       if (timerState.mode === 'work') onCompleteRef.current?.()
-      dispatch({ type: 'COMPLETE', settings })
+      dispatch({ type: 'COMPLETE', settings: settingsRef.current })
     }
-  }, [timerState.secondsLeft, timerState.status, timerState.mode, settings])
+  }, [timerState.secondsLeft, timerState.status, timerState.mode])
 
   const start = useCallback(() => dispatch({ type: 'START' }), [])
   const pause = useCallback(() => dispatch({ type: 'PAUSE' }), [])
