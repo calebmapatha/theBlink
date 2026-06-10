@@ -131,7 +131,14 @@ export function useProviders() {
 
   const searchProviderByHPCSA = async (hpcsa) => {
     try {
-      const snap = await getDocs(query(collection(db, 'providers'), where('hpcsa', '==', hpcsa)))
+      // The subscriptionActive filter is required for the query to be provable
+      // against firestore.rules (non-admins may only read active profiles);
+      // without it Firestore rejects the whole query.
+      const snap = await getDocs(query(
+        collection(db, 'providers'),
+        where('hpcsa', '==', hpcsa),
+        where('subscriptionActive', '==', true),
+      ))
       if (snap.empty) return null
       const d = snap.docs[0]
       return { id: d.id, ...d.data() }
