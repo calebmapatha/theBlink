@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { User, Moon, Sun, LogOut, Trash2, Check, ChevronRight, Bell, BellOff, RotateCcw, Camera, Loader, Database } from 'lucide-react'
+import { User, Moon, Sun, LogOut, Trash2, Check, ChevronRight, Bell, BellOff, RotateCcw, Camera, Loader, Database, Send } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -160,41 +160,78 @@ function ClearDataModal({ open, onClose, onConfirm }) {
   )
 }
 
-function ReminderRow({ label, pref, onToggle, onTimeChange }) {
+function ReminderRow({ label, pref, onToggle, onTimeChange, onTest }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3.5">
       <span className="flex-1 text-sm font-medium text-ink-900 dark:text-ink-100">{label}</span>
       <input type="time" value={pref.time} onChange={e => onTimeChange(e.target.value)} disabled={!pref.enabled}
         className="text-sm text-ink-700 dark:text-ink-300 bg-transparent border border-surface-200 dark:border-surface-700 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary-400 disabled:opacity-40" />
+      {pref.enabled && (
+        <button onClick={onTest} title="Send test notification"
+          className="p-1.5 rounded-lg text-ink-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors flex-shrink-0">
+          <Send size={14} />
+        </button>
+      )}
+      {/* Toggle — overflow-hidden clips the nub so it never bleeds past the track */}
       <button onClick={onToggle} aria-pressed={pref.enabled}
-        className={`relative w-10 h-5 rounded-full transition-colors flex-shrink-0 ${pref.enabled ? 'bg-primary-500' : 'bg-surface-300 dark:bg-surface-600'}`}>
-        <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${pref.enabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
+        className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 overflow-hidden ${pref.enabled ? 'bg-primary-500' : 'bg-surface-300 dark:bg-surface-600'}`}>
+        <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${pref.enabled ? 'translate-x-5' : 'translate-x-0'}`} />
       </button>
     </div>
   )
 }
 
 function RemindersSection({ notifications }) {
-  if (typeof Notification === 'undefined') return null
-  const granted = Notification.permission === 'granted'
+  // permission is unavailable means the browser doesn't support the API at all
+  if (notifications.permission === 'unavailable') return null
+  const { permission, prefs, requestPermission, updatePref, notifyNow } = notifications
+  const isStandalone = typeof window !== 'undefined' &&
+    (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true)
+
   return (
     <div className="mb-6">
       <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-2 px-1">Reminders</p>
       <Card className="divide-y divide-surface-100 dark:divide-surface-700 overflow-hidden p-0">
-        {!granted ? (
-          <div className="px-4 py-4 flex items-center gap-3">
-            <BellOff size={17} className="text-ink-400 flex-shrink-0" />
-            <span className="flex-1 text-sm text-ink-700 dark:text-ink-300">Notifications are disabled</span>
-            <Button size="sm" variant="soft" onClick={notifications.requestPermission}>Enable</Button>
+        {permission !== 'granted' ? (
+          <div className="px-4 py-4 space-y-2">
+            <div className="flex items-center gap-3">
+              <BellOff size={17} className="text-ink-400 flex-shrink-0" />
+              <span className="flex-1 text-sm text-ink-700 dark:text-ink-300">
+                {permission === 'denied' ? 'Notifications are blocked' : 'Notifications are disabled'}
+              </span>
+              {permission !== 'denied' && (
+                <Button size="sm" variant="soft" onClick={requestPermission}>Enable</Button>
+              )}
+            </div>
+            {permission === 'denied' && (
+              <p className="text-xs text-ink-400 pl-7">
+                Open your browser/phone settings and allow notifications for this site, then reload.
+              </p>
+            )}
+            {!isStandalone && permission !== 'denied' && (
+              <p className="text-xs text-ink-400 pl-7">
+                For reliable background reminders, add MentisFlow to your home screen first.
+              </p>
+            )}
           </div>
         ) : (
           <>
-            <ReminderRow label="Habit reminder" pref={notifications.prefs.habitReminder}
-              onToggle={() => notifications.updatePref('habitReminder', { enabled: !notifications.prefs.habitReminder.enabled })}
-              onTimeChange={time => notifications.updatePref('habitReminder', { time })} />
-            <ReminderRow label="Focus reminder" pref={notifications.prefs.focusReminder}
-              onToggle={() => notifications.updatePref('focusReminder', { enabled: !notifications.prefs.focusReminder.enabled })}
-              onTimeChange={time => notifications.updatePref('focusReminder', { time })} />
+            <ReminderRow label="Habit reminder" pref={prefs.habitReminder}
+              onToggle={() => updatePref('habitReminder', { enabled: !prefs.habitReminder.enabled })}
+              onTimeChange={time => updatePref('habitReminder', { time })}
+              onTest={() => notifyNow('MentisFlow: Habit time!', 'Test — Check in on your habits for today 🌱')} />
+            <ReminderRow label="Focus reminder" pref={prefs.focusReminder}
+              onToggle={() => updatePref('focusReminder', { enabled: !prefs.focusReminder.enabled })}
+              onTimeChange={time => updatePref('focusReminder', { time })}
+              onTest={() => notifyNow('MentisFlow: Focus session', "Test — Time to start a focus session. You've got this! 🎯")} />
+            {!isStandalone && (
+              <div className="px-4 py-2.5 flex items-start gap-2">
+                <Bell size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-ink-400">
+                  Reminders fire while the app is open. Add to home screen for background notifications.
+                </p>
+              </div>
+            )}
           </>
         )}
       </Card>
