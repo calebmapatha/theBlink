@@ -7,6 +7,8 @@ import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
+import { AddToCalendar } from '../components/ui/AddToCalendar'
+import { slotsForDay, dayMode, DEFAULT_HOURS } from '../utils/availability'
 
 const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400'
 
@@ -449,7 +451,7 @@ function EditModal({ open, onClose, profile, onSave }) {
   )
 }
 
-function AppointmentCard({ appt, onConfirm, onDecline }) {
+function AppointmentCard({ appt, onConfirm, onDecline, meetingLink }) {
   return (
     <Card className="p-4">
       <div className="flex items-start justify-between gap-3">
@@ -476,6 +478,13 @@ function AppointmentCard({ appt, onConfirm, onDecline }) {
             </div>
           )}
           <DataSnapshot snapshot={appt.sharedDataSnapshot} />
+          {appt.status === 'confirmed' && (
+            <AddToCalendar
+              appt={{ ...appt, meetingLink }}
+              role="provider"
+              className="mt-2.5 pt-2.5 border-t border-surface-100 dark:border-surface-800"
+            />
+          )}
         </div>
         {appt.status === 'pending' && (
           <div className="flex gap-1.5 flex-shrink-0">
@@ -513,27 +522,51 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
     getDiary(providerUid).then(d => { setDiary(d || {}); setDiaryLoading(false) })
   }, [providerUid])
 
-  const addSlot = async () => {
-    if (!newTime) return
-    const slots = diary[selectedDay] || []
-    if (slots.includes(newTime)) return
-    const updated = { ...diary, [selectedDay]: [...slots, newTime].sort() }
+  const persist = async (updated) => {
     setSaving(true)
     setDiary(updated)
     await saveDiary(providerUid, updated)
     setSaving(false)
   }
 
+  // Adding/removing a slot on a default-hours day first materialises the
+  // defaults as a custom list, then applies the change.
+  const addSlot = async () => {
+    if (!newTime) return
+    const base = slotsForDay(diary, selectedDay)
+    if (base.includes(newTime)) return
+    await persist({ ...diary, [selectedDay]: [...base, newTime].sort() })
+  }
+
   const removeSlot = async (day, time) => {
-    const updated = { ...diary, [day]: (diary[day] || []).filter(t => t !== time) }
-    setDiary(updated)
-    await saveDiary(providerUid, updated)
+    const base = slotsForDay(diary, day)
+    await persist({ ...diary, [day]: base.filter(t => t !== time) })
+  }
+
+  const closeDay = (day) => persist({ ...diary, [day]: [] })
+
+  const resetDay = (day) => {
+    const updated = { ...diary }
+    delete updated[day]
+    return persist(updated)
   }
 
   if (diaryLoading) return <div className="h-20 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />
 
+  const MODE_BADGES = {
+    default: { label: 'Default hours', cls: 'bg-surface-100 dark:bg-surface-700 text-ink-400' },
+    custom:  { label: 'Custom',        cls: 'bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400' },
+    closed:  { label: 'Closed',        cls: 'bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400' },
+  }
+
   return (
     <div className="space-y-4">
+      <p className="text-xs text-ink-400 leading-relaxed">
+        Weekday slots ({DEFAULT_HOURS[0]}–{DEFAULT_HOURS[DEFAULT_HOURS.length - 1]}, hourly) are{' '}
+        <strong className="text-ink-600 dark:text-ink-300">open by default</strong>. Add or remove times to
+        customise a day, or close it entirely. Confirmed bookings hide their slot automatically.
+      </p>
+
       <Card className="p-4">
         <p className="text-xs font-medium text-ink-400 mb-3">Add availability slot</p>
         <div className="flex gap-2">
@@ -547,27 +580,43 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
         </div>
       </Card>
 
-      <div className="space-y-2.5">
-        {DAYS.map(({ key, label }) => (
-          <div key={key} className="flex items-start gap-3">
-            <p className="text-xs font-medium text-ink-400 w-8 flex-shrink-0 pt-1.5">{label.slice(0, 3)}</p>
-            <div className="flex-1 flex flex-wrap gap-1.5">
-              {(diary[key] || []).length === 0 ? (
-                <span className="text-xs text-ink-400 italic">—</span>
-              ) : (
-                (diary[key] || []).map(time => (
-                  <span key={time}
-                    className="flex items-center gap-1 text-xs bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400 px-2 py-1 rounded-lg">
-                    {time}
-                    <button onClick={() => removeSlot(key, time)} className="hover:text-red-500 transition-colors">
-                      <X size={9} />
-                    </button>
-                  </span>
-                ))
-              )}
+      <div className="space-y-3">
+        {DAYS.map(({ key, label }) => {
+          const mode  = dayMode(diary, key)
+          const slots = slotsForDay(diary, key)
+          const badge = MODE_BADGES[mode]
+          return (
+            <div key={key} className="rounded-xl border border-surface-100 dark:border-surface-800 p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <p className="text-xs font-semibold text-ink-700 dark:text-ink-200 flex-1">{label}</p>
+                <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${badge.cls}`}>{badge.label}</span>
+                {mode !== 'closed' && (
+                  <button onClick={() => closeDay(key)} disabled={saving}
+                    className="text-[10px] text-ink-400 hover:text-red-500 transition-colors">Close day</button>
+                )}
+                {mode !== 'default' && (
+                  <button onClick={() => resetDay(key)} disabled={saving}
+                    className="text-[10px] text-ink-400 hover:text-primary-500 transition-colors">Reset to default</button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {slots.length === 0 ? (
+                  <span className="text-xs text-ink-400 italic">No slots — patients can't book this day</span>
+                ) : (
+                  slots.map(time => (
+                    <span key={time}
+                      className="flex items-center gap-1 text-xs bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400 px-2 py-1 rounded-lg">
+                      {time}
+                      <button onClick={() => removeSlot(key, time)} disabled={saving} className="hover:text-red-500 transition-colors">
+                        <X size={9} />
+                      </button>
+                    </span>
+                  ))
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
@@ -575,7 +624,7 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
 
 export function ProviderDashboard() {
   const { user }                                                                                                    = useAuth()
-  const { getProvider, getAppointments, updateAppointment, saveProvider, getDiary, saveDiary, uploadPhoto, getProviderRatings } = useProviders()
+  const { getProvider, getAppointments, updateAppointment, confirmAppointment, saveProvider, getDiary, saveDiary, uploadPhoto, getProviderRatings } = useProviders()
   const navigate                                                                                                    = useNavigate()
   const [profile, setProfile]           = useState(null)
   const [appointments, setAppointments] = useState([])
@@ -605,7 +654,14 @@ export function ProviderDashboard() {
   }, [user])
 
   const handleAction = async (id, status) => {
-    await updateAppointment(id, { status })
+    const appt = appointments.find(a => a.id === id)
+    if (status === 'confirmed' && appt) {
+      // Also records the slot in the provider's bookedSlots map so it
+      // disappears from patients' booking views.
+      await confirmAppointment(appt)
+    } else {
+      await updateAppointment(id, { status })
+    }
     setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a))
   }
 
@@ -881,7 +937,8 @@ export function ProviderDashboard() {
               <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">Confirmed ({confirmed.length})</p>
               <div className="space-y-3">
                 {confirmed.map(a => (
-                  <AppointmentCard key={a.id} appt={a} onConfirm={() => {}} onDecline={() => {}} />
+                  <AppointmentCard key={a.id} appt={a} onConfirm={() => {}} onDecline={() => {}}
+                    meetingLink={profile?.meetingLink} />
                 ))}
               </div>
             </div>

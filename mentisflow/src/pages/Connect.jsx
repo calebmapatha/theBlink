@@ -9,6 +9,8 @@ import { Modal } from '../components/ui/Modal'
 import { useProviders } from '../hooks/useProviders'
 import { useAuth } from '../context/AuthContext'
 import { useApp } from '../context/AppContext'
+import { AddToCalendar } from '../components/ui/AddToCalendar'
+import { availableSlotsForDate } from '../utils/availability'
 
 const SPECIALTIES  = ['ADHD', 'Anxiety', 'Depression', 'OCD', 'PTSD', 'Autism Spectrum', 'Bipolar Disorder', 'Stress Management', 'Sleep Disorders', 'Trauma']
 const SA_PROVINCES = ['Gauteng', 'Western Cape', 'KwaZulu-Natal', 'Eastern Cape', 'Free State', 'Limpopo', 'Mpumalanga', 'North West', 'Northern Cape']
@@ -19,8 +21,6 @@ const DATA_TYPES = [
   { id: 'tasks',         label: 'Task completion',   emoji: '✅' },
   { id: 'treatmentPlan', label: 'Treatment plan',    emoji: '📋' },
 ]
-
-const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
 
 const RATING_METRICS = [
   { key: 'communication',   label: 'Communication',   desc: 'Explains clearly & listens well' },
@@ -419,13 +419,13 @@ function RatingModal({ open, onClose, appointment, providerName, onSubmit }) {
   )
 }
 
-function BookingModal({ provider, open, onClose, bookAppointment, user, userProfile, getDiary }) {
+function BookingModal({ provider, open, onClose, bookAppointment, user, userProfile, getBookingInfo }) {
   const [date, setDate]               = useState('')
   const [timeSlot, setTimeSlot]       = useState(null)
   const [notes, setNotes]             = useState('')
   const [loading, setLoading]         = useState(false)
   const [done, setDone]               = useState(false)
-  const [diary, setDiary]             = useState({})
+  const [bookingInfo, setBookingInfo] = useState({ diary: {}, bookedSlots: {} })
   const [diaryLoading, setDiaryLoading] = useState(false)
   const [sharedTypes, setSharedTypes] = useState([])
   const [consentGiven, setConsentGiven] = useState(false)
@@ -433,20 +433,18 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
   useEffect(() => {
     if (!provider || !open) return
     setDiaryLoading(true)
-    getDiary(provider.id).then(d => {
-      setDiary(d || {})
+    getBookingInfo(provider.id).then(info => {
+      setBookingInfo(info)
       setDiaryLoading(false)
     })
   }, [provider?.id, open])
 
-  const availableSlots = useMemo(() => {
-    if (!date) return []
-    // Parse the YYYY-MM-DD as a local date explicitly (no UTC shift) so the
-    // weekday is always correct regardless of the user's timezone.
-    const [y, mo, d] = date.split('-').map(Number)
-    const dayKey = DAY_KEYS[new Date(y, mo - 1, d).getDay()]
-    return (diary[dayKey] || []).slice().sort()
-  }, [date, diary])
+  // Open-by-default: weekday default hours unless the provider customised or
+  // closed the day, minus slots already confirmed for that date.
+  const availableSlots = useMemo(
+    () => availableSlotsForDate(bookingInfo.diary, bookingInfo.bookedSlots, date),
+    [date, bookingInfo],
+  )
 
   const toggleType = (id) =>
     setSharedTypes(prev => prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id])
@@ -510,7 +508,7 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
                 <p className="text-xs text-ink-400">Loading slots…</p>
               ) : availableSlots.length === 0 ? (
                 <p className="text-xs text-ink-400 bg-surface-50 dark:bg-surface-900 px-3 py-2 rounded-xl">
-                  No slots available for this day. Try another date or contact the provider directly.
+                  No open slots for this day — it may be fully booked or the provider is unavailable. Try another date.
                 </p>
               ) : (
                 <div className="flex flex-wrap gap-2">
@@ -585,7 +583,7 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
 export function Connect() {
   const {
     providers, loading, loadMore, hasMore, bookAppointment,
-    getDiary, linkDoctor, getLinkedDoctor, unlinkDoctor,
+    getBookingInfo, linkDoctor, getLinkedDoctor, unlinkDoctor,
     searchProviderByHPCSA, getPatientAppointments,
     incrementProfileViews, submitRating, getRating,
   } = useProviders()
@@ -964,6 +962,13 @@ export function Connect() {
                             )}
                           </div>
                         </div>
+                        {a.status === 'confirmed' && (
+                          <AddToCalendar
+                            appt={{ ...a, meetingLink: linkedDoctor?.meetingLink }}
+                            role="patient"
+                            className="mt-2.5 pt-2.5 border-t border-surface-100 dark:border-surface-800"
+                          />
+                        )}
                       </Card>
                     ))}
                   </div>
@@ -1055,7 +1060,7 @@ export function Connect() {
         bookAppointment={bookAppointment}
         user={user}
         userProfile={userProfile}
-        getDiary={getDiary}
+        getBookingInfo={getBookingInfo}
       />
 
       <RatingModal
