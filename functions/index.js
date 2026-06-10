@@ -46,9 +46,12 @@ export const aggregateRating = onDocumentCreated('ratings/{appointmentId}', asyn
     const count = ratings.length
     if (count === 0) return
 
+    // Scores are validated to 1–5 in firestore.rules; clamp here as well so a
+    // single bad legacy document can never skew an aggregate out of range.
+    const clamp = (v) => Math.min(5, Math.max(0, Number(v) || 0))
     const ratingAvg = {}
     for (const key of RATING_KEYS) {
-      const sum = ratings.reduce((s, r) => s + (Number(r[key]) || 0), 0)
+      const sum = ratings.reduce((s, r) => s + clamp(r[key]), 0)
       ratingAvg[key] = +(sum / count).toFixed(2)
     }
 

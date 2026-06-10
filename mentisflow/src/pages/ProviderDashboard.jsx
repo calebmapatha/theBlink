@@ -824,7 +824,9 @@ export function ProviderDashboard() {
         {profile?.bio && (
           <p className="mt-3 text-xs text-ink-600 dark:text-ink-300 leading-relaxed line-clamp-3">{profile.bio}</p>
         )}
-        {profile?.meetingLink && (
+        {/* Only ever link out to http(s) URLs — a stored javascript: URI must
+            not become a clickable script. */}
+        {/^https?:\/\//i.test(profile?.meetingLink || '') && (
           <a href={profile.meetingLink} target="_blank" rel="noopener noreferrer"
             className="mt-2 flex items-center gap-1.5 text-xs text-primary-500 hover:underline w-fit">
             <ExternalLink size={10} /> {platformLabel ? `${platformLabel} meeting room` : 'Your meeting room'}
