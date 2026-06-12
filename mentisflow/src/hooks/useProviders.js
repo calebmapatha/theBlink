@@ -78,8 +78,15 @@ export function useProviders() {
   // Confirm an appointment and mark its slot as booked on the provider's own
   // doc so the slot disappears from every patient's booking view. Must be
   // called by the provider (only the owner may write their provider doc).
+  // If the provider has pre-screening documents, the appointment is flagged
+  // screeningRequired so the patient is prompted to sign them.
   const confirmAppointment = async (appt) => {
-    await updateDoc(doc(db, 'appointments', appt.id), { status: 'confirmed' })
+    let screeningRequired = false
+    try {
+      const docsSnap = await getDocs(collection(db, 'providers', appt.providerUid, 'screeningDocs'))
+      screeningRequired = !docsSnap.empty
+    } catch {}
+    await updateDoc(doc(db, 'appointments', appt.id), { status: 'confirmed', screeningRequired })
     try {
       const snap = await getDoc(doc(db, 'providers', appt.providerUid))
       const current = snap.exists() ? (snap.data().bookedSlots || {}) : {}
@@ -92,6 +99,7 @@ export function useProviders() {
       // the worst case is a double-request the provider can decline.
       console.warn('bookedSlots update failed', e)
     }
+    return { screeningRequired }
   }
 
   const bookAppointment = (data) =>

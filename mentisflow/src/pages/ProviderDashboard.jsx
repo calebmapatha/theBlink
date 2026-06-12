@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, X, Eye, TrendingUp, Camera, Loader, Star } from 'lucide-react'
+import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, X, Eye, TrendingUp, Camera, Loader, Star, FileText, Trash2, FileSignature } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -10,6 +10,7 @@ import { useProviders } from '../hooks/useProviders'
 import { AddToCalendar } from '../components/ui/AddToCalendar'
 import { slotsForDay, dayMode, DEFAULT_HOURS } from '../utils/availability'
 import { trialDaysLeft } from '../utils/pricing'
+import { getScreeningDocs, addScreeningDocPDF, addScreeningDocText, deleteScreeningDoc, openScreeningPDF, getConsentsForAppointment, MAX_PDF_BYTES, MAX_DOCS } from '../utils/screeningDocs'
 
 const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400'
 
@@ -450,7 +451,7 @@ function EditModal({ open, onClose, profile, onSave }) {
   )
 }
 
-function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink }) {
+function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, onViewConsents }) {
   const todayStr = new Date().toISOString().split('T')[0]
   const isPast = appt.date && appt.date < todayStr
   return (
@@ -479,6 +480,20 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink })
             </div>
           )}
           <DataSnapshot snapshot={appt.sharedDataSnapshot} />
+          {appt.screeningSigned ? (
+            <p className="text-[10px] text-success-600 dark:text-success-400 mt-1.5 flex items-center gap-1">
+              <FileSignature size={10} className="flex-shrink-0" />
+              Documents signed{appt.screeningSignatureName ? ` — ${appt.screeningSignatureName}` : ''}
+              {onViewConsents && (
+                <button onClick={() => onViewConsents(appt)} className="text-primary-500 underline ml-1">View</button>
+              )}
+            </p>
+          ) : appt.screeningRequired && appt.status === 'confirmed' ? (
+            <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1.5 flex items-center gap-1">
+              <FileSignature size={10} className="flex-shrink-0" />
+              Awaiting document signature from patient
+            </p>
+          ) : null}
           {appt.status === 'confirmed' && (
             <AddToCalendar
               appt={{ ...appt, meetingLink }}
@@ -639,6 +654,191 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
   )
 }
 
+// The signed consent records for one appointment — document titles, typed
+// name, drawn signature image and timestamp.
+function ConsentsModal({ appt, onClose }) {
+  const [consents, setConsents] = useState(null)
+
+  useEffect(() => {
+    if (!appt) return
+    setConsents(null)
+    getConsentsForAppointment(appt.id).then(setConsents)
+  }, [appt?.id])
+
+  return (
+    <Modal open={!!appt} onClose={onClose} title="Signed documents">
+      {consents === null ? (
+        <div className="py-8 text-center"><Loader size={18} className="animate-spin text-primary-500 mx-auto" /></div>
+      ) : consents.length === 0 ? (
+        <p className="text-sm text-ink-400 text-center py-6">No signed records found for this appointment.</p>
+      ) : (
+        <div className="space-y-3">
+          <p className="text-xs text-ink-400">
+            Signed by <strong className="text-ink-700 dark:text-ink-300">{appt?.patientName}</strong> for
+            the session on {appt?.date} at {appt?.timeSlot}.
+          </p>
+          {consents.map(c => (
+            <div key={c.id} className="p-3 rounded-xl border border-surface-200 dark:border-surface-700 space-y-2">
+              <div className="flex items-center gap-2">
+                <FileText size={13} className="text-primary-500 flex-shrink-0" />
+                <p className="text-xs font-medium text-ink-900 dark:text-ink-100 flex-1">{c.docTitle}</p>
+              </div>
+              <p className="text-[10px] text-ink-400">
+                Signed as <strong className="text-ink-600 dark:text-ink-300">{c.signatureName}</strong>
+                {c.signedAt?.seconds ? ` · ${new Date(c.signedAt.seconds * 1000).toLocaleString('en-ZA')}` : ''}
+              </p>
+              {c.signatureImage && (
+                <img src={c.signatureImage} alt={`Signature of ${c.signatureName}`}
+                  className="h-16 rounded-lg border border-surface-200 dark:border-surface-700 bg-white" />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </Modal>
+  )
+}
+
+// Optional pre-screening documents (T&Cs, intake consent…) the patient is
+// asked to sign after the doctor accepts a booking. Stored in Firestore as
+// small PDFs (base64) or plain text — no Cloud Storage needed.
+function DocumentsManager({ providerUid }) {
+  const [docs, setDocs]         = useState([])
+  const [docsLoading, setDocsLoading] = useState(true)
+  const [busy, setBusy]         = useState(false)
+  const [error, setError]       = useState('')
+  const [textOpen, setTextOpen] = useState(false)
+  const [textTitle, setTextTitle] = useState('')
+  const [textBody, setTextBody]   = useState('')
+  const [viewing, setViewing]   = useState(null)
+  const pdfRef                  = useRef()
+
+  useEffect(() => {
+    getScreeningDocs(providerUid).then(d => { setDocs(d); setDocsLoading(false) })
+  }, [providerUid])
+
+  const refresh = async () => setDocs(await getScreeningDocs(providerUid))
+
+  const handlePDF = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setBusy(true); setError('')
+    try {
+      await addScreeningDocPDF(providerUid, file)
+      await refresh()
+    } catch (err) {
+      setError(err.message || 'Upload failed.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleAddText = async () => {
+    setBusy(true); setError('')
+    try {
+      await addScreeningDocText(providerUid, textTitle, textBody)
+      setTextOpen(false); setTextTitle(''); setTextBody('')
+      await refresh()
+    } catch (err) {
+      setError(err.message || 'Could not save the document.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleDelete = async (id) => {
+    if (!confirm('Remove this document? New bookings will no longer require it. Already-signed records are kept.')) return
+    setBusy(true)
+    try {
+      await deleteScreeningDoc(providerUid, id)
+      await refresh()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  if (docsLoading) return <div className="h-20 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />
+
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-ink-400 leading-relaxed">
+        Optional. Upload documents — terms &amp; conditions, consultation agreements, practice policies —
+        for patients to sign. When you <strong className="text-ink-600 dark:text-ink-300">accept</strong> a
+        booking request, the documents are sent to the patient to read and digitally sign before the
+        session. Signatures are stored with each appointment.
+      </p>
+
+      {docs.length === 0 ? (
+        <Card className="p-4 text-center">
+          <FileSignature size={20} className="text-ink-400 mx-auto mb-1.5" />
+          <p className="text-xs text-ink-400">No pre-screening documents yet — patients can book without signing anything.</p>
+        </Card>
+      ) : (
+        <div className="space-y-2">
+          {docs.map(d => (
+            <Card key={d.id} className="p-3 flex items-center gap-3">
+              <FileText size={16} className="text-primary-500 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-ink-900 dark:text-ink-100 truncate">{d.title}</p>
+                <p className="text-[10px] text-ink-400">
+                  {d.kind === 'pdf' ? `PDF · ${Math.round((d.size || 0) / 1024)} KB` : 'Text document'}
+                </p>
+              </div>
+              <button
+                onClick={() => d.kind === 'pdf' ? openScreeningPDF(d) : setViewing(d)}
+                className="text-[10px] font-medium text-primary-500 hover:underline flex-shrink-0">
+                View
+              </button>
+              <button onClick={() => handleDelete(d.id)} disabled={busy}
+                className="p-1 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex-shrink-0" title="Remove">
+                <Trash2 size={13} />
+              </button>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {error && <p className="text-xs text-red-500">{error}</p>}
+
+      {docs.length < MAX_DOCS && (
+        <div className="flex gap-2">
+          <Button variant="soft" size="sm" className="flex-1" disabled={busy} onClick={() => pdfRef.current.click()}>
+            {busy ? <Loader size={13} className="animate-spin" /> : <>Upload PDF (max {Math.round(MAX_PDF_BYTES / 1024)} KB)</>}
+          </Button>
+          <Button variant="soft" size="sm" className="flex-1" disabled={busy} onClick={() => { setError(''); setTextOpen(true) }}>
+            Write text document
+          </Button>
+        </div>
+      )}
+      <input ref={pdfRef} type="file" accept="application/pdf" className="hidden" onChange={handlePDF} />
+
+      <Modal open={textOpen} onClose={() => setTextOpen(false)} title="New text document">
+        <div className="space-y-3">
+          <input value={textTitle} onChange={e => setTextTitle(e.target.value)}
+            placeholder="Title, e.g. Terms & Conditions" className={inputCls} />
+          <textarea value={textBody} onChange={e => setTextBody(e.target.value)} rows={10}
+            placeholder="Paste or type the full document text…"
+            className={`${inputCls} resize-none`} />
+          {error && <p className="text-xs text-red-500">{error}</p>}
+          <div className="flex gap-2">
+            <Button variant="ghost" className="flex-1" onClick={() => setTextOpen(false)}>Cancel</Button>
+            <Button className="flex-1" disabled={busy || !textTitle.trim() || !textBody.trim()} onClick={handleAddText}>
+              {busy ? <Loader size={14} className="animate-spin" /> : 'Save document'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal open={!!viewing} onClose={() => setViewing(null)} title={viewing?.title || ''}>
+        <p className="text-xs text-ink-700 dark:text-ink-300 leading-relaxed whitespace-pre-wrap max-h-[60vh] overflow-y-auto">
+          {viewing?.text}
+        </p>
+      </Modal>
+    </div>
+  )
+}
+
 export function ProviderDashboard() {
   const { user }                                                                                                    = useAuth()
   const { getProvider, getAppointments, updateAppointment, confirmAppointment, saveProvider, getDiary, saveDiary, uploadPhoto, getProviderRatings } = useProviders()
@@ -649,6 +849,7 @@ export function ProviderDashboard() {
   const [loading, setLoading]           = useState(true)
   const [editOpen, setEditOpen]         = useState(false)
   const [statModal, setStatModal]       = useState(null)
+  const [consentAppt, setConsentAppt]   = useState(null)
   const [photoUploading, setPhotoUploading] = useState(false)
   const fileRef                         = useRef()
 
@@ -672,14 +873,17 @@ export function ProviderDashboard() {
 
   const handleAction = async (id, status) => {
     const appt = appointments.find(a => a.id === id)
+    let extra = {}
     if (status === 'confirmed' && appt) {
       // Also records the slot in the provider's bookedSlots map so it
-      // disappears from patients' booking views.
-      await confirmAppointment(appt)
+      // disappears from patients' booking views, and flags the appointment
+      // if pre-screening documents must be signed.
+      const res = await confirmAppointment(appt)
+      extra = { screeningRequired: res?.screeningRequired || false }
     } else {
       await updateAppointment(id, { status })
     }
-    setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a))
+    setAppointments(prev => prev.map(a => a.id === id ? { ...a, status, ...extra } : a))
   }
 
   const handleSave = async (updates) => {
@@ -1006,7 +1210,8 @@ export function ProviderDashboard() {
                 {confirmed.map(a => (
                   <AppointmentCard key={a.id} appt={a} onConfirm={() => {}} onDecline={() => {}}
                     onOutcome={(id, status) => handleAction(id, status)}
-                    meetingLink={profile?.meetingLink} />
+                    meetingLink={profile?.meetingLink}
+                    onViewConsents={setConsentAppt} />
                 ))}
               </div>
             </div>
@@ -1019,6 +1224,12 @@ export function ProviderDashboard() {
         <DiaryManager providerUid={user.uid} getDiary={getDiary} saveDiary={saveDiary} />
       </div>
 
+      <div className="mb-6">
+        <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-4">Pre-screening documents</p>
+        <DocumentsManager providerUid={user.uid} />
+      </div>
+
+      <ConsentsModal appt={consentAppt} onClose={() => setConsentAppt(null)} />
       <EditModal open={editOpen} onClose={() => setEditOpen(false)} profile={profile} onSave={handleSave} />
       <StatDetailModal kind={statModal} onClose={() => setStatModal(null)}
         stats={{ appointments, pending, confirmed, sessions, declined, patientList, profileViews, uniquePatients, acceptanceRate, sessionFee: profile?.sessionFee }} />
