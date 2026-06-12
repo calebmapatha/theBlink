@@ -63,56 +63,126 @@ export const aggregateRating = onDocumentCreated('ratings/{appointmentId}', asyn
   }
 })
 
+// Trial length, overridable at runtime from config/platform → pricing.trialDays.
+const DEFAULT_TRIAL_DAYS = 30
+
+async function configuredTrialDays() {
+  try {
+    const snap = await db.doc('config/platform').get()
+    const days = snap.data()?.pricing?.trialDays
+    return Number.isFinite(days) && days > 0 && days <= 365 ? days : DEFAULT_TRIAL_DAYS
+  } catch {
+    return DEFAULT_TRIAL_DAYS
+  }
+}
+
 /**
- * Activate a provider's subscription.
+ * Activate a provider's subscription, or start their one-time free trial.
  *
- * DEMO MODE: activates immediately on request. This exists so that
- * subscriptionActive is set by trusted server code (Admin SDK) instead of the
- * client — clients are blocked from writing that field in firestore.rules.
+ * plan: 'trial' | 'standard' | 'featured'
  *
- * TODO (real billing): replace the body with Stripe Checkout session creation
- * and return the checkout URL. Activation then happens exclusively in
- * `stripeWebhook` on `checkout.session.completed`. No client change needed
- * beyond redirecting to the returned URL.
+ * All subscription/trial state lives server-side because clients are blocked
+ * from writing these fields in firestore.rules — a doctor must not be able to
+ * grant themselves an endless trial or an active subscription.
+ *
+ * Paid plans are DEMO MODE: they activate immediately on request.
+ * TODO (real billing): Paystack, not Stripe — Stripe does not onboard South
+ * African merchants. Replace the paid branch with Paystack transaction
+ * initialization (subscription plan codes) and return the authorization_url;
+ * activation then happens exclusively in `paymentWebhook` on charge.success.
  */
 export const activateProvider = onCall(async (request) => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'You must be signed in.')
   const uid = request.auth.uid
-  const plan = request.data?.plan === 'featured' ? 'featured' : 'standard'
+  const requested = request.data?.plan
 
   const provRef = db.doc(`providers/${uid}`)
   const snap = await provRef.get()
   if (!snap.exists) throw new HttpsError('failed-precondition', 'Create your provider profile first.')
+  const existing = snap.data() || {}
 
   // New providers enter the Super Admin approval queue: the subscription is
   // active, but the profile stays hidden from patients until approvalStatus
   // is set to 'approved' by an admin. Re-activations keep their status.
-  const existingStatus = snap.data()?.approvalStatus
+  const approvalStatus = existing.approvalStatus || 'pending'
+
+  if (requested === 'trial') {
+    if (existing.trialUsed) {
+      throw new HttpsError('failed-precondition', 'Your free trial has already been used. Please choose a plan.')
+    }
+    const trialDays = await configuredTrialDays()
+    const now = new Date()
+    const trialEndsAt = new Date(now.getTime() + trialDays * 24 * 60 * 60 * 1000).toISOString()
+    await provRef.set({
+      subscriptionActive: true,
+      subscriptionStatus: 'trialing',
+      subscriptionPlan:   'standard', // trial = full Standard features
+      trialUsed:          true,
+      trialStarted:       now.toISOString(),
+      trialEndsAt,
+      approvalStatus,
+    }, { merge: true })
+    logger.info('activateProvider: trial started', { uid, trialDays, trialEndsAt, approvalStatus })
+    return { activated: true, trial: true, trialEndsAt }
+  }
+
+  const plan = requested === 'featured' ? 'featured' : 'standard'
   await provRef.set({
     subscriptionActive:  true,
+    subscriptionStatus:  'active',
     subscriptionPlan:    plan,
     subscriptionStarted: new Date().toISOString(),
-    approvalStatus:      existingStatus || 'pending',
+    approvalStatus,
   }, { merge: true })
 
-  logger.info('activateProvider: activated', { uid, plan, approvalStatus: existingStatus || 'pending' })
+  logger.info('activateProvider: activated', { uid, plan, approvalStatus })
   return { activated: true }
 })
 
 /**
- * Stripe webhook endpoint (stub).
+ * Daily sweep: deactivate providers whose free trial has ended.
+ *
+ * Their profile and data are kept — subscriptionActive: false simply hides
+ * the listing from patients until they pick a paid plan, which is also the
+ * reason they come back. The companion query needs the composite index on
+ * (subscriptionStatus, trialEndsAt) declared in firestore.indexes.json.
+ */
+export const expireTrials = onSchedule('every 24 hours', async () => {
+  const nowIso = new Date().toISOString()
+  const snap = await db.collection('providers')
+    .where('subscriptionStatus', '==', 'trialing')
+    .where('trialEndsAt', '<=', nowIso)
+    .get()
+  if (snap.empty) {
+    logger.info('expireTrials: no trials to expire')
+    return
+  }
+
+  const batch = db.batch()
+  snap.docs.forEach(d => batch.set(d.ref, {
+    subscriptionActive: false,
+    subscriptionStatus: 'trial_expired',
+  }, { merge: true }))
+  await batch.commit()
+  logger.info(`expireTrials: expired ${snap.size} trial(s)`)
+})
+
+/**
+ * Payment webhook endpoint (stub) — intended for Paystack.
  *
  * Wire-up steps when going live:
- *  1. Add `stripe` to functions/package.json and set the STRIPE_SECRET_KEY and
- *     STRIPE_WEBHOOK_SECRET secrets (firebase functions:secrets:set ...).
- *  2. Verify the Stripe-Signature header with stripe.webhooks.constructEvent.
- *  3. On checkout.session.completed / invoice.paid: read metadata.providerUid
- *     and set subscriptionActive: true.
- *  4. On customer.subscription.deleted: set subscriptionActive: false.
- *  5. Always 200 on success, 400 on signature failure.
+ *  1. Add `paystack` API calls (plain fetch is enough) and set the
+ *     PAYSTACK_SECRET_KEY secret (firebase functions:secrets:set ...).
+ *  2. Verify the x-paystack-signature header (HMAC-SHA512 of the raw body
+ *     with the secret key).
+ *  3. On charge.success / subscription.create: read metadata.providerUid and
+ *     set subscriptionActive: true, subscriptionStatus: 'active'.
+ *  4. On subscription.disable / invoice.payment_failed: set
+ *     subscriptionActive: false, subscriptionStatus: 'past_due' | 'cancelled'.
+ *  5. Always 200 on success, 401 on signature failure.
  */
-export const stripeWebhook = onRequest({ cors: false }, async (req, res) => {
-  res.status(501).send('Stripe webhook not yet configured.')
+export const paymentWebhook = onRequest({ cors: false }, async (req, res) => {
+  res.status(501).send('Payment webhook not yet configured.')
 })
 
 /**

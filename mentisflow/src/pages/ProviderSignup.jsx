@@ -8,6 +8,7 @@ import { httpsCallable } from 'firebase/functions'
 import { functions } from '../lib/firebase'
 import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
+import { DEFAULT_PRICING, fetchPricing } from '../utils/pricing'
 
 const activateProvider = httpsCallable(functions, 'activateProvider')
 
@@ -24,10 +25,10 @@ const PLATFORMS   = [
   { value: 'skype',   label: 'Skype' },
   { value: 'other',   label: 'Other' },
 ]
-const PLANS = [
-  { id: 'standard', price: 49, label: 'Standard', features: ['Profile listing', 'Appointment requests', 'Patient messaging', 'Analytics'] },
-  { id: 'featured', price: 99, label: 'Featured',  features: ['Everything in Standard', 'Featured placement in search', 'Priority support', 'Advanced analytics'] },
-]
+const PLAN_FEATURES = {
+  standard: ['Profile listing', 'Appointment requests', 'Patient messaging', 'Analytics'],
+  featured: ['Everything in Standard', 'Featured placement in search', 'Priority support', 'Advanced analytics'],
+}
 
 function SpecialtyChips({ selected, onToggle, items }) {
   return (
@@ -54,9 +55,12 @@ export function ProviderSignup() {
   const navigate                      = useNavigate()
   const [step, setStep]               = useState(1)
   const [checking, setChecking]       = useState(true)
-  const [plan, setPlan]               = useState('standard')
+  const [plan, setPlan]               = useState('trial')
   const [saving, setSaving]           = useState(false)
   const [activateError, setActivateError] = useState('')
+  const [pricing, setPricing]         = useState(DEFAULT_PRICING)
+  const [trialUsed, setTrialUsed]     = useState(false)
+  const [hasProfile, setHasProfile]   = useState(false)
 
   const [form, setForm] = useState({
     name:            '',
@@ -78,9 +82,26 @@ export function ProviderSignup() {
 
   useEffect(() => {
     if (!user) return
+    fetchPricing().then(setPricing)
     setForm(f => ({ ...f, name: user.displayName || user.email?.split('@')[0] || '' }))
     getProvider(user.uid).then(p => {
-      if (p?.subscriptionActive) navigate('/provider/dashboard')
+      // Paid (or legacy-active) providers have nothing to do here. Trialing
+      // providers may stay to upgrade; expired ones come back to renew.
+      if (p?.subscriptionActive && p?.subscriptionStatus !== 'trialing') {
+        navigate('/provider/dashboard')
+        return
+      }
+      if (p) {
+        setHasProfile(true)
+        setTrialUsed(!!p.trialUsed)
+        if (p.trialUsed) setPlan('standard')
+        // Prefill so re-activation/upgrade never wipes the existing profile.
+        setForm(f => Object.fromEntries(
+          Object.keys(f).map(k => [k, p[k] != null && p[k] !== '' ? p[k] : f[k]])
+        ))
+        // Profile already exists — jump straight to plan selection.
+        setStep(3)
+      }
       setChecking(false)
     })
   }, [user])
@@ -91,14 +112,15 @@ export function ProviderSignup() {
 
   const handleActivate = async () => {
     setSaving(true)
+    setActivateError('')
     try {
-      // Save the profile WITHOUT subscriptionActive — that field is granted
-      // only by the trusted activateProvider Cloud Function (which, in demo
-      // mode, activates immediately; in production it follows Stripe payment).
+      // Save the profile WITHOUT any subscription/trial fields — those are
+      // granted only by the trusted activateProvider Cloud Function (paid
+      // plans are demo mode until Paystack billing lands; trials are real).
       await saveProvider(user.uid, {
         ...form,
-        email:        user.email,
-        profileViews: 0,
+        email: user.email,
+        ...(hasProfile ? {} : { profileViews: 0 }),
       })
       // activateProvider also queues the doctor for Super Admin approval
       // (approvalStatus: 'pending') — set server-side so it can't be forged.
@@ -106,7 +128,9 @@ export function ProviderSignup() {
       localStorage.setItem('mf_role', 'provider')
       window.location.reload()
     } catch (e) {
-      setActivateError('Could not activate your subscription. Please try again.')
+      setActivateError(e?.message?.includes('trial')
+        ? 'Your free trial has already been used — please choose a plan.'
+        : 'Could not activate your subscription. Please try again.')
     } finally {
       setSaving(false)
     }
@@ -118,6 +142,11 @@ export function ProviderSignup() {
   const STEPS       = ['Profile', 'Session Setup', 'Subscribe']
   const canProceed1 = form.name.trim() && form.bio.trim() && form.specialties.length > 0 && form.hpcsa.trim()
   const canProceed2 = form.sessionFee && Number(form.sessionFee) > 0
+
+  const PLANS = [
+    { id: 'standard', price: pricing.plans.standard.monthly, label: 'Standard', features: PLAN_FEATURES.standard },
+    { id: 'featured', price: pricing.plans.featured.monthly, label: 'Featured', features: PLAN_FEATURES.featured },
+  ]
 
   const meetingPlaceholder = form.meetingPlatform === 'meet'
     ? 'https://meet.google.com/abc-defg-hij'
@@ -254,9 +283,9 @@ export function ProviderSignup() {
               </div>
               {form.sessionFee && Number(form.sessionFee) > 0 && (
                 <div className="mt-2 rounded-xl bg-primary-50 dark:bg-primary-700/10 px-3 py-2.5 text-xs space-y-0.5">
-                  <p className="font-semibold text-primary-700 dark:text-primary-300">Platform fee: 10% per confirmed session</p>
+                  <p className="font-semibold text-primary-700 dark:text-primary-300">No per-session commission</p>
                   <p className="text-ink-500 dark:text-ink-400">
-                    MentisFlow earns R{Math.round(Number(form.sessionFee) * 0.1)} · You receive R{Math.round(Number(form.sessionFee) * 0.9)} per session
+                    You keep 100% of your R{Number(form.sessionFee).toLocaleString()} session fee — MentisFlow charges only your monthly plan.
                   </p>
                 </div>
               )}
@@ -303,6 +332,41 @@ export function ProviderSignup() {
       {step === 3 && (
         <div className="space-y-4">
           <p className="text-xs font-medium text-ink-400 px-1">Choose your plan</p>
+
+          {!trialUsed && (
+            <button onClick={() => setPlan('trial')}
+              className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${
+                plan === 'trial'
+                  ? 'border-primary-400 bg-primary-50/60 dark:bg-primary-700/15'
+                  : 'border-surface-200 dark:border-surface-700 hover:border-surface-300'
+              }`}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                    plan === 'trial' ? 'border-primary-500 bg-primary-500' : 'border-surface-300 dark:border-surface-600'
+                  }`}>
+                    {plan === 'trial' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                  </div>
+                  <span className="font-semibold text-ink-900 dark:text-ink-100 text-sm">Free trial</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-success-500 text-white font-medium">Recommended</span>
+                </div>
+                <span className="font-bold text-ink-900 dark:text-ink-100 text-base">{pricing.currency}0<span className="text-xs font-normal text-ink-400"> · {pricing.trialDays} days</span></span>
+              </div>
+              <ul className="space-y-1">
+                {['All Standard features', 'No card required', `Then ${pricing.currency}${pricing.plans.standard.monthly}/mo — or cancel anytime`].map(f => (
+                  <li key={f} className="flex items-center gap-1.5 text-xs text-ink-400">
+                    <Check size={10} className="text-success-500 flex-shrink-0" />{f}
+                  </li>
+                ))}
+              </ul>
+            </button>
+          )}
+          {trialUsed && hasProfile && (
+            <div className="rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 px-3 py-2.5 text-xs text-amber-700 dark:text-amber-400">
+              Your {pricing.trialDays}-day free trial has been used. Choose a plan to keep your profile live.
+            </div>
+          )}
+
           {PLANS.map(p => (
             <button key={p.id} onClick={() => setPlan(p.id)}
               className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${
@@ -322,7 +386,7 @@ export function ProviderSignup() {
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-warm-400 text-white font-medium">Popular</span>
                   )}
                 </div>
-                <span className="font-bold text-ink-900 dark:text-ink-100 text-base">R{p.price}<span className="text-xs font-normal text-ink-400">/mo</span></span>
+                <span className="font-bold text-ink-900 dark:text-ink-100 text-base">{pricing.currency}{p.price}<span className="text-xs font-normal text-ink-400">/mo</span></span>
               </div>
               <ul className="space-y-1">
                 {p.features.map(f => (
@@ -335,13 +399,14 @@ export function ProviderSignup() {
           ))}
 
           <div className="rounded-xl bg-surface-50 dark:bg-surface-800 px-3 py-2.5 text-xs text-ink-500 dark:text-ink-400">
-            In addition to your monthly plan, MentisFlow charges a <span className="font-semibold text-ink-700 dark:text-ink-300">10% platform fee</span> per confirmed client session (R{Math.round(Number(form.sessionFee || 0) * 0.1)}/session at your current rate).
+            <span className="font-semibold text-ink-700 dark:text-ink-300">No per-session commission.</span> You keep 100% of your session fees — your monthly plan is MentisFlow's only charge.
           </div>
 
+          {plan !== 'trial' && (
           <Card className="p-4 space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-xs font-medium text-ink-400">Payment details</p>
-              <div className="flex items-center gap-1 text-xs text-ink-400"><CreditCard size={11} /> Stripe</div>
+              <div className="flex items-center gap-1 text-xs text-ink-400"><CreditCard size={11} /> Paystack</div>
             </div>
             <div>
               <label className="block text-xs text-ink-400 mb-1">Card number</label>
@@ -361,15 +426,18 @@ export function ProviderSignup() {
               </div>
             </div>
             <p className="text-[10px] text-ink-400 bg-surface-50 dark:bg-surface-900 px-2.5 py-1.5 rounded-lg">
-              🔒 Demo mode. No real charge. Full Stripe billing enabled at launch.
+              🔒 Demo mode. No real charge. Paystack billing enabled at launch.
             </p>
           </Card>
+          )}
 
           {activateError && (
             <p className="text-xs text-red-500 text-center">{activateError}</p>
           )}
           <Button className="w-full" disabled={saving} onClick={handleActivate}>
-            {saving ? 'Activating…' : `Activate for R${PLANS.find(p => p.id === plan)?.price}/month`}
+            {saving ? 'Activating…'
+              : plan === 'trial' ? `Start ${pricing.trialDays}-day free trial`
+              : `Activate for ${pricing.currency}${PLANS.find(p => p.id === plan)?.price}/month`}
           </Button>
         </div>
       )}

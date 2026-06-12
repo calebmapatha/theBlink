@@ -12,6 +12,7 @@ import { Modal } from '../components/ui/Modal'
 import { useAuth } from '../context/AuthContext'
 import { useAdmin } from '../hooks/useAdmin'
 import { isAdminUser, exportCSV } from '../utils/admin'
+import { DEFAULT_PRICING, fetchPricing, mergePricing } from '../utils/pricing'
 import { BarChart, LineChart } from '../components/ui/charts'
 import { isSession } from '../utils/providerStats'
 
@@ -31,7 +32,9 @@ function providerState(p) {
   if (p.suspended) return { label: 'Suspended', cls: 'bg-red-50 dark:bg-red-500/10 text-red-500' }
   if (p.approvalStatus === 'pending') return { label: 'Pending approval', cls: 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400' }
   if (p.approvalStatus === 'rejected') return { label: 'Rejected', cls: 'bg-red-50 dark:bg-red-500/10 text-red-500' }
+  if (p.subscriptionStatus === 'trial_expired') return { label: 'Trial ended', cls: 'bg-surface-100 dark:bg-surface-700 text-ink-400' }
   if (!p.subscriptionActive) return { label: 'Inactive', cls: 'bg-surface-100 dark:bg-surface-700 text-ink-400' }
+  if (p.subscriptionStatus === 'trialing') return { label: 'Trial', cls: 'bg-primary-50 dark:bg-primary-700/15 text-primary-600 dark:text-primary-400' }
   return { label: 'Live', cls: 'bg-success-50 dark:bg-success-500/10 text-success-600 dark:text-success-400' }
 }
 
@@ -85,6 +88,9 @@ export function AdminPortal() {
   const [loading, setLoading]       = useState(true)
   const [searchQ, setSearchQ]       = useState('')
   const [modal, setModal]           = useState(null) // { type, provider }
+  const [pricing, setPricing]       = useState(DEFAULT_PRICING)
+
+  useEffect(() => { fetchPricing().then(setPricing) }, [])
 
   const authorized = isAdminUser(user)
 
@@ -145,11 +151,17 @@ export function AdminPortal() {
       completed,
       completionRate,
       gross,
-      commission: Math.round(gross * 0.1),
+      trials:     providers.filter(p => p.subscriptionStatus === 'trialing').length,
+      // Estimated MRR from paying (non-trial) active subscriptions.
+      mrr: providers
+        .filter(p => p.subscriptionActive && !p.suspended && p.subscriptionStatus !== 'trialing')
+        .reduce((s, p) => s + (p.subscriptionPlan === 'featured'
+          ? pricing.plans.featured.monthly
+          : pricing.plans.standard.monthly), 0),
       byMonth,
       openReports: reports.filter(r => r.status === 'open').length,
     }
-  }, [providers, patients, appts, reports])
+  }, [providers, patients, appts, reports, pricing])
 
   const filteredProviders = useMemo(() => {
     const q = searchQ.toLowerCase()
@@ -209,8 +221,8 @@ export function AdminPortal() {
                 <StatTile label="Completion" value={stats.completionRate !== null ? `${stats.completionRate}%` : '—'} sub="past appointments" />
               </div>
               <div className="grid grid-cols-2 gap-3 mb-4">
-                <StatTile label="Gross booking value" value={`R${stats.gross.toLocaleString()}`} sub="all sessions" />
-                <StatTile label="Platform commission (10%)" value={`R${stats.commission.toLocaleString()}`} />
+                <StatTile label="Gross booking value" value={`R${stats.gross.toLocaleString()}`} sub="all sessions · doctors keep 100%" />
+                <StatTile label="Est. subscription MRR" value={`R${stats.mrr.toLocaleString()}`} sub={`${stats.trials} on free trial`} />
               </div>
               <Card className="p-4 mb-4">
                 <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">Bookings — last 12 months</p>
@@ -502,16 +514,33 @@ function ConfigTab({ admin }) {
   const [cfg, setCfg]     = useState(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
-  useEffect(() => { admin.getConfig().then(c => setCfg({ signupsOpen: true, platformFeePct: 10, ...c })) }, [])
+  useEffect(() => {
+    admin.getConfig().then(c => setCfg({
+      signupsOpen: true,
+      ...c,
+      pricing: mergePricing(c?.pricing),
+    }))
+  }, [])
   if (!cfg) return <div className="h-24 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />
+
+  const setPricingField = (path, value) => setCfg(c => {
+    const p = structuredClone(c.pricing)
+    if (path.length === 1) p[path[0]] = value
+    else p.plans[path[0]][path[1]] = value
+    return { ...c, pricing: p }
+  })
 
   const save = async () => {
     setSaving(true)
-    await admin.saveConfig(cfg)
+    // Re-merge so blank/invalid numbers fall back to defaults instead of
+    // being written to config and breaking the signup page.
+    await admin.saveConfig({ ...cfg, pricing: mergePricing(cfg.pricing) })
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
+
+  const numInputCls = 'w-28 px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-sm text-ink-900 dark:text-ink-100 focus:outline-none focus:ring-2 focus:ring-primary-400'
 
   return (
     <Card className="p-4 space-y-4">
@@ -528,12 +557,32 @@ function ConfigTab({ admin }) {
         </button>
       </label>
 
-      <div>
-        <p className="text-sm font-medium text-ink-900 dark:text-ink-100 mb-1">Platform fee (%)</p>
-        <input type="number" min="0" max="50" value={cfg.platformFeePct}
-          onChange={e => setCfg(c => ({ ...c, platformFeePct: Number(e.target.value) }))}
-          className="w-24 px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-sm text-ink-900 dark:text-ink-100 focus:outline-none focus:ring-2 focus:ring-primary-400" />
-        <p className="text-[10px] text-ink-400 mt-1">Displayed across the app. Changing it here updates future displays — it does not retro-bill anyone.</p>
+      <div className="space-y-3">
+        <div>
+          <p className="text-sm font-medium text-ink-900 dark:text-ink-100">Subscription pricing</p>
+          <p className="text-[11px] text-ink-400">Shown on the doctor signup page. Existing subscriptions are not re-billed. New trials use the trial length below.</p>
+        </div>
+        <div className="flex flex-wrap gap-4">
+          <label className="block">
+            <span className="block text-xs text-ink-400 mb-1">Free trial (days)</span>
+            <input type="number" min="1" max="365" value={cfg.pricing.trialDays}
+              onChange={e => setPricingField(['trialDays'], Number(e.target.value))}
+              className={numInputCls} />
+          </label>
+          <label className="block">
+            <span className="block text-xs text-ink-400 mb-1">Standard (R/mo)</span>
+            <input type="number" min="1" value={cfg.pricing.plans.standard.monthly}
+              onChange={e => setPricingField(['standard', 'monthly'], Number(e.target.value))}
+              className={numInputCls} />
+          </label>
+          <label className="block">
+            <span className="block text-xs text-ink-400 mb-1">Featured (R/mo)</span>
+            <input type="number" min="1" value={cfg.pricing.plans.featured.monthly}
+              onChange={e => setPricingField(['featured', 'monthly'], Number(e.target.value))}
+              className={numInputCls} />
+          </label>
+        </div>
+        <p className="text-[10px] text-ink-400">Doctors keep 100% of their session fees — the platform charges no per-session commission.</p>
       </div>
 
       <Button onClick={save} disabled={saving}>

@@ -71,7 +71,7 @@ export function ProviderAnalytics() {
     return {
       kpi:        kpis(appts, win, fee),
       bookingsSeries: series(appts, buckets, () => 1, isSession),
-      revenueSeries:  series(appts, buckets, () => Math.round(fee * 0.9), isSession),
+      revenueSeries:  series(appts, buckets, () => Math.round(fee), isSession),
       att, occ, ratingAvg,
       nvr:        newVsReturning(appts, win),
       growth:     patientGrowth(appts),
@@ -207,7 +207,7 @@ export function ProviderAnalytics() {
                   <p className="text-xs font-medium text-ink-900 dark:text-ink-100 truncate">{a.patientName}</p>
                   <p className="text-[10px] text-ink-400">{a.date} · {a.timeSlot}</p>
                 </div>
-                <span className="text-[10px] font-semibold text-success-600 dark:text-success-400 flex-shrink-0">R{Math.round(fee * 0.9)}</span>
+                <span className="text-[10px] font-semibold text-success-600 dark:text-success-400 flex-shrink-0">R{Math.round(fee)}</span>
               </div>
             ))}
           </div>
