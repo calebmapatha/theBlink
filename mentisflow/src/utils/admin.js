@@ -1,6 +1,8 @@
-// Super Admin helpers. The email here must match isAdmin() in firestore.rules.
+// Super Admin helpers. The email here must match isAdmin() in firestore.rules,
+// including the verified-email requirement (firestore.rules is the real
+// enforcement; this only gates the UI).
 export const ADMIN_EMAIL = 'calebmapatha@gmail.com'
-export const isAdminUser = (user) => user?.email === ADMIN_EMAIL
+export const isAdminUser = (user) => user?.email === ADMIN_EMAIL && user?.emailVerified === true
 
 // Escape one CSV cell. Cells starting with =, +, -, @ or a tab/CR are
 // prefixed with a quote so spreadsheet apps treat them as text instead of

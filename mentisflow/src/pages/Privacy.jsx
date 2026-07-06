@@ -44,10 +44,10 @@ export function Privacy() {
 
         <Section title="2. Information we collect">
           <ul className="list-disc pl-5 space-y-1">
-            <li><strong>Account details</strong> — your name and email address.</li>
-            <li><strong>Wellbeing data</strong> — habits, tasks, mood and energy check-ins, focus sessions, brain-dump notes and treatment-plan entries you create in the app.</li>
-            <li><strong>Health data you choose to share</strong> — when booking an appointment you may share a snapshot of the above with a specific practitioner.</li>
-            <li><strong>Appointment data</strong> — bookings, status and any notes you add.</li>
+            <li><strong>Account details</strong>: your name and email address.</li>
+            <li><strong>Wellbeing data</strong>: habits, tasks, mood and energy check-ins, focus sessions, brain-dump notes and treatment-plan entries you create in the app.</li>
+            <li><strong>Health data you choose to share</strong>: when booking an appointment you may share a snapshot of the above with a specific practitioner.</li>
+            <li><strong>Appointment data</strong>: bookings, status and any notes you add.</li>
           </ul>
           <p>
             Mental-health information is "special personal information" under POPIA and
@@ -99,8 +99,8 @@ export function Privacy() {
         <Section title="7. Security">
           <p>
             We use Firebase for authentication and storage. Access is restricted by
-            security rules so that only you — and a practitioner you have explicitly shared
-            with — can read your health information. Data is transmitted over TLS and stored
+            security rules so that only you, and a practitioner you have explicitly shared
+            with, can read your health information. Data is transmitted over TLS and stored
             encrypted.
           </p>
         </Section>

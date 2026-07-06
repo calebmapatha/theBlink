@@ -53,8 +53,35 @@ export function useProviders() {
     return snap.exists() ? { id: snap.id, ...snap.data() } : null
   }
 
+  // Personal meeting-room links (Zoom/Meet rooms are often static URLs) must
+  // never sit on the world-readable provider doc: any signed-in user could
+  // read them and disrupt sessions. They live in providers/{uid}/private/
+  // (owner + admin only, enforced in firestore.rules) and are stamped onto
+  // the appointment when the provider confirms it.
+  const PRIVATE_KEYS = ['meetingLink']
+
+  const getPrivateProfile = async (uid) => {
+    try {
+      const snap = await getDoc(doc(db, 'providers', uid, 'private', 'meeting'))
+      return snap.exists() ? snap.data() : {}
+    } catch { return {} }
+  }
+
   const saveProvider = async (uid, data) => {
-    await setDoc(doc(db, 'providers', uid), { ...data, updatedAt: serverTimestamp() }, { merge: true })
+    const pub = { ...data }
+    const priv = {}
+    for (const k of PRIVATE_KEYS) {
+      if (k in pub) {
+        priv[k] = pub[k] ?? ''
+        // Also migrates legacy docs: any copy still on the public profile is
+        // removed the next time the provider saves.
+        pub[k] = deleteField()
+      }
+    }
+    await setDoc(doc(db, 'providers', uid), { ...pub, updatedAt: serverTimestamp() }, { merge: true })
+    if (Object.keys(priv).length > 0) {
+      await setDoc(doc(db, 'providers', uid, 'private', 'meeting'), priv, { merge: true })
+    }
     await reload()
   }
 
@@ -86,7 +113,22 @@ export function useProviders() {
       const docsSnap = await getDocs(collection(db, 'providers', appt.providerUid, 'screeningDocs'))
       screeningRequired = !docsSnap.empty
     } catch {}
-    await updateDoc(doc(db, 'appointments', appt.id), { status: 'confirmed', screeningRequired })
+    // Stamp the meeting link onto the appointment: the patient cannot read the
+    // provider's private profile, so the confirmed appointment is the only
+    // place they receive it (falls back to the legacy public-doc location).
+    let meetingLink = ''
+    try {
+      const priv = await getPrivateProfile(appt.providerUid)
+      meetingLink = priv.meetingLink || ''
+      if (!meetingLink) {
+        const snap = await getDoc(doc(db, 'providers', appt.providerUid))
+        meetingLink = snap.exists() ? (snap.data().meetingLink || '') : ''
+      }
+    } catch {}
+    await updateDoc(doc(db, 'appointments', appt.id), {
+      status: 'confirmed', screeningRequired,
+      ...(meetingLink ? { meetingLink } : {}),
+    })
     try {
       const snap = await getDoc(doc(db, 'providers', appt.providerUid))
       const current = snap.exists() ? (snap.data().bookedSlots || {}) : {}
@@ -223,7 +265,7 @@ export function useProviders() {
 
   return {
     providers, loading, reload, loadMore, hasMore,
-    getProvider, saveProvider,
+    getProvider, saveProvider, getPrivateProfile,
     getDiary, saveDiary, getBookingInfo, confirmAppointment,
     bookAppointment, getAppointments, getPatientAppointments, updateAppointment,
     linkDoctor, getLinkedDoctor, unlinkDoctor, searchProviderByHPCSA,

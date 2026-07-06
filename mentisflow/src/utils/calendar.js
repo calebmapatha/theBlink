@@ -34,7 +34,7 @@ export function buildEvent(appt, role = 'patient') {
     'Booked via MentisFlow.',
   ].filter(Boolean)
   return {
-    title:       `MentisFlow session — ${withName}`,
+    title:       `MentisFlow session: ${withName}`,
     description: lines.join('\n'),
     location:    appt.meetingLink || 'Online video session',
     start, end,

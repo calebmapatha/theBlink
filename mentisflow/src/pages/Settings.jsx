@@ -9,6 +9,7 @@ import { useApp } from '../context/AppContext'
 import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
 import { seedDemoProviders } from '../utils/seedProviders'
+import { isAdminUser } from '../utils/admin'
 
 const AVATAR_OPTIONS = ['🧠','😊','⚡','🎯','🦁','🐢','🦊','🌟','🔥','💎','🏔️','🌊','🎨','🎥','🚀']
 
@@ -107,7 +108,7 @@ function ProfileModal({ open, onClose, profile, onSave, authUser, photoURL, onPh
         </div>
         <div className="px-3 py-2.5 rounded-xl bg-surface-50 dark:bg-surface-900">
           <p className="text-xs text-ink-400 mb-0.5">Email (from account)</p>
-          <p className="text-sm text-ink-700 dark:text-ink-300">{authUser?.email || '—'}</p>
+          <p className="text-sm text-ink-700 dark:text-ink-300">{authUser?.email || 'N/A'}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
@@ -220,11 +221,11 @@ function RemindersSection({ notifications }) {
             <ReminderRow label="Habit reminder" pref={prefs.habitReminder}
               onToggle={() => updatePref('habitReminder', { enabled: !prefs.habitReminder.enabled })}
               onTimeChange={time => updatePref('habitReminder', { time })}
-              onTest={() => notifyNow('MentisFlow: Habit time!', 'Test — Check in on your habits for today 🌱')} />
+              onTest={() => notifyNow('MentisFlow: Habit time!', 'Test: Check in on your habits for today 🌱')} />
             <ReminderRow label="Focus reminder" pref={prefs.focusReminder}
               onToggle={() => updatePref('focusReminder', { enabled: !prefs.focusReminder.enabled })}
               onTimeChange={time => updatePref('focusReminder', { time })}
-              onTest={() => notifyNow('MentisFlow: Focus session', "Test — Time to start a focus session. You've got this! 🎯")} />
+              onTest={() => notifyNow('MentisFlow: Focus session', "Test: Time to start a focus session. You've got this! 🎯")} />
             {!isStandalone && (
               <div className="px-4 py-2.5 flex items-start gap-2">
                 <Bell size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
@@ -340,7 +341,7 @@ export function Settings() {
         <SettingsRow icon={Trash2} label="Clear all data" danger onClick={() => setClearOpen(true)} />
       </Section>
 
-      {user?.email === 'calebmapatha@gmail.com' && (
+      {isAdminUser(user) && (
         <Section title="Admin">
           <SettingsRow icon={Shield} label="Open Admin Portal" onClick={() => navigate('/admin')} />
           <div className="px-4 py-3.5 space-y-2">

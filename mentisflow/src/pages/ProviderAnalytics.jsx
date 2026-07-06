@@ -20,7 +20,7 @@ function KpiCard({ label, value, delta, prefix = '' }) {
       <p className={`text-[10px] font-medium flex items-center gap-0.5 mt-0.5 ${
         flat ? 'text-ink-400' : up ? 'text-success-600 dark:text-success-400' : 'text-red-500'}`}>
         {!flat && (up ? <TrendingUp size={10} /> : <TrendingDown size={10} />)}
-        {flat ? '—' : `${up ? '+' : ''}${delta}%`} <span className="text-ink-400 font-normal">vs prev period</span>
+        {flat ? 'no change' : `${up ? '+' : ''}${delta}%`} <span className="text-ink-400 font-normal">vs prev period</span>
       </p>
     </Card>
   )
@@ -129,7 +129,7 @@ export function ProviderAnalytics() {
       <div className="grid grid-cols-2 gap-3 mb-4">
         <Card className="p-3">
           <p className="text-[10px] text-ink-400 mb-1 flex items-center gap-1"><CalendarCheck size={10} /> Next 7 days occupancy</p>
-          <p className="text-xl font-bold text-ink-900 dark:text-ink-100">{occ.pct !== null ? `${occ.pct}%` : '—'}</p>
+          <p className="text-xl font-bold text-ink-900 dark:text-ink-100">{occ.pct !== null ? `${occ.pct}%` : 'N/A'}</p>
           <p className="text-[10px] text-ink-400">{occ.booked} booked of {occ.open} open slots</p>
           <div className="h-1.5 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden mt-1.5">
             <div className="h-full rounded-full bg-primary-500" style={{ width: `${occ.pct || 0}%` }} />
@@ -138,7 +138,7 @@ export function ProviderAnalytics() {
         <Card className="p-3">
           <p className="text-[10px] text-ink-400 mb-1 flex items-center gap-1"><Star size={10} /> Patient satisfaction</p>
           <p className="text-xl font-bold text-ink-900 dark:text-ink-100">
-            {stats.ratingAvg?.overall ? `${stats.ratingAvg.overall.toFixed(1)}/5` : '—'}
+            {stats.ratingAvg?.overall ? `${stats.ratingAvg.overall.toFixed(1)}/5` : 'N/A'}
           </p>
           <p className="text-[10px] text-ink-400">{ratings.length || profile?.ratingCount || 0} review{(ratings.length || profile?.ratingCount || 0) !== 1 ? 's' : ''}</p>
         </Card>

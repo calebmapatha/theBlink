@@ -5,8 +5,13 @@ service cloud.firestore {
     function isSignedIn() {
       return request.auth != null;
     }
+    // Admin is identified by email AND a verified-email claim: without the
+    // email_verified check, an account created with this address on another
+    // identity provider (before verification) could claim admin rights.
     function isAdmin() {
-      return request.auth != null && request.auth.token.email == 'calebmapatha@gmail.com';
+      return request.auth != null &&
+        request.auth.token.email == 'calebmapatha@gmail.com' &&
+        request.auth.token.email_verified == true;
     }
     function changedKeys() {
       return request.resource.data.diff(resource.data).affectedKeys();
@@ -57,6 +62,14 @@ service cloud.firestore {
       match /screeningDocs/{docId} {
         allow read: if isSignedIn();
         allow write: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      }
+
+      // Owner-only provider details (personal meeting-room links). Patients
+      // never read this: the link is stamped onto their appointment when the
+      // provider confirms it. Keeping it out of the public profile stops any
+      // signed-in user from harvesting video-room URLs.
+      match /private/{docId} {
+        allow read, write: if isSignedIn() && (request.auth.uid == uid || isAdmin());
       }
     }
 

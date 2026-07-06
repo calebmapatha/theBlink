@@ -27,7 +27,9 @@ beforeEach(() => env.clearFirestore())
 const patient  = () => env.authenticatedContext('patient1',  { email: 'patient1@example.com' }).firestore()
 const provider = () => env.authenticatedContext('provider1', { email: 'doc@example.com' }).firestore()
 const stranger = () => env.authenticatedContext('attacker',  { email: 'attacker@example.com' }).firestore()
-const admin    = () => env.authenticatedContext('adminuid',  { email: ADMIN_EMAIL }).firestore()
+const admin    = () => env.authenticatedContext('adminuid',  { email: ADMIN_EMAIL, email_verified: true }).firestore()
+// Same email, but the address was never verified: must NOT get admin rights.
+const fakeAdmin = () => env.authenticatedContext('impostor', { email: ADMIN_EMAIL, email_verified: false }).firestore()
 const anon     = () => env.unauthenticatedContext().firestore()
 
 // Seed data while bypassing rules.
@@ -138,6 +140,17 @@ describe('providers', () => {
     await assertSucceeds(getDoc(doc(admin(), 'providers/provider1')))
   })
 
+  it('private subcollection (meeting link) is owner/admin only', async () => {
+    await seed('providers/provider1', { name: 'Dr X', subscriptionActive: true })
+    await seed('providers/provider1/private/meeting', { meetingLink: 'https://meet.example.com/room' })
+    await assertSucceeds(getDoc(doc(provider(), 'providers/provider1/private/meeting')))
+    await assertSucceeds(setDoc(doc(provider(), 'providers/provider1/private/meeting'), { meetingLink: 'https://zoom.us/j/1' }))
+    await assertSucceeds(getDoc(doc(admin(), 'providers/provider1/private/meeting')))
+    await assertFails(getDoc(doc(patient(), 'providers/provider1/private/meeting')))
+    await assertFails(getDoc(doc(stranger(), 'providers/provider1/private/meeting')))
+    await assertFails(setDoc(doc(stranger(), 'providers/provider1/private/meeting'), { meetingLink: 'https://evil.example' }))
+  })
+
   it('the HPCSA search query is allowed when filtered to active providers', async () => {
     await seed('providers/provider1', { name: 'Dr X', hpcsa: 'MP123', subscriptionActive: true })
     await assertSucceeds(getDocs(query(
@@ -196,6 +209,15 @@ describe('user data, reports, admin collections', () => {
     await assertFails(setDoc(doc(stranger(), 'adminLogs/l2'), { action: 'x' }))
     await assertFails(updateDoc(doc(admin(), 'adminLogs/l1'), { action: 'edited' }))
     await assertFails(deleteDoc(doc(admin(), 'adminLogs/l1')))
+  })
+
+  it('admin email without verified-email claim gets no admin rights', async () => {
+    await seed('reports/r1', { reporterUid: 'patient1', reason: 'spam' })
+    await seed('providers/provider1', { name: 'Dr X', subscriptionActive: false })
+    await assertFails(getDoc(doc(fakeAdmin(), 'reports/r1')))
+    await assertFails(getDoc(doc(fakeAdmin(), 'providers/provider1')))
+    await assertFails(setDoc(doc(fakeAdmin(), 'adminLogs/l9'), { action: 'x' }))
+    await assertFails(setDoc(doc(fakeAdmin(), 'announcements/a1'), { title: 'x' }))
   })
 
   it('unknown collections are denied by default', async () => {

@@ -40,7 +40,7 @@ export async function getScreeningDocs(providerUid) {
 // Throws with a user-readable message on validation failure.
 export async function addScreeningDocPDF(providerUid, file, title) {
   if (file.type !== 'application/pdf') throw new Error('Only PDF files are supported.')
-  if (file.size > MAX_PDF_BYTES) throw new Error(`PDF too large — maximum ${Math.round(MAX_PDF_BYTES / 1024)} KB.`)
+  if (file.size > MAX_PDF_BYTES) throw new Error(`PDF too large. Maximum ${Math.round(MAX_PDF_BYTES / 1024)} KB.`)
   const dataUrl = await new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(reader.result)
