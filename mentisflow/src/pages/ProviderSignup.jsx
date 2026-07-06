@@ -51,7 +51,7 @@ const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:b
 
 export function ProviderSignup() {
   const { user }                      = useAuth()
-  const { getProvider, saveProvider } = useProviders()
+  const { getProvider, saveProvider, getPrivateProfile } = useProviders()
   const navigate                      = useNavigate()
   const [step, setStep]               = useState(1)
   const [checking, setChecking]       = useState(true)
@@ -72,6 +72,7 @@ export function ProviderSignup() {
     languages:       ['English'],
     avatar:          '🧠',
     sessionFee:      '',
+    hideFee:         false,
     availability:    '',
     meetingPlatform: '',
     meetingLink:     '',
@@ -84,7 +85,7 @@ export function ProviderSignup() {
     if (!user) return
     fetchPricing().then(setPricing)
     setForm(f => ({ ...f, name: user.displayName || user.email?.split('@')[0] || '' }))
-    getProvider(user.uid).then(p => {
+    getProvider(user.uid).then(async p => {
       // Paid (or legacy-active) providers have nothing to do here. Trialing
       // providers may stay to upgrade; expired ones come back to renew.
       if (p?.subscriptionActive && p?.subscriptionStatus !== 'trialing') {
@@ -95,6 +96,9 @@ export function ProviderSignup() {
         setHasProfile(true)
         setTrialUsed(!!p.trialUsed)
         if (p.trialUsed) setPlan('standard')
+        // Owner-only fields (meeting link) live in the private subcollection.
+        const priv = await getPrivateProfile(user.uid)
+        p = { ...p, ...priv }
         // Prefill so re-activation/upgrade never wipes the existing profile.
         setForm(f => Object.fromEntries(
           Object.keys(f).map(k => [k, p[k] != null && p[k] !== '' ? p[k] : f[k]])
@@ -129,7 +133,7 @@ export function ProviderSignup() {
       window.location.reload()
     } catch (e) {
       setActivateError(e?.message?.includes('trial')
-        ? 'Your free trial has already been used — please choose a plan.'
+        ? 'Your free trial has already been used. Please choose a plan.'
         : 'Could not activate your subscription. Please try again.')
     } finally {
       setSaving(false)
@@ -285,10 +289,18 @@ export function ProviderSignup() {
                 <div className="mt-2 rounded-xl bg-primary-50 dark:bg-primary-700/10 px-3 py-2.5 text-xs space-y-0.5">
                   <p className="font-semibold text-primary-700 dark:text-primary-300">No per-session commission</p>
                   <p className="text-ink-500 dark:text-ink-400">
-                    You keep 100% of your R{Number(form.sessionFee).toLocaleString()} session fee — MentisFlow charges only your monthly plan.
+                    You keep 100% of your R{Number(form.sessionFee).toLocaleString()} session fee. MentisFlow charges only your monthly plan.
                   </p>
                 </div>
               )}
+              <label className="flex items-start gap-2.5 mt-3 cursor-pointer">
+                <input type="checkbox" checked={!!form.hideFee} onChange={e => set('hideFee', e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded accent-primary-500 flex-shrink-0" />
+                <span className="text-xs text-ink-500 dark:text-ink-400 leading-relaxed">
+                  <span className="font-medium text-ink-700 dark:text-ink-300">Hide my session fee from patients.</span>{' '}
+                  Your profile will show "Fee on request" instead of the amount. You can change this any time.
+                </span>
+              </label>
             </div>
             <div>
               <label className="block text-xs font-medium text-ink-400 mb-1">Availability</label>
@@ -353,7 +365,7 @@ export function ProviderSignup() {
                 <span className="font-bold text-ink-900 dark:text-ink-100 text-base">{pricing.currency}0<span className="text-xs font-normal text-ink-400"> · {pricing.trialDays} days</span></span>
               </div>
               <ul className="space-y-1">
-                {['All Standard features', 'No card required', `Then ${pricing.currency}${pricing.plans.standard.monthly}/mo — or cancel anytime`].map(f => (
+                {['All Standard features', 'No card required', `Then ${pricing.currency}${pricing.plans.standard.monthly}/mo, or cancel anytime`].map(f => (
                   <li key={f} className="flex items-center gap-1.5 text-xs text-ink-400">
                     <Check size={10} className="text-success-500 flex-shrink-0" />{f}
                   </li>
@@ -399,7 +411,7 @@ export function ProviderSignup() {
           ))}
 
           <div className="rounded-xl bg-surface-50 dark:bg-surface-800 px-3 py-2.5 text-xs text-ink-500 dark:text-ink-400">
-            <span className="font-semibold text-ink-700 dark:text-ink-300">No per-session commission.</span> You keep 100% of your session fees — your monthly plan is MentisFlow's only charge.
+            <span className="font-semibold text-ink-700 dark:text-ink-300">No per-session commission.</span> You keep 100% of your session fees. Your monthly plan is MentisFlow's only charge.
           </div>
 
           {plan !== 'trial' && (

@@ -218,14 +218,14 @@ export function AdminPortal() {
                 <StatTile label="Doctors" value={stats.doctors} sub={`${stats.live} live · ${stats.pendingDocs} pending`} />
                 <StatTile label="Patients" value={stats.patients} />
                 <StatTile label="Bookings" value={stats.bookings} sub={`${stats.sessions} sessions`} />
-                <StatTile label="Completion" value={stats.completionRate !== null ? `${stats.completionRate}%` : '—'} sub="past appointments" />
+                <StatTile label="Completion" value={stats.completionRate !== null ? `${stats.completionRate}%` : 'N/A'} sub="past appointments" />
               </div>
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <StatTile label="Gross booking value" value={`R${stats.gross.toLocaleString()}`} sub="all sessions · doctors keep 100%" />
                 <StatTile label="Est. subscription MRR" value={`R${stats.mrr.toLocaleString()}`} sub={`${stats.trials} on free trial`} />
               </div>
               <Card className="p-4 mb-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">Bookings — last 12 months</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">Bookings: last 12 months</p>
                 <BarChart data={stats.byMonth} />
               </Card>
               <div className="flex gap-2">
@@ -372,7 +372,7 @@ export function AdminPortal() {
                   {r.resolution && <p className="text-[10px] text-ink-400 mt-0.5">Resolution: {r.resolution}</p>}
                   {r.status === 'open' && (
                     <div className="flex gap-2 mt-3">
-                      <Button size="sm" variant="soft" onClick={() => act(admin.resolveReport, r.id, 'dismissed — no action')}>Dismiss</Button>
+                      <Button size="sm" variant="soft" onClick={() => act(admin.resolveReport, r.id, 'dismissed, no action')}>Dismiss</Button>
                       <Button size="sm" variant="ghost" onClick={() => {
                         const prov = providers.find(p => p.id === r.providerUid)
                         if (prov) setModal({ type: 'suspend', provider: prov, reportId: r.id })
@@ -498,7 +498,7 @@ function LogsTab({ admin }) {
             <ScrollText size={12} className="text-ink-400 flex-shrink-0" />
             <p className="text-xs font-medium text-ink-800 dark:text-ink-200 flex-1">
               {l.action.replace(/_/g, ' ')}
-              {l.detail && <span className="text-ink-400 font-normal"> — {l.detail}</span>}
+              {l.detail && <span className="text-ink-400 font-normal"> · {l.detail}</span>}
             </p>
             <span className="text-[10px] text-ink-400 flex-shrink-0">
               {l.at?.seconds ? new Date(l.at.seconds * 1000).toLocaleString('en-ZA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
@@ -582,7 +582,7 @@ function ConfigTab({ admin }) {
               className={numInputCls} />
           </label>
         </div>
-        <p className="text-[10px] text-ink-400">Doctors keep 100% of their session fees — the platform charges no per-session commission.</p>
+        <p className="text-[10px] text-ink-400">Doctors keep 100% of their session fees. The platform charges no per-session commission.</p>
       </div>
 
       <Button onClick={save} disabled={saving}>

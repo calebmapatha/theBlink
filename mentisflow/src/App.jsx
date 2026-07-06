@@ -24,6 +24,7 @@ import { ProviderAnalytics } from './pages/ProviderAnalytics'
 import { AdminPortal } from './pages/AdminPortal'
 import { fetchLatestAnnouncement } from './hooks/useAdmin'
 import { Login } from './pages/Login'
+import { Landing } from './pages/Landing'
 import { Privacy } from './pages/Privacy'
 import { useApp } from './context/AppContext'
 import { HeartHandshake } from 'lucide-react'
@@ -67,13 +68,13 @@ function AppShell({ isProvider }) {
     <div className="flex h-screen bg-surface-50 dark:bg-surface-950 text-ink-900 dark:text-ink-100">
       {syncError && (
         <div className="fixed top-0 inset-x-0 z-50 bg-amber-500 text-white text-xs font-medium px-4 py-2 flex items-center justify-center gap-3">
-          <span>Some changes couldn’t be saved to the cloud. Check your connection — your data is safe on this device.</span>
+          <span>Some changes couldn’t be saved to the cloud. Check your connection. Your data is safe on this device.</span>
           <button onClick={() => setSyncError(false)} className="underline flex-shrink-0">Dismiss</button>
         </div>
       )}
       {announcement && !syncError && (
         <div className="fixed top-0 inset-x-0 z-50 bg-primary-600 text-white text-xs px-4 py-2 flex items-center justify-center gap-3">
-          <span><strong>{announcement.title}</strong> — {announcement.body}</span>
+          <span><strong>{announcement.title}</strong>: {announcement.body}</span>
           <button onClick={dismissAnnouncement} className="underline flex-shrink-0">Dismiss</button>
         </div>
       )}
@@ -129,6 +130,26 @@ function LoadingScreen() {
   )
 }
 
+// Public front door for logged-out visitors: marketing landing page with a
+// switch into the sign-in flow. Plain state (no router) keeps this robust to
+// the GitHub Pages base path (/theBlink/), same as the /privacy check below.
+// The landing page is ALWAYS the default; the login form only appears after
+// an explicit tap on a sign-in / get-started button.
+function PublicSite() {
+  const [view, setView] = useState('landing')
+  const [role, setRole] = useState(null)
+
+  const openLogin = (r = null) => {
+    if (r) localStorage.setItem('mf_role', r)
+    setRole(r)
+    setView('login')
+    window.scrollTo(0, 0)
+  }
+
+  if (view === 'login') return <Login onBack={() => setView('landing')} initialRole={role} />
+  return <Landing onSignIn={() => openLogin()} onGetStarted={openLogin} />
+}
+
 function AuthGate() {
   const { user } = useAuth()
   const [isProvider, setIsProvider] = useState(undefined)
@@ -146,7 +167,7 @@ function AuthGate() {
   if (window.location.pathname.replace(/\/$/, '').endsWith('/privacy')) return <Privacy />
 
   if (user === undefined || (user !== null && isProvider === undefined)) return <LoadingScreen />
-  if (!user) return <Login />
+  if (!user) return <PublicSite />
   return (
     <AppProvider userId={user.uid}>
       <AppShell isProvider={isProvider} />

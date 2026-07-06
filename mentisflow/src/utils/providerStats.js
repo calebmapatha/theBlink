@@ -241,6 +241,6 @@ export function insights({ appts, diary, profileViews, ratingAvg, occupancy, att
     out.push('👀 Less than 10% of profile views turn into bookings. A richer bio, photo, and visible availability all improve conversion.')
   }
 
-  if (out.length === 0) out.push('✅ Practice is healthy — no issues detected. Keep your diary up to date to maintain momentum.')
+  if (out.length === 0) out.push('✅ Practice is healthy, no issues detected. Keep your diary up to date to maintain momentum.')
   return out
 }

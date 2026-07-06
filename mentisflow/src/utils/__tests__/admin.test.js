@@ -2,9 +2,11 @@ import { describe, it, expect } from 'vitest'
 import { csvCell, isAdminUser, ADMIN_EMAIL } from '../admin'
 
 describe('isAdminUser', () => {
-  it('matches only the configured admin email', () => {
-    expect(isAdminUser({ email: ADMIN_EMAIL })).toBe(true)
-    expect(isAdminUser({ email: 'someone@example.com' })).toBe(false)
+  it('matches only the configured admin email with a verified address', () => {
+    expect(isAdminUser({ email: ADMIN_EMAIL, emailVerified: true })).toBe(true)
+    expect(isAdminUser({ email: ADMIN_EMAIL, emailVerified: false })).toBe(false)
+    expect(isAdminUser({ email: ADMIN_EMAIL })).toBe(false)
+    expect(isAdminUser({ email: 'someone@example.com', emailVerified: true })).toBe(false)
     expect(isAdminUser(null)).toBe(false)
     expect(isAdminUser(undefined)).toBe(false)
   })

@@ -272,10 +272,14 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
         {/* Fee */}
         <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-surface-50 dark:bg-surface-900">
           <span className="text-sm text-ink-500 dark:text-ink-400">Session fee</span>
-          <div>
-            <span className="text-xl font-bold text-ink-900 dark:text-ink-100">R{provider.sessionFee}</span>
-            <span className="text-xs text-ink-400 ml-1">/ session</span>
-          </div>
+          {provider.hideFee ? (
+            <span className="text-sm font-semibold text-ink-700 dark:text-ink-300">On request</span>
+          ) : (
+            <div>
+              <span className="text-xl font-bold text-ink-900 dark:text-ink-100">R{provider.sessionFee}</span>
+              <span className="text-xs text-ink-400 ml-1">/ session</span>
+            </div>
+          )}
         </div>
 
         {/* Actions */}
@@ -361,8 +365,14 @@ function ProviderCard({ provider, onBook, onLink, linked, onViewProfile }) {
 
       <div className="mt-3 pt-3 border-t border-surface-100 dark:border-surface-800 flex items-center justify-between gap-2">
         <div>
-          <span className="text-sm font-bold text-ink-900 dark:text-ink-100">R{provider.sessionFee}</span>
-          <span className="text-xs text-ink-400"> / session</span>
+          {provider.hideFee ? (
+            <span className="text-xs font-semibold text-ink-500 dark:text-ink-400">Fee on request</span>
+          ) : (
+            <>
+              <span className="text-sm font-bold text-ink-900 dark:text-ink-100">R{provider.sessionFee}</span>
+              <span className="text-xs text-ink-400"> / session</span>
+            </>
+          )}
         </div>
         <div className="flex gap-2">
           {onLink && !linked && (
@@ -572,7 +582,7 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
                 <p className="text-xs text-ink-400">Loading slots…</p>
               ) : availableSlots.length === 0 ? (
                 <p className="text-xs text-ink-400 bg-surface-50 dark:bg-surface-900 px-3 py-2 rounded-xl">
-                  No open slots for this day — it may be fully booked or the provider is unavailable. Try another date.
+                  No open slots for this day. It may be fully booked or the provider is unavailable. Try another date.
                 </p>
               ) : (
                 <div className="flex flex-wrap gap-2">
@@ -640,7 +650,11 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
           )}
 
           <div className="px-3 py-2 rounded-xl bg-surface-50 dark:bg-surface-900 text-xs text-ink-400">
-            Session fee: <strong className="text-ink-700 dark:text-ink-300">R{provider.sessionFee}</strong> · Payment arranged directly with the provider after confirmation.
+            {provider.hideFee ? (
+              <>Session fee: <strong className="text-ink-700 dark:text-ink-300">on request</strong> · Payment arranged directly with the provider after confirmation.</>
+            ) : (
+              <>Session fee: <strong className="text-ink-700 dark:text-ink-300">R{provider.sessionFee}</strong> · Payment arranged directly with the provider after confirmation.</>
+            )}
           </div>
 
           <div className="flex gap-2">
@@ -787,7 +801,7 @@ function SignDocumentsModal({ appt, open, onClose, user, userProfile, onSigned, 
           if (viewingDoc && !agreed.includes(viewingDoc.id)) toggleAgreed(viewingDoc.id)
           setViewingDoc(null)
         }}>
-          I have read this — agree &amp; close
+          I have read this. Agree &amp; close
         </Button>
       </div>
     </Modal>
@@ -1185,7 +1199,7 @@ export function Connect() {
                           <button onClick={() => setSigningAppt(a)}
                             className="mt-2.5 w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/40 text-amber-700 dark:text-amber-400 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors">
                             <FileSignature size={14} className="flex-shrink-0" />
-                            Documents ready to sign — tap to review &amp; sign
+                            Documents ready to sign. Tap to review &amp; sign
                           </button>
                         )}
                         {a.screeningSigned && (
@@ -1195,7 +1209,7 @@ export function Connect() {
                         )}
                         {a.status === 'confirmed' && (
                           <AddToCalendar
-                            appt={{ ...a, meetingLink: linkedDoctor?.meetingLink }}
+                            appt={{ ...a, meetingLink: a.meetingLink || linkedDoctor?.meetingLink || '' }}
                             role="patient"
                             className="mt-2.5 pt-2.5 border-t border-surface-100 dark:border-surface-800"
                           />

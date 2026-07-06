@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { onAuthStateChanged, signInWithPopup, signInWithEmailAndPassword,
-         createUserWithEmailAndPassword, signOut as firebaseSignOut } from 'firebase/auth'
+         createUserWithEmailAndPassword, sendPasswordResetEmail,
+         signOut as firebaseSignOut } from 'firebase/auth'
 import { auth, googleProvider } from '../lib/firebase'
 
 const AuthContext = createContext(null)
@@ -41,6 +42,22 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // Returns true on success so the caller can show a "check your inbox"
+  // confirmation. Firebase deliberately succeeds for unknown emails
+  // (enumeration protection), so success does not confirm the account exists.
+  const resetPassword = async (email) => {
+    setAuthError(null)
+    try {
+      await sendPasswordResetEmail(auth, email)
+      return true
+    } catch (e) {
+      setAuthError(friendlyError(e.code))
+      return false
+    }
+  }
+
+  const clearAuthError = () => setAuthError(null)
+
   const signOut = async () => {
     // Wipe the unencrypted, user-scoped data cache (habits, tasks, brain dump,
     // treatment plan, etc.) so sensitive health data does not linger on a
@@ -54,7 +71,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, authError, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut }}>
+    <AuthContext.Provider value={{ user, authError, clearAuthError, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, signOut }}>
       {children}
     </AuthContext.Provider>
   )

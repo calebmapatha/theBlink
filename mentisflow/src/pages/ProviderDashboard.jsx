@@ -222,7 +222,7 @@ function StatDetailModal({ kind, onClose, stats }) {
           <MetricRow label="Booking requests" value={appointments.length}
             sub="Appointments requested from your profile" />
           <MetricRow label="View → booking conversion"
-            value={profileViews > 0 ? `${Math.round((appointments.length / profileViews) * 100)}%` : '—'}
+            value={profileViews > 0 ? `${Math.round((appointments.length / profileViews) * 100)}%` : 'N/A'}
             sub="Share of profile views that turned into a booking" />
           <MetricRow label="Unique patients reached" value={uniquePatients} />
           <p className="text-[11px] text-ink-400 leading-relaxed pt-1">
@@ -262,7 +262,7 @@ function StatDetailModal({ kind, onClose, stats }) {
       body: (
         <div className="space-y-2">
           <MetricRow label="Accept rate"
-            value={acceptanceRate !== null ? `${acceptanceRate}%` : '—'}
+            value={acceptanceRate !== null ? `${acceptanceRate}%` : 'N/A'}
             sub="Confirmed out of all responded requests (pending excluded)" />
           <MetricRow label="Confirmed" value={confirmed.length} />
           <MetricRow label="Declined" value={declined.length} />
@@ -280,7 +280,7 @@ function StatDetailModal({ kind, onClose, stats }) {
             </div>
           )}
           <p className="text-[11px] text-ink-400 leading-relaxed pt-1">
-            💡 Responding quickly to pending requests — even declining — keeps patients informed and your profile trustworthy.
+            💡 Responding quickly to pending requests, even declining, keeps patients informed and your profile trustworthy.
           </p>
         </div>
       ),
@@ -290,7 +290,7 @@ function StatDetailModal({ kind, onClose, stats }) {
       body: (
         <div className="space-y-2">
           <MetricRow label="Your earnings" value={`R${gross.toLocaleString()}`}
-            sub={`${sessions.length} session${sessions.length !== 1 ? 's' : ''} × R${fee.toLocaleString()} — no commission, you keep 100%`} />
+            sub={`${sessions.length} session${sessions.length !== 1 ? 's' : ''} × R${fee.toLocaleString()}. No commission, you keep 100%`} />
           {pending.length > 0 && (
             <MetricRow label="Potential (pending)" value={`R${Math.round(pending.length * fee).toLocaleString()}`}
               sub={`${pending.length} pending request${pending.length !== 1 ? 's' : ''} if confirmed`} />
@@ -314,7 +314,7 @@ function StatDetailModal({ kind, onClose, stats }) {
             </div>
           )}
           <p className="text-[11px] text-ink-400 leading-relaxed pt-1">
-            Estimate only — based on your current session fee and confirmed bookings. Payments are settled directly between you and the patient.
+            Estimate only, based on your current session fee and confirmed bookings. Payments are settled directly between you and the patient.
           </p>
         </div>
       ),
@@ -372,6 +372,7 @@ function EditModal({ open, onClose, profile, onSave }) {
   const [form, setForm] = useState({
     bio:             profile?.bio || '',
     sessionFee:      profile?.sessionFee || '',
+    hideFee:         !!profile?.hideFee,
     availability:    profile?.availability || '',
     meetingPlatform: profile?.meetingPlatform || '',
     meetingLink:     profile?.meetingLink || '',
@@ -401,6 +402,13 @@ function EditModal({ open, onClose, profile, onSave }) {
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 text-sm">R</span>
             <input type="number" value={form.sessionFee} onChange={e => set('sessionFee', e.target.value)} min="0" className={`${inputCls} pl-7`} />
           </div>
+          <label className="flex items-start gap-2.5 mt-2.5 cursor-pointer">
+            <input type="checkbox" checked={!!form.hideFee} onChange={e => set('hideFee', e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded accent-primary-500 flex-shrink-0" />
+            <span className="text-xs text-ink-500 dark:text-ink-400 leading-relaxed">
+              Hide my session fee from patients. Your profile will show "Fee on request" instead of the amount.
+            </span>
+          </label>
         </div>
         <div>
           <label className="block text-xs font-medium text-ink-400 mb-1">Availability</label>
@@ -483,7 +491,7 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
           {appt.screeningSigned ? (
             <p className="text-[10px] text-success-600 dark:text-success-400 mt-1.5 flex items-center gap-1">
               <FileSignature size={10} className="flex-shrink-0" />
-              Documents signed{appt.screeningSignatureName ? ` — ${appt.screeningSignatureName}` : ''}
+              Documents signed{appt.screeningSignatureName ? `: ${appt.screeningSignatureName}` : ''}
               {onViewConsents && (
                 <button onClick={() => onViewConsents(appt)} className="text-primary-500 underline ml-1">View</button>
               )}
@@ -594,7 +602,7 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
   return (
     <div className="space-y-4">
       <p className="text-xs text-ink-400 leading-relaxed">
-        Weekday slots ({DEFAULT_HOURS[0]}–{DEFAULT_HOURS[DEFAULT_HOURS.length - 1]}, hourly) are{' '}
+        Weekday slots ({DEFAULT_HOURS[0]} to {DEFAULT_HOURS[DEFAULT_HOURS.length - 1]}, hourly) are{' '}
         <strong className="text-ink-600 dark:text-ink-300">open by default</strong>. Add or remove times to
         customise a day, or close it entirely. Confirmed bookings hide their slot automatically.
       </p>
@@ -633,7 +641,7 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {slots.length === 0 ? (
-                  <span className="text-xs text-ink-400 italic">No slots — patients can't book this day</span>
+                  <span className="text-xs text-ink-400 italic">No slots. Patients can't book this day</span>
                 ) : (
                   slots.map(time => (
                     <span key={time}
@@ -763,7 +771,7 @@ function DocumentsManager({ providerUid }) {
   return (
     <div className="space-y-3">
       <p className="text-xs text-ink-400 leading-relaxed">
-        Optional. Upload documents — terms &amp; conditions, consultation agreements, practice policies —
+        Optional. Upload documents (terms &amp; conditions, consultation agreements, practice policies)
         for patients to sign. When you <strong className="text-ink-600 dark:text-ink-300">accept</strong> a
         booking request, the documents are sent to the patient to read and digitally sign before the
         session. Signatures are stored with each appointment.
@@ -772,7 +780,7 @@ function DocumentsManager({ providerUid }) {
       {docs.length === 0 ? (
         <Card className="p-4 text-center">
           <FileSignature size={20} className="text-ink-400 mx-auto mb-1.5" />
-          <p className="text-xs text-ink-400">No pre-screening documents yet — patients can book without signing anything.</p>
+          <p className="text-xs text-ink-400">No pre-screening documents yet. Patients can book without signing anything.</p>
         </Card>
       ) : (
         <div className="space-y-2">
@@ -841,7 +849,7 @@ function DocumentsManager({ providerUid }) {
 
 export function ProviderDashboard() {
   const { user }                                                                                                    = useAuth()
-  const { getProvider, getAppointments, updateAppointment, confirmAppointment, saveProvider, getDiary, saveDiary, uploadPhoto, getProviderRatings } = useProviders()
+  const { getProvider, getPrivateProfile, getAppointments, updateAppointment, confirmAppointment, saveProvider, getDiary, saveDiary, uploadPhoto, getProviderRatings } = useProviders()
   const navigate                                                                                                    = useNavigate()
   const [profile, setProfile]           = useState(null)
   const [appointments, setAppointments] = useState([])
@@ -859,9 +867,11 @@ export function ProviderDashboard() {
       getProvider(user.uid),
       getAppointments(user.uid),
       getProviderRatings(user.uid),
-    ]).then(([p, appts, rats]) => {
+      getPrivateProfile(user.uid),
+    ]).then(([p, appts, rats, priv]) => {
       if (!p) { navigate('/provider/signup'); return }
-      setProfile(p)
+      // Merge owner-only fields (meeting link) into the working profile.
+      setProfile({ ...p, ...priv })
       setAppointments(appts.sort((a, b) => {
         const order = { pending: 0, confirmed: 1, cancelled: 2 }
         return (order[a.status] ?? 3) - (order[b.status] ?? 3)
@@ -972,7 +982,7 @@ export function ProviderDashboard() {
           <p className="text-xs font-semibold text-red-600 dark:text-red-400 mb-0.5">Your subscription is inactive</p>
           <p className="text-[11px] text-red-600/80 dark:text-red-400/80 leading-relaxed mb-2">
             {profile?.subscriptionStatus === 'trial_expired'
-              ? 'Your free trial has ended — your profile is hidden from patients until you choose a plan. Your data and reviews are safe.'
+              ? 'Your free trial has ended. Your profile is hidden from patients until you choose a plan. Your data and reviews are safe.'
               : 'Your profile is hidden from patients until you reactivate your plan.'}
           </p>
           <Button size="sm" onClick={() => navigate('/provider/signup')}>Choose a plan</Button>
@@ -994,7 +1004,7 @@ export function ProviderDashboard() {
           <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-0.5">⏳ Awaiting approval</p>
           <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 leading-relaxed">
             Your profile is being reviewed and isn't visible to patients yet. You can set up your diary
-            and profile in the meantime — you'll go live as soon as you're approved.
+            and profile in the meantime. You'll go live as soon as you're approved.
           </p>
         </div>
       )}
@@ -1076,7 +1086,7 @@ export function ProviderDashboard() {
         {[
           { kind: 'views',      icon: Eye,        color: 'text-primary-500', value: profileViews, label: 'Profile views' },
           { kind: 'patients',   icon: Users,      color: 'text-success-500', value: uniquePatients, label: 'Unique patients' },
-          { kind: 'acceptRate', icon: TrendingUp, color: 'text-warm-500',    value: acceptanceRate !== null ? `${acceptanceRate}%` : '—', label: 'Accept rate' },
+          { kind: 'acceptRate', icon: TrendingUp, color: 'text-warm-500',    value: acceptanceRate !== null ? `${acceptanceRate}%` : 'N/A', label: 'Accept rate' },
         ].map(({ kind, icon: Icon, color, value, label }) => (
           <Card key={kind} role="button" tabIndex={0} onClick={() => setStatModal(kind)}
             onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setStatModal(kind) } }}
