@@ -46,9 +46,10 @@ const itemVariants = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, 
 
 export function Dashboard() {
   const navigate = useNavigate()
-  const { habits, tasks, checkin, dump, timer, rewards, userId, awardAndToast } = useApp()
+  const { habits, tasks, checkin, dump, timer, rewards, userId, awardAndToast, userProfile } = useApp()
   const treatmentPlan = useTreatmentPlan(userId)
   const [dumpText, setDumpText] = useState('')
+  const firstName = (userProfile?.profile?.displayName || '').trim().split(/\s+/)[0] || ''
 
   const checkedTodayCount  = habits.habits.filter(h => habits.isCheckedToday(h.id)).length
   const completedTaskCount = tasks.completedToday.length
@@ -84,12 +85,14 @@ export function Dashboard() {
 
   return (
     <PageWrapper>
-      <div className="mb-5">
-        <div className="flex items-center gap-2 text-ink-400 text-xs mb-1">
+      <div className="mb-6">
+        <div className="flex items-center gap-2 text-ink-400 text-xs mb-1.5">
           <Sun size={13} />
-          <span>{formatDayHeader()}</span>
+          <span className="font-medium">{formatDayHeader()}</span>
         </div>
-        <h1 className="text-2xl font-semibold text-ink-900 dark:text-ink-100">{greeting()} 👋</h1>
+        <h1 className="text-[1.7rem] font-bold tracking-tight text-ink-900 dark:text-ink-100 leading-tight">
+          {greeting()}{firstName ? `, ${firstName}` : ''} 👋
+        </h1>
       </div>
 
       <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-3">
@@ -98,20 +101,23 @@ export function Dashboard() {
         <motion.div variants={itemVariants}>
           <button
             onClick={() => navigate('/connect')}
-            className="w-full text-left p-5 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-md hover:shadow-lg transition-shadow"
+            className="relative w-full text-left p-5 rounded-3xl bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-md shadow-primary-500/20 hover:shadow-lg hover:shadow-primary-500/30 transition-shadow overflow-hidden"
           >
-            <div className="flex items-start justify-between gap-3">
+            <div className="absolute -top-10 -right-8 w-36 h-36 bg-white/10 rounded-full blur-2xl" aria-hidden="true" />
+            <div className="relative flex items-start justify-between gap-3">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1.5">
                   <HeartHandshake size={16} className="opacity-80" />
-                  <p className="text-xs font-semibold opacity-80 uppercase tracking-wider">MentisFlow Connect</p>
+                  <p className="text-xs font-bold opacity-80 uppercase tracking-wider">MentisFlow Connect</p>
                 </div>
-                <p className="text-lg font-semibold leading-snug mb-1">Mental Health Support</p>
+                <p className="text-lg font-bold leading-snug mb-1">Mental Health Support</p>
                 <p className="text-sm opacity-80 leading-relaxed">
                   Connect with HPCSA-registered psychiatrists &amp; psychologists. Book appointments and share your wellness data.
                 </p>
               </div>
-              <ChevronRight size={18} className="opacity-60 flex-shrink-0 mt-1" />
+              <span className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0 mt-1">
+                <ChevronRight size={16} />
+              </span>
             </div>
           </button>
         </motion.div>

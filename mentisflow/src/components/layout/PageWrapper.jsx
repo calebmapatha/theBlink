@@ -9,7 +9,7 @@ export function PageWrapper({ children }) {
       transition={{ duration: 0.2, ease: 'easeOut' }}
       className="h-full overflow-y-auto"
     >
-      <div className="max-w-2xl mx-auto px-6 py-8">
+      <div className="max-w-2xl mx-auto px-5 sm:px-6 py-8">
         {children}
       </div>
     </motion.div>
