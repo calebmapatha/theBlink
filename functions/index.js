@@ -63,8 +63,9 @@ export const aggregateRating = onDocumentCreated('ratings/{appointmentId}', asyn
   }
 })
 
-// Trial length, overridable at runtime from config/platform → pricing.trialDays.
-const DEFAULT_TRIAL_DAYS = 30
+// Trial length (2 months), overridable at runtime from config/platform →
+// pricing.trialDays. Must match DEFAULT_PRICING.trialDays in the web app.
+const DEFAULT_TRIAL_DAYS = 60
 
 async function configuredTrialDays() {
   try {

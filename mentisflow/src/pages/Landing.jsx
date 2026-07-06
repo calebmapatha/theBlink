@@ -237,7 +237,7 @@ export function Landing({ onSignIn, onGetStarted }) {
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
             ['R0', 'commission. Doctors keep 100% of session fees'],
-            [`${trialDays} days`, 'free trial for every new practice'],
+            ['2 months', 'free trial for every new practice'],
             ['9 provinces', 'find practitioners anywhere in SA'],
             ['2 roles', 'one platform for patients & practitioners'],
           ].map(([big, small]) => (
@@ -332,11 +332,12 @@ export function Landing({ onSignIn, onGetStarted }) {
           {...fadeUp}
           className="mt-14 rounded-3xl bg-slate-50 border border-slate-100 p-8 sm:p-10 text-center max-w-3xl mx-auto"
         >
-          <p className="text-sm font-bold text-teal-600 uppercase tracking-wide">Start with a {trialDays}-day free trial</p>
+          <p className="text-sm font-bold text-teal-600 uppercase tracking-wide">Start with a 2-month free trial</p>
           <h3 className="text-2xl font-extrabold tracking-tight mt-2">Try everything first. Pay nothing today.</h3>
           <p className="text-slate-500 mt-3 leading-relaxed max-w-xl mx-auto">
-            Every new practice starts with a {trialDays}-day free trial, with no card required and no
-            per-session commission. Plan options are shown when you create your practice profile.
+            Every new practice starts with a 2-month ({trialDays}-day) free trial, with no card
+            required and no per-session commission. Plan options are shown when you create your
+            practice profile.
           </p>
           <button
             onClick={() => onGetStarted('provider')}
@@ -401,7 +402,7 @@ export function Landing({ onSignIn, onGetStarted }) {
               onClick={() => onGetStarted('provider')}
               className="bg-teal-600/40 hover:bg-teal-600/60 border border-white/30 text-white font-semibold px-7 py-3.5 rounded-2xl transition-colors"
             >
-              Start your {trialDays}-day practice trial
+              Start your 2-month practice trial
             </button>
           </div>
         </motion.div>
