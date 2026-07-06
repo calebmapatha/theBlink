@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { format, startOfMonth, getDay, getDaysInMonth, isFuture, isToday } from 'date-fns'
 import { PageWrapper } from '../components/layout/PageWrapper'
+import { PageHeader } from '../components/layout/PageHeader'
 import { Card } from '../components/ui/Card'
 import { useApp } from '../context/AppContext'
 
@@ -76,10 +77,7 @@ export function MonthlyTracker() {
 
   return (
     <PageWrapper>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-ink-900 dark:text-ink-100">Monthly Tracker</h1>
-        <p className="text-sm text-ink-400 mt-0.5">Habit performance over time</p>
-      </div>
+      <PageHeader title="Monthly Tracker" subtitle="Habit performance over time" />
 
       <div className="flex items-center justify-between mb-4">
         <button onClick={goBack} className="p-2 rounded-xl hover:bg-surface-100 dark:hover:bg-surface-800 text-ink-700 dark:text-ink-300 transition-colors">

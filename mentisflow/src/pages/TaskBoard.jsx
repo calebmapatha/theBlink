@@ -3,6 +3,7 @@ import { Plus, Star, Trash2, ArrowUp, ArrowDown, CalendarDays, GripVertical } fr
 import { motion, AnimatePresence } from 'framer-motion'
 import { format } from 'date-fns'
 import { PageWrapper } from '../components/layout/PageWrapper'
+import { PageHeader } from '../components/layout/PageHeader'
 import { Checkbox } from '../components/ui/Checkbox'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
@@ -90,10 +91,7 @@ export function TaskBoard() {
 
   return (
     <PageWrapper>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-ink-900 dark:text-ink-100">Tasks</h1>
-        <p className="text-sm text-ink-400 mt-0.5">Capture · focus · finish</p>
-      </div>
+      <PageHeader title="Tasks" subtitle="Capture, focus, finish" />
 
       <div className="mb-6">
         <div className="flex gap-2">

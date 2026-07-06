@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Plus, Settings, Edit2, Trash2, Check } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { PageWrapper } from '../components/layout/PageWrapper'
+import { PageHeader } from '../components/layout/PageHeader'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import { useApp } from '../context/AppContext'
@@ -257,15 +258,16 @@ export function HabitTracker() {
 
   return (
     <PageWrapper>
-      <div className="flex items-center justify-between mb-2">
-        <div>
-          <h1 className="text-2xl font-semibold text-ink-900 dark:text-ink-100">Habits</h1>
-          <p className="text-sm text-ink-400 mt-0.5">{formatDayHeader()}</p>
-        </div>
-        <Button variant="ghost" size="icon" onClick={() => setManageOpen(true)}>
-          <Settings size={18} />
-        </Button>
-      </div>
+      <PageHeader
+        title="Habits"
+        subtitle={formatDayHeader()}
+        action={
+          <Button variant="ghost" size="icon" onClick={() => setManageOpen(true)}>
+            <Settings size={18} />
+          </Button>
+        }
+        className="mb-2"
+      />
 
       {habits.totalHabits > 0 && (
         <SummaryRing checked={checkedToday} total={habits.totalHabits} />

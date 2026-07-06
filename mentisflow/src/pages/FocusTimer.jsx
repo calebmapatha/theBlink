@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Play, Pause, RotateCcw, SkipForward, Settings, Volume2 } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
+import { PageHeader } from '../components/layout/PageHeader'
 import { ProgressRing } from '../components/ui/ProgressRing'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
@@ -65,15 +66,16 @@ export function FocusTimer() {
 
   return (
     <PageWrapper>
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-ink-900 dark:text-ink-100">Focus Timer</h1>
-          <p className="text-sm text-ink-400 mt-0.5">Pomodoro-style work sessions</p>
-        </div>
-        <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(true)}>
-          <Settings size={18} />
-        </Button>
-      </div>
+      <PageHeader
+        title="Focus Timer"
+        subtitle="Pomodoro-style work sessions"
+        action={
+          <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(true)}>
+            <Settings size={18} />
+          </Button>
+        }
+        className="mb-8"
+      />
 
       <div className="flex gap-2 mb-10 p-1 bg-surface-100 dark:bg-surface-800/60 rounded-xl">
         {Object.entries(MODE_LABELS).map(([mode, label]) => (

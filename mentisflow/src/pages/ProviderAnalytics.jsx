@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { TrendingUp, TrendingDown, Calendar, Users, Star, Lightbulb, Clock, CalendarCheck } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
+import { PageHeader } from '../components/layout/PageHeader'
 import { Card } from '../components/ui/Card'
 import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
@@ -99,10 +100,7 @@ export function ProviderAnalytics() {
 
   return (
     <PageWrapper>
-      <div className="mb-5">
-        <h1 className="text-2xl font-semibold text-ink-900 dark:text-ink-100">Practice Analytics</h1>
-        <p className="text-sm text-ink-400 mt-0.5">How your practice is performing</p>
-      </div>
+      <PageHeader title="Practice Analytics" subtitle="How your practice is performing" className="mb-5" />
 
       {/* Period selector */}
       <div className="flex gap-2 mb-4">

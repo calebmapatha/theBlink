@@ -947,13 +947,16 @@ export function Connect() {
 
   return (
     <PageWrapper>
-      <div className="mb-5 p-4 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white">
-        <div className="flex items-center gap-2 mb-1">
-          <HeartHandshake size={16} className="opacity-80" />
-          <p className="text-xs font-medium opacity-80 uppercase tracking-wider">Mental Health Journey</p>
+      <div className="relative mb-5 p-4 rounded-3xl bg-gradient-to-br from-primary-500 to-primary-700 text-white overflow-hidden shadow-md shadow-primary-500/20">
+        <div className="absolute -top-8 -right-6 w-28 h-28 bg-white/10 rounded-full blur-2xl" aria-hidden="true" />
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-1">
+            <HeartHandshake size={16} className="opacity-80" />
+            <p className="text-xs font-bold opacity-80 uppercase tracking-wider">Mental Health Journey</p>
+          </div>
+          <h1 className="text-xl font-bold mb-0.5">You deserve support</h1>
+          <p className="text-sm opacity-80">Certified HPCSA-registered psychiatrists &amp; psychologists, available online.</p>
         </div>
-        <h1 className="text-xl font-semibold mb-0.5">You deserve support</h1>
-        <p className="text-sm opacity-80">Certified HPCSA-registered psychiatrists &amp; psychologists, available online.</p>
       </div>
 
       <div className="flex gap-2 mb-5">

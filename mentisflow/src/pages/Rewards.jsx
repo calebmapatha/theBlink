@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Zap, Trophy } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
+import { PageHeader } from '../components/layout/PageHeader'
 import { Card } from '../components/ui/Card'
 import { useApp } from '../context/AppContext'
 import { formatRelative } from '../utils/dateUtils'
@@ -12,10 +13,7 @@ export function Rewards() {
 
   return (
     <PageWrapper>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-ink-900 dark:text-ink-100">Rewards</h1>
-        <p className="text-sm text-ink-400 mt-0.5">Your progress and achievements</p>
-      </div>
+      <PageHeader title="Rewards" subtitle="Your progress and achievements" />
 
       {/* Level card */}
       <Card glow className="p-6 mb-4 text-center">
