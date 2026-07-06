@@ -9,7 +9,7 @@ import { db } from '../lib/firebase'
 // Model: flat monthly subscription, no per-session commission. Doctors keep
 // 100% of their session fees; MentisFlow charges only the listing plan.
 export const DEFAULT_PRICING = {
-  trialDays: 30,
+  trialDays: 60, // 2-month free trial
   currency: 'R',
   plans: {
     standard: { monthly: 495, annual: 4950 },

@@ -9,7 +9,7 @@ const { DEFAULT_PRICING, mergePricing, trialDaysLeft } = await import('../pricin
 
 describe('DEFAULT_PRICING', () => {
   it('carries the launch numbers', () => {
-    expect(DEFAULT_PRICING.trialDays).toBe(30)
+    expect(DEFAULT_PRICING.trialDays).toBe(60)
     expect(DEFAULT_PRICING.plans.standard.monthly).toBe(495)
     expect(DEFAULT_PRICING.plans.featured.monthly).toBe(895)
   })
