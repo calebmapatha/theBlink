@@ -415,7 +415,9 @@ export const notifyBookingStatus = onDocumentUpdated('appointments/{id}', async 
     await writeNotification(after.patientUid, {
       type: 'booking_confirmed',
       title: 'Appointment confirmed',
-      body: `Your appointment on ${after.date} at ${after.timeSlot} was confirmed.`,
+      body: after.screeningRequired
+        ? `Your appointment on ${after.date} at ${after.timeSlot} was confirmed. Please review and sign the documents your practitioner requires.`
+        : `Your appointment on ${after.date} at ${after.timeSlot} was confirmed.`,
       link: '/connect',
     })
   } else if (after.status === 'cancelled') {

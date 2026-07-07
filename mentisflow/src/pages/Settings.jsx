@@ -68,6 +68,7 @@ function PhotoAvatar({ photoURL, avatar, size = 'lg', onClick, uploading }) {
 function ProfileModal({ open, onClose, profile, onSave, authUser, photoURL, onPhotoUpload }) {
   const [name, setName]       = useState(profile.displayName || authUser?.displayName || '')
   const [avatar, setAvatar]   = useState(profile.avatarEmoji || '🧠')
+  const [pharmacy, setPharmacy] = useState(profile.pharmacy || '')
   const [uploading, setUploading] = useState(false)
   const fileRef               = useRef()
 
@@ -109,13 +110,19 @@ function ProfileModal({ open, onClose, profile, onSave, authUser, photoURL, onPh
           <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name"
             className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
         </div>
+        <div>
+          <label className="block text-xs font-medium text-ink-400 mb-1">Preferred pharmacy <span className="font-normal">(optional)</span></label>
+          <input value={pharmacy} onChange={e => setPharmacy(e.target.value)} placeholder="e.g. Clicks Rosebank, or your local pharmacy"
+            className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
+          <p className="text-[10px] text-ink-400 mt-1">Where you'd like prescriptions sent. You can share this with your doctor.</p>
+        </div>
         <div className="px-3 py-2.5 rounded-xl bg-surface-50 dark:bg-surface-900">
           <p className="text-xs text-ink-400 mb-0.5">Email (from account)</p>
           <p className="text-sm text-ink-700 dark:text-ink-300">{authUser?.email || 'N/A'}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
-          <Button className="flex-1" onClick={() => { onSave({ displayName: name, avatarEmoji: avatar }); onClose() }}>
+          <Button className="flex-1" onClick={() => { onSave({ displayName: name, avatarEmoji: avatar, pharmacy: pharmacy.trim() }); onClose() }}>
             <Check size={14} /> Save
           </Button>
         </div>

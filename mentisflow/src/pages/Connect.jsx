@@ -1191,7 +1191,14 @@ export function Connect() {
                       <Card key={a.id} className="p-3">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-ink-900 dark:text-ink-100">{a.date} at {a.timeSlot}</p>
+                            <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">{linkedDoctor.name}</p>
+                            <p className="text-xs text-ink-400">{[linkedDoctor.type, linkedDoctor.city, linkedDoctor.province].filter(Boolean).join(' · ')}</p>
+                            <p className="text-sm text-ink-700 dark:text-ink-200 mt-1 flex items-center gap-1.5">
+                              <Calendar size={11} className="text-ink-400 flex-shrink-0" /> {a.date} at {a.timeSlot}
+                            </p>
+                            <p className="text-[11px] text-ink-400 mt-0.5 flex items-center gap-1">
+                              <Video size={10} className="flex-shrink-0" /> Online video session
+                            </p>
                             {a.sharedDataTypes?.length > 0 && (
                               <div className="flex gap-1 mt-1.5 flex-wrap">
                                 {a.sharedDataTypes.map(t => {
