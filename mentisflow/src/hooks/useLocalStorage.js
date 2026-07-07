@@ -60,6 +60,10 @@ export function useUserLocalStorage(userId, key, initialValue) {
       return item ? JSON.parse(item) : initialValue
     } catch { return initialValue }
   })
+  // True once the Firestore hydrate has resolved (either way). Lets callers
+  // avoid acting on the default value before cloud data has arrived, e.g.
+  // showing onboarding to a long-time user on a brand-new device.
+  const [hydrated, setHydrated] = useState(false)
 
   const hasSynced = useRef(false)
 
@@ -84,6 +88,7 @@ export function useUserLocalStorage(userId, key, initialValue) {
         } catch {}
       }
     }).catch(err => console.warn(`Hydrate failed for "${key}"`, err))
+      .finally(() => setHydrated(true))
   }, [userId, key, storageKey])
 
   const setValue = useCallback((value) => {
@@ -97,5 +102,5 @@ export function useUserLocalStorage(userId, key, initialValue) {
     })
   }, [userId, key, storageKey])
 
-  return [state, setValue]
+  return [state, setValue, hydrated]
 }

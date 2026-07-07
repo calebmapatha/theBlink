@@ -134,7 +134,7 @@ export function Dashboard() {
 
         {/* Check-in */}
         <motion.div variants={itemVariants}>
-          <Card className="p-4 cursor-pointer hover:border-primary-300 dark:hover:border-primary-700 transition-colors" onClick={() => navigate('/checkin')}>
+          <Card interactive className="p-4" onClick={() => navigate('/checkin')}>
             {checkin.todayCheckin ? (
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
@@ -169,7 +169,7 @@ export function Dashboard() {
         {/* Habits + Tasks */}
         <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3">
           <button onClick={() => navigate('/habits')} className="text-left">
-            <Card className="p-4 h-full hover:border-primary-300 dark:hover:border-primary-700 transition-colors">
+            <Card interactive className="p-4 h-full">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">Habits</p>
                 <ChevronRight size={13} className="text-ink-400" />
@@ -190,7 +190,7 @@ export function Dashboard() {
           </button>
 
           <button onClick={() => navigate('/tasks')} className="text-left">
-            <Card className="p-4 h-full hover:border-primary-300 dark:hover:border-primary-700 transition-colors">
+            <Card interactive className="p-4 h-full">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">Tasks</p>
                 <ChevronRight size={13} className="text-ink-400" />
@@ -246,7 +246,7 @@ export function Dashboard() {
 
         {/* Timer */}
         <motion.div variants={itemVariants}>
-          <Card className="p-4 cursor-pointer hover:border-primary-300 dark:hover:border-primary-700 transition-colors" onClick={() => navigate('/timer')}>
+          <Card interactive className="p-4" onClick={() => navigate('/timer')}>
             <div className="flex items-center gap-4">
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-1">Focus Timer</p>
@@ -288,7 +288,7 @@ export function Dashboard() {
 
         {/* Monthly overview */}
         <motion.div variants={itemVariants}>
-          <Card className="p-4 cursor-pointer hover:border-primary-300 dark:hover:border-primary-700 transition-colors" onClick={() => navigate('/monthly')}>
+          <Card interactive className="p-4" onClick={() => navigate('/monthly')}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <BarChart2 size={15} className="text-ink-400" />
@@ -315,7 +315,7 @@ export function Dashboard() {
 
         {/* Treatment Plan */}
         <motion.div variants={itemVariants}>
-          <Card className="p-4 cursor-pointer hover:border-primary-300 dark:hover:border-primary-700 transition-colors" onClick={() => navigate('/treatment')}>
+          <Card interactive className="p-4" onClick={() => navigate('/treatment')}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <ClipboardList size={15} className="text-ink-400" />
@@ -357,7 +357,7 @@ export function Dashboard() {
 
         {/* XP */}
         <motion.div variants={itemVariants}>
-          <Card className="p-4 cursor-pointer hover:border-primary-300 dark:hover:border-primary-700 transition-colors" onClick={() => navigate('/rewards')}>
+          <Card interactive className="p-4" onClick={() => navigate('/rewards')}>
             <div className="flex items-center justify-between mb-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-0.5">Level {rewards.currentLevel.level}</p>
