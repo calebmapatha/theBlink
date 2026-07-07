@@ -355,7 +355,8 @@ export function Settings() {
 
   const handlePhotoUpload = async (file) => {
     const url = await uploadPhoto(user.uid, file, 'patient')
-    if (url) setPhotoURL(url)
+    if (url) { setPhotoURL(url); showToast('Photo updated') }
+    else showToast('Could not upload photo. Use an image under 5MB and try again.', { variant: 'error' })
   }
 
   const displayName = userProfile.profile.displayName || user?.displayName || user?.email?.split('@')[0] || 'You'

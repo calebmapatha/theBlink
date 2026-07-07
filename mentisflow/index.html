@@ -1,7 +1,17 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- Apply a returning user's saved theme before first paint (light by
+         default) so dark-mode users never see a light flash. Value is JSON
+         (see useLocalStorage). -->
+    <script>
+      try {
+        if (JSON.parse(localStorage.getItem('adhd_theme')) === 'dark') {
+          document.documentElement.classList.add('dark')
+        }
+      } catch (e) {}
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>MentisFlow: Mental health care, connected</title>
     <meta name="description" content="Connect with HPCSA-registered psychiatrists and psychologists. Book appointments, share your mental health data, and manage your wellbeing with FocusBlink." />
