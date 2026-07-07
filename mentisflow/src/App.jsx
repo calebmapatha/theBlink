@@ -8,6 +8,7 @@ import { AppProvider } from './context/AppContext'
 import { Sidebar } from './components/layout/Sidebar'
 import { Toast } from './components/ui/Toast'
 import { Onboarding } from './components/Onboarding'
+import { Notifications } from './components/Notifications'
 import { Dashboard } from './pages/Dashboard'
 import { FocusTimer } from './pages/FocusTimer'
 import { TaskBoard } from './pages/TaskBoard'
@@ -91,6 +92,7 @@ function AppShell({ isProvider }) {
       {/* First-run tour for patients; providers get the signup wizard instead. */}
       {!isProvider && <Onboarding />}
       <main className="flex-1 min-w-0 h-full pb-16 md:pb-0 overflow-y-auto">
+        <Notifications />
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             {isProvider ? (

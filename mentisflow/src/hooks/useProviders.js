@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { collection, doc, getDoc, getDocs, setDoc, addDoc, query, where, orderBy, limit, startAfter, updateDoc, deleteField, serverTimestamp, increment } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, setDoc, addDoc, deleteDoc, query, where, orderBy, limit, startAfter, updateDoc, deleteField, serverTimestamp, increment } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../lib/firebase'
 
@@ -263,6 +263,39 @@ export function useProviders() {
     } catch { return [] }
   }
 
+  // ── Prescriptions ("future scripts") ──────────────────────────────────────
+  // A practitioner writes these FOR a linked patient; the patient reads them
+  // (see firestore.rules). Patients keep their *current* medications
+  // separately in their own treatment plan.
+  const byNewest = (a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
+
+  const createPrescription = ({ patientUid, patientName, providerUid, providerName, items, notes }) =>
+    addDoc(collection(db, 'prescriptions'), {
+      patientUid, patientName: patientName || '',
+      providerUid, providerName: providerName || '',
+      items, notes: notes || '',
+      createdAt: serverTimestamp(),
+    })
+
+  // A patient's received prescriptions (single equality filter — rule-safe).
+  const getMyPrescriptions = async (patientUid) => {
+    try {
+      const snap = await getDocs(query(collection(db, 'prescriptions'), where('patientUid', '==', patientUid)))
+      return snap.docs.map(d => ({ id: d.id, ...d.data() })).sort(byNewest)
+    } catch { return [] }
+  }
+
+  // Everything the doctor has authored (filter by patient client-side to avoid
+  // a two-equality query / composite index).
+  const getAuthoredPrescriptions = async (providerUid) => {
+    try {
+      const snap = await getDocs(query(collection(db, 'prescriptions'), where('providerUid', '==', providerUid)))
+      return snap.docs.map(d => ({ id: d.id, ...d.data() })).sort(byNewest)
+    } catch { return [] }
+  }
+
+  const deletePrescription = (id) => deleteDoc(doc(db, 'prescriptions', id))
+
   return {
     providers, loading, reload, loadMore, hasMore,
     getProvider, saveProvider, getPrivateProfile,
@@ -272,5 +305,6 @@ export function useProviders() {
     incrementProfileViews,
     uploadPhoto, getPatientProfile,
     submitRating, getRating, getProviderRatings,
+    createPrescription, getMyPrescriptions, getAuthoredPrescriptions, deletePrescription,
   }
 }

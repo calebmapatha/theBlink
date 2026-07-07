@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Trash2, Check, ChevronRight, ClipboardList, Target, Pill, FileText, Activity, X } from 'lucide-react'
+import { Plus, Trash2, Check, ChevronRight, ClipboardList, Target, Pill, FileText, Activity, X, Stethoscope } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { PageHeader } from '../components/layout/PageHeader'
 import { DatePicker } from '../components/ui/DatePicker'
@@ -8,6 +8,7 @@ import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import { useApp } from '../context/AppContext'
+import { useProviders } from '../hooks/useProviders'
 import { useTreatmentPlan } from '../hooks/useTreatmentPlan'
 
 const GOAL_CATEGORIES = ['Anxiety', 'Depression', 'Sleep', 'Medication', 'Social', 'Work', 'Relationships', 'Self-care', 'Other']
@@ -483,19 +484,96 @@ function SymptomsTab({ plan, addSymptom, updateSymptom, deleteSymptom }) {
   )
 }
 
+// ── Scripts (doctor-authored prescriptions, read-only to the patient) ─────────
+
+function ScriptsTab({ scripts, loading, onAddToMeds }) {
+  const [added, setAdded] = useState({})
+
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-ink-400">
+        {scripts.length} prescription{scripts.length !== 1 ? 's' : ''} from your practitioner
+      </p>
+
+      {loading ? (
+        <div className="h-24 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />
+      ) : scripts.length === 0 ? (
+        <div className="py-10 text-center">
+          <p className="text-3xl mb-2">💊</p>
+          <p className="text-sm text-ink-400">No prescriptions yet.</p>
+          <p className="text-xs text-ink-400 mt-1">Scripts your doctor sends appear here. You manage your own current medications under the Medications tab.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {scripts.map(rx => (
+            <Card key={rx.id} className="p-4">
+              <div className="flex items-center gap-2 mb-2.5">
+                <div className="w-8 h-8 rounded-xl bg-primary-50 dark:bg-primary-700/20 flex items-center justify-center flex-shrink-0">
+                  <Stethoscope size={15} className="text-primary-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">{rx.providerName || 'Your practitioner'}</p>
+                  <p className="text-[10px] text-ink-400">{rx.createdAt?.toDate ? rx.createdAt.toDate().toLocaleDateString() : ''}</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {(rx.items || []).map((it, i) => {
+                  const key = `${rx.id}_${i}`
+                  return (
+                    <div key={i} className="flex items-start gap-2 rounded-xl bg-surface-50 dark:bg-surface-900 px-3 py-2">
+                      <Pill size={13} className="text-primary-500 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-ink-900 dark:text-ink-100">{it.name}</p>
+                        <p className="text-xs text-ink-400">{[it.dosage, it.frequency].filter(Boolean).join(' · ')}</p>
+                        {it.instructions && <p className="text-xs text-ink-500 dark:text-ink-400 mt-0.5 italic">{it.instructions}</p>}
+                      </div>
+                      <button disabled={added[key]}
+                        onClick={() => { onAddToMeds(it); setAdded(a => ({ ...a, [key]: true })) }}
+                        className="text-[10px] font-semibold text-primary-500 hover:text-primary-600 disabled:text-success-500 disabled:cursor-default flex-shrink-0 mt-0.5">
+                        {added[key] ? '✓ Added' : '+ To my meds'}
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+              {rx.notes && <p className="text-xs text-ink-600 dark:text-ink-300 mt-2.5 italic">{rx.notes}</p>}
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 const TABS = [
   { key: 'goals',       label: 'Goals',       icon: Target },
   { key: 'medications', label: 'Medications',  icon: Pill },
+  { key: 'scripts',     label: 'Scripts',      icon: Stethoscope },
   { key: 'notes',       label: 'Notes',        icon: FileText },
   { key: 'symptoms',    label: 'Symptoms',     icon: Activity },
 ]
 
 export function TreatmentPlan() {
   const { userId, showToast } = useApp()
+  const { getMyPrescriptions } = useProviders()
   const plan       = useTreatmentPlan(userId)
   const [tab, setTab] = useState('goals')
+
+  // Doctor-authored prescriptions ("future scripts"), read-only to the patient.
+  const [scripts, setScripts] = useState([])
+  const [scriptsLoading, setScriptsLoading] = useState(true)
+  useEffect(() => {
+    if (!userId) return
+    getMyPrescriptions(userId).then(rows => { setScripts(rows); setScriptsLoading(false) })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId])
+
+  const addScriptToMeds = (it) => {
+    plan.addMedication({ name: it.name, dosage: it.dosage || '', frequency: it.frequency || 'Once daily', prescribedBy: 'Prescribed by your doctor' })
+    showToast('Added to your medications')
+  }
 
   // Wrap a delete so removing health data shows an Undo toast and restores
   // the item in place instead of a silent permanent delete.
@@ -515,6 +593,7 @@ export function TreatmentPlan() {
   const summary = {
     goals:       plan.plan.goals.filter(g => g.status === 'active').length,
     medications: plan.plan.medications.filter(m => m.active).length,
+    scripts:     scripts.length,
     notes:       plan.plan.sessionNotes.length,
     symptoms:    plan.plan.symptoms.length,
   }
@@ -530,7 +609,7 @@ export function TreatmentPlan() {
       />
 
       {/* Summary strip */}
-      <div className="grid grid-cols-4 gap-2 mb-5">
+      <div className="grid grid-cols-5 gap-1.5 mb-5">
         {TABS.map(({ key, label, icon: Icon }) => (
           <button key={key} onClick={() => setTab(key)}
             className={`p-3 rounded-2xl text-center transition-all ${
@@ -554,6 +633,7 @@ export function TreatmentPlan() {
           transition={{ duration: 0.2 }}>
           {tab === 'goals'       && <GoalsTab       plan={plan.plan} addGoal={plan.addGoal} updateGoal={plan.updateGoal} deleteGoal={deleteGoal} />}
           {tab === 'medications' && <MedicationsTab plan={plan.plan} addMedication={plan.addMedication} toggleMedication={plan.toggleMedication} deleteMedication={deleteMedication} />}
+          {tab === 'scripts'     && <ScriptsTab     scripts={scripts} loading={scriptsLoading} onAddToMeds={addScriptToMeds} />}
           {tab === 'notes'       && <NotesTab       plan={plan.plan} addNote={plan.addNote} deleteNote={deleteNote} />}
           {tab === 'symptoms'    && <SymptomsTab    plan={plan.plan} addSymptom={plan.addSymptom} updateSymptom={plan.updateSymptom} deleteSymptom={deleteSymptom} />}
         </motion.div>
