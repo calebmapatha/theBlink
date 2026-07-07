@@ -156,9 +156,20 @@ For automated Firebase deploys, add a `FIREBASE_TOKEN` secret (from `firebase lo
 | `notifyBookingRequested` | Firestore `onCreate` on `appointments/{id}` | Queues an email to the practitioner about a new booking request (Trigger Email extension) |
 | `notifyBookingStatus` | Firestore `onUpdate` on `appointments/{id}` | Queues an email to the patient when an appointment is confirmed or cancelled |
 | `purgeOldAppointments` | Scheduled (every 24 h) | Deletes appointments older than 2 years — POPIA data retention compliance |
-| `paymentWebhook` | HTTPS Request | Stub for future Paystack subscription webhooks |
+| `paymentWebhook` | HTTPS Request | Verifies Paystack webhook signatures (HMAC-SHA512) and activates/deactivates subscriptions on charge.success, subscription.disable, and invoice.payment_failed |
 
 Booking emails are queued into the `mail` collection in the format used by the official **Trigger Email from Firestore** extension. Install it once with your SMTP credentials (`firebase ext:install firebase/firestore-send-email`, collection `mail`) and the queued emails start sending; until then they sit unsent.
+
+### Payments (Paystack)
+
+Paid practitioner plans use Paystack checkout. Without a configured key, paid plans activate in **demo mode** (no charge) so the platform stays demoable. To go live:
+
+1. Create a Paystack business and four ZAR subscription Plans: Standard and Featured, each with a monthly and an annual variant (annual is priced at 10x monthly, i.e. 2 months free).
+2. Store the plan codes on the `config/platform` document: `paystack: { plans: { standard: { monthly: 'PLN_...', annual: 'PLN_...' }, featured: { monthly: 'PLN_...', annual: 'PLN_...' } } }`.
+3. Copy `functions/.env.example` to `functions/.env`, set `PAYSTACK_SECRET_KEY`, and redeploy functions.
+4. In the Paystack dashboard, point a webhook at the deployed `paymentWebhook` function URL.
+
+Flow: `activateProvider` creates a checkout and returns its URL; the app redirects the doctor to Paystack; `paymentWebhook` activates the subscription on `charge.success`. Free trials never touch Paystack.
 
 ---
 
