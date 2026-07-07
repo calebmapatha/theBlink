@@ -2,7 +2,8 @@ import { useEffect } from 'react'
 import { useLocalStorage } from './useLocalStorage'
 
 export function useTheme() {
-  const [theme, setTheme] = useLocalStorage('adhd_theme', 'dark')
+  // Light by default for everyone; only users who explicitly switch get dark.
+  const [theme, setTheme] = useLocalStorage('adhd_theme', 'light')
 
   useEffect(() => {
     const root = document.documentElement

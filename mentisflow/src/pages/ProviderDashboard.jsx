@@ -7,6 +7,7 @@ import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import { useAuth } from '../context/AuthContext'
+import { useApp } from '../context/AppContext'
 import { useProviders } from '../hooks/useProviders'
 import { detectLocation } from '../utils/geolocate'
 import { TimePicker } from '../components/ui/TimePicker'
@@ -874,6 +875,7 @@ function DocumentsManager({ providerUid }) {
 
 export function ProviderDashboard() {
   const { user }                                                                                                    = useAuth()
+  const { showToast }                                                                                               = useApp()
   const { getProvider, getPrivateProfile, getAppointments, updateAppointment, confirmAppointment, saveProvider, getDiary, saveDiary, uploadPhoto, getProviderRatings } = useProviders()
   const navigate                                                                                                    = useNavigate()
   const [profile, setProfile]           = useState(null)
@@ -932,7 +934,9 @@ export function ProviderDashboard() {
     setPhotoUploading(true)
     const url = await uploadPhoto(user.uid, file, 'provider')
     if (url) setProfile(p => ({ ...p, photoURL: url }))
+    else showToast('Could not upload photo. Use an image under 5MB and try again.', { variant: 'error' })
     setPhotoUploading(false)
+    e.target.value = '' // allow re-selecting the same file after a failure
   }
 
   if (loading) return (
