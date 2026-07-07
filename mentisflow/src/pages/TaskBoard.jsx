@@ -65,7 +65,7 @@ function CompletedItem({ task, onDelete }) {
 }
 
 export function TaskBoard() {
-  const { tasks, awardAndToast } = useApp()
+  const { tasks, awardAndToast, showToast } = useApp()
   const [input, setInput]           = useState('')
   const [urgent, setUrgent]         = useState(false)
   const [tab, setTab]               = useState('today')
@@ -86,6 +86,15 @@ export function TaskBoard() {
     const task = tasks.tasks.find(t => t.id === id)
     tasks.completeTask(id)
     awardAndToast(task?.urgent ? 'URGENT_TASK' : 'TASK_COMPLETE', `Task done: "${task?.text?.slice(0, 30)}"`)
+  }
+
+  // Delete with an Undo toast instead of a permanent, silent removal.
+  const handleDelete = (id) => {
+    const index = tasks.tasks.findIndex(t => t.id === id)
+    const task  = tasks.tasks[index]
+    if (!task) return
+    tasks.deleteTask(id)
+    showToast('Task deleted', { variant: 'info', action: { label: 'Undo', onClick: () => tasks.restoreTask(task, index) } })
   }
 
   const currentTasks = tab === 'today' ? tasks.todayTasks : tasks.backlogTasks
@@ -146,7 +155,7 @@ export function TaskBoard() {
           ) : (
             currentTasks.map(task => (
               <TaskItem key={task.id} task={task}
-                onComplete={handleComplete} onDelete={tasks.deleteTask}
+                onComplete={handleComplete} onDelete={handleDelete}
                 onToggleUrgent={tasks.toggleUrgent}
                 onMove={tab === 'today' ? tasks.moveToBacklog : tasks.moveToToday}
                 isToday={tab === 'today'}
@@ -163,7 +172,7 @@ export function TaskBoard() {
           <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-2">Completed today ({tasks.completedToday.length})</p>
           <div className="space-y-1">
             {tasks.completedToday.map(task => (
-              <CompletedItem key={task.id} task={task} onDelete={tasks.deleteTask} />
+              <CompletedItem key={task.id} task={task} onDelete={handleDelete} />
             ))}
           </div>
         </div>

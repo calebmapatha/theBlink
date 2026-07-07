@@ -18,6 +18,16 @@ export function useTasks(userId) {
     setTasks(prev => prev.filter(t => t.id !== id))
   }, [setTasks])
 
+  // Re-insert a deleted task at its original position (for undo). Deduped.
+  const restoreTask = useCallback((task, index = 0) => {
+    setTasks(prev => {
+      if (prev.some(t => t.id === task.id)) return prev
+      const next = [...prev]
+      next.splice(Math.min(Math.max(index, 0), next.length), 0, task)
+      return next
+    })
+  }, [setTasks])
+
   const moveToToday = useCallback((id) => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, scheduledDate: todayKey() } : t))
   }, [setTasks])
@@ -48,6 +58,6 @@ export function useTasks(userId) {
     todayTasks:     tasks.filter(t => t.scheduledDate === today && !t.completedAt),
     completedToday: tasks.filter(t => t.scheduledDate === today && t.completedAt),
     backlogTasks:   tasks.filter(t => t.scheduledDate !== today && !t.completedAt),
-    addTask, completeTask, deleteTask, moveToToday, moveToBacklog, toggleUrgent, reorderTask,
+    addTask, completeTask, deleteTask, restoreTask, moveToToday, moveToBacklog, toggleUrgent, reorderTask,
   }
 }
