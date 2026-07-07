@@ -121,6 +121,27 @@ service cloud.firestore {
       allow delete: if isSignedIn() && (request.auth.uid == uid || isAdmin());
     }
 
+    // Prescriptions ("future scripts"): authored by a practitioner FOR a
+    // patient, read-only to that patient. A doctor may only prescribe to a
+    // patient who has linked them (patients/{uid}.linkedDoctorUid), so the
+    // patient consents to the relationship first. Patients manage their own
+    // *current* medications separately in their private user data.
+    match /prescriptions/{id} {
+      allow read: if isSignedIn() && (
+        isAdmin() ||
+        request.auth.uid == resource.data.patientUid ||
+        request.auth.uid == resource.data.providerUid
+      );
+      allow create: if isSignedIn() &&
+        request.resource.data.providerUid == request.auth.uid &&
+        request.resource.data.patientUid is string &&
+        exists(/databases/$(database)/documents/patients/$(request.resource.data.patientUid)) &&
+        get(/databases/$(database)/documents/patients/$(request.resource.data.patientUid)).data.linkedDoctorUid == request.auth.uid;
+      allow update: if isSignedIn() && request.auth.uid == resource.data.providerUid &&
+        !changedKeys().hasAny(['patientUid', 'providerUid', 'createdAt']);
+      allow delete: if isSignedIn() && (request.auth.uid == resource.data.providerUid || isAdmin());
+    }
+
     // Ratings: readable only by the patient who wrote it, the rated provider,
     // or admin. Immutable once made.
     //

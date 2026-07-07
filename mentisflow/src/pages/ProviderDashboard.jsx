@@ -484,7 +484,83 @@ function EditModal({ open, onClose, profile, onSave }) {
   )
 }
 
-function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, onViewConsents }) {
+const RX_FREQUENCIES = ['Once daily', 'Twice daily', 'Three times daily', 'Every morning', 'Every night', 'As needed', 'Weekly', 'Other']
+
+function PrescriptionModal({ open, onClose, appt, onSubmit }) {
+  const blank = () => ({ name: '', dosage: '', frequency: 'Once daily', instructions: '' })
+  const [items, setItems] = useState([blank()])
+  const [notes, setNotes] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    if (open) { setItems([blank()]); setNotes(''); setSaving(false) }
+  }, [open])
+
+  const setItem = (i, k, v) => setItems(arr => arr.map((it, idx) => idx === i ? { ...it, [k]: v } : it))
+  const addItem = () => setItems(arr => [...arr, blank()])
+  const removeItem = (i) => setItems(arr => arr.length > 1 ? arr.filter((_, idx) => idx !== i) : arr)
+
+  const valid = items.some(it => it.name.trim())
+  const handle = async () => {
+    setSaving(true)
+    await onSubmit({
+      items: items.filter(it => it.name.trim()).map(it => ({
+        name: it.name.trim(), dosage: it.dosage.trim(), frequency: it.frequency, instructions: it.instructions.trim(),
+      })),
+      notes: notes.trim(),
+    })
+    setSaving(false)
+  }
+
+  return (
+    <Modal open={open} onClose={onClose} title={`Prescribe for ${appt?.patientName || 'patient'}`}>
+      <div className="space-y-4">
+        <p className="text-xs text-ink-400 leading-relaxed">
+          The patient will see this under <strong className="text-ink-600 dark:text-ink-300">Scripts</strong> in
+          their treatment plan. They manage their own current medications separately.
+        </p>
+
+        {items.map((it, i) => (
+          <div key={i} className="rounded-2xl border border-surface-100 dark:border-surface-700 p-3 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-ink-500 dark:text-ink-300">Medication {i + 1}</p>
+              {items.length > 1 && (
+                <button onClick={() => removeItem(i)} className="text-ink-400 hover:text-red-500 transition-colors"><Trash2 size={13} /></button>
+              )}
+            </div>
+            <input value={it.name} onChange={e => setItem(i, 'name', e.target.value)} className={inputCls} placeholder="Medication name (e.g. Sertraline)" />
+            <div className="grid grid-cols-2 gap-2">
+              <input value={it.dosage} onChange={e => setItem(i, 'dosage', e.target.value)} className={inputCls} placeholder="Dosage (e.g. 50mg)" />
+              <select value={it.frequency} onChange={e => setItem(i, 'frequency', e.target.value)} className={inputCls}>
+                {RX_FREQUENCIES.map(f => <option key={f}>{f}</option>)}
+              </select>
+            </div>
+            <input value={it.instructions} onChange={e => setItem(i, 'instructions', e.target.value)} className={inputCls} placeholder="Instructions (optional, e.g. take with food)" />
+          </div>
+        ))}
+
+        <button onClick={addItem} className="flex items-center gap-1.5 text-xs font-semibold text-primary-500 hover:text-primary-600 transition-colors">
+          <FileText size={12} /> Add another medication
+        </button>
+
+        <div>
+          <label className="block text-xs font-medium text-ink-400 mb-1">Notes to patient (optional)</label>
+          <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className={`${inputCls} resize-none`}
+            placeholder="e.g. Collect from your pharmacy; review in 4 weeks." />
+        </div>
+
+        <div className="flex gap-2">
+          <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
+          <Button className="flex-1" disabled={!valid || saving} onClick={handle}>
+            {saving ? 'Sending…' : 'Send prescription'}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
+function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, onViewConsents, onPrescribe }) {
   const todayStr = new Date().toISOString().split('T')[0]
   const isPast = appt.date && appt.date < todayStr
   return (
@@ -533,6 +609,12 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
               role="provider"
               className="mt-2.5 pt-2.5 border-t border-surface-100 dark:border-surface-800"
             />
+          )}
+          {appt.status === 'confirmed' && onPrescribe && (
+            <button onClick={() => onPrescribe(appt)}
+              className="mt-2.5 flex items-center gap-1.5 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline">
+              <FileText size={12} /> Write prescription
+            </button>
           )}
         </div>
         {appt.status === 'pending' && (
@@ -876,7 +958,7 @@ function DocumentsManager({ providerUid }) {
 export function ProviderDashboard() {
   const { user }                                                                                                    = useAuth()
   const { showToast }                                                                                               = useApp()
-  const { getProvider, getPrivateProfile, getAppointments, updateAppointment, confirmAppointment, saveProvider, getDiary, saveDiary, uploadPhoto, getProviderRatings } = useProviders()
+  const { getProvider, getPrivateProfile, getAppointments, updateAppointment, confirmAppointment, saveProvider, getDiary, saveDiary, uploadPhoto, getProviderRatings, createPrescription } = useProviders()
   const navigate                                                                                                    = useNavigate()
   const [profile, setProfile]           = useState(null)
   const [appointments, setAppointments] = useState([])
@@ -885,6 +967,7 @@ export function ProviderDashboard() {
   const [editOpen, setEditOpen]         = useState(false)
   const [statModal, setStatModal]       = useState(null)
   const [consentAppt, setConsentAppt]   = useState(null)
+  const [prescribeAppt, setPrescribeAppt] = useState(null)
   const [photoUploading, setPhotoUploading] = useState(false)
   const fileRef                         = useRef()
 
@@ -921,6 +1004,27 @@ export function ProviderDashboard() {
       await updateAppointment(id, { status })
     }
     setAppointments(prev => prev.map(a => a.id === id ? { ...a, status, ...extra } : a))
+  }
+
+  const handleCreatePrescription = async ({ items, notes }) => {
+    try {
+      await createPrescription({
+        patientUid:  prescribeAppt.patientUid,
+        patientName: prescribeAppt.patientName,
+        providerUid: user.uid,
+        providerName: profile?.name || '',
+        items, notes,
+      })
+      setPrescribeAppt(null)
+      showToast('Prescription sent to your patient')
+    } catch (e) {
+      showToast(
+        e?.code === 'permission-denied'
+          ? 'This patient needs to add you as their doctor (from Connect) before you can prescribe.'
+          : 'Could not send the prescription. Please try again.',
+        { variant: 'error' },
+      )
+    }
   }
 
   const handleSave = async (updates) => {
@@ -1250,7 +1354,8 @@ export function ProviderDashboard() {
                   <AppointmentCard key={a.id} appt={a} onConfirm={() => {}} onDecline={() => {}}
                     onOutcome={(id, status) => handleAction(id, status)}
                     meetingLink={profile?.meetingLink}
-                    onViewConsents={setConsentAppt} />
+                    onViewConsents={setConsentAppt}
+                    onPrescribe={setPrescribeAppt} />
                 ))}
               </div>
             </div>
@@ -1270,6 +1375,7 @@ export function ProviderDashboard() {
 
       <ConsentsModal appt={consentAppt} onClose={() => setConsentAppt(null)} />
       <EditModal open={editOpen} onClose={() => setEditOpen(false)} profile={profile} onSave={handleSave} />
+      <PrescriptionModal open={!!prescribeAppt} onClose={() => setPrescribeAppt(null)} appt={prescribeAppt} onSubmit={handleCreatePrescription} />
       <StatDetailModal kind={statModal} onClose={() => setStatModal(null)}
         stats={{ appointments, pending, confirmed, sessions, declined, patientList, profileViews, uniquePatients, acceptanceRate, sessionFee: profile?.sessionFee }} />
     </PageWrapper>
