@@ -382,6 +382,8 @@ function EditModal({ open, onClose, profile, onSave }) {
     meetingLink:     profile?.meetingLink || '',
     city:            profile?.city || '',
     province:        profile?.province || '',
+    consultationType: profile?.consultationType || 'remote',
+    address:         profile?.address || '',
   })
   const [saving, setSaving] = useState(false)
   const [locating, setLocating] = useState(false)
@@ -473,6 +475,28 @@ function EditModal({ open, onClose, profile, onSave }) {
           {locating ? 'Finding your location…' : 'Use my current location'}
         </button>
         {locError && <p className="text-xs text-red-500">{locError}</p>}
+        <div>
+          <label className="block text-xs font-medium text-ink-400 mb-2">Consultation type</label>
+          <div className="grid grid-cols-3 gap-2">
+            {[['remote', 'Online only'], ['in-person', 'In person'], ['both', 'Both']].map(([v, label]) => (
+              <button key={v} type="button" onClick={() => set('consultationType', v)}
+                className={`py-2 rounded-xl text-xs font-medium border transition-colors ${
+                  form.consultationType === v
+                    ? 'border-primary-400 bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400'
+                    : 'border-surface-200 dark:border-surface-700 text-ink-400 hover:border-surface-300'
+                }`}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        {(form.consultationType === 'in-person' || form.consultationType === 'both') && (
+          <div>
+            <label className="block text-xs font-medium text-ink-400 mb-1">Practice address</label>
+            <input value={form.address} onChange={e => set('address', e.target.value)} className={inputCls} placeholder="e.g. 12 Oak Ave, Rosebank, Johannesburg" />
+            <p className="text-[10px] text-ink-400 mt-1">Shown to patients on a map — use a full address Google Maps can find.</p>
+          </div>
+        )}
         <div className="flex gap-2">
           <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
           <Button className="flex-1" disabled={saving} onClick={handle}>
@@ -1018,7 +1042,7 @@ function DocumentsManager({ providerUid }) {
 export function ProviderDashboard() {
   const { user }                                                                                                    = useAuth()
   const { showToast }                                                                                               = useApp()
-  const { getProvider, getPrivateProfile, getAppointments, updateAppointment, confirmAppointment, saveProvider, getDiary, saveDiary, uploadPhoto, getProviderRatings, createPrescription, uploadVerificationDoc, getVerification, getVerificationURL } = useProviders()
+  const { getProvider, getPrivateProfile, getAppointments, updateAppointment, confirmAppointment, saveProvider, getDiary, saveDiary, uploadPhoto, getProviderRatings, createPrescription, uploadVerificationDoc, getVerification, getVerificationURL, getProviderFeeRequests, discloseFee } = useProviders()
   const navigate                                                                                                    = useNavigate()
   const [profile, setProfile]           = useState(null)
   const [appointments, setAppointments] = useState([])
@@ -1029,6 +1053,7 @@ export function ProviderDashboard() {
   const [consentAppt, setConsentAppt]   = useState(null)
   const [prescribeAppt, setPrescribeAppt] = useState(null)
   const [photoUploading, setPhotoUploading] = useState(false)
+  const [feeRequests, setFeeRequests]   = useState([])
   const fileRef                         = useRef()
 
   useEffect(() => {
@@ -1038,7 +1063,8 @@ export function ProviderDashboard() {
       getAppointments(user.uid),
       getProviderRatings(user.uid),
       getPrivateProfile(user.uid),
-    ]).then(([p, appts, rats, priv]) => {
+      getProviderFeeRequests(user.uid),
+    ]).then(([p, appts, rats, priv, fees]) => {
       if (!p) { navigate('/provider/signup'); return }
       // Merge owner-only fields (meeting link) into the working profile.
       setProfile({ ...p, ...priv })
@@ -1047,9 +1073,20 @@ export function ProviderDashboard() {
         return (order[a.status] ?? 3) - (order[b.status] ?? 3)
       }))
       setRatings(rats)
+      setFeeRequests(fees)
       setLoading(false)
     })
   }, [user])
+
+  const handleDiscloseFee = async (req) => {
+    setFeeRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: 'disclosed' } : r))
+    try {
+      await discloseFee(req.id)
+      showToast('Fee shared — the patient has been notified')
+    } catch {
+      showToast('Could not share the fee. Please try again.', { variant: 'error' })
+    }
+  }
 
   const handleAction = async (id, status) => {
     const appt = appointments.find(a => a.id === id)
@@ -1061,7 +1098,9 @@ export function ProviderDashboard() {
       const res = await confirmAppointment(appt)
       extra = { screeningRequired: res?.screeningRequired || false }
     } else {
-      await updateAppointment(id, { status })
+      // Tag provider-initiated cancellations so the patient (not the doctor)
+      // gets the notification.
+      await updateAppointment(id, status === 'cancelled' ? { status, cancelledBy: 'provider' } : { status })
     }
     setAppointments(prev => prev.map(a => a.id === id ? { ...a, status, ...extra } : a))
   }
@@ -1214,6 +1253,22 @@ export function ProviderDashboard() {
       {/* Verification documents — required while the account is not yet approved. */}
       {profile && profile.approvalStatus !== 'approved' && (
         <VerificationSection uid={user.uid} upload={uploadVerificationDoc} getMeta={getVerification} getUrl={getVerificationURL} showToast={showToast} />
+      )}
+
+      {/* Pending fee-disclosure requests from patients. */}
+      {feeRequests.some(r => r.status === 'pending') && (
+        <Card className="p-4 mb-5">
+          <p className="text-sm font-semibold text-ink-900 dark:text-ink-100 mb-0.5">Fee requests</p>
+          <p className="text-xs text-ink-400 mb-3">Patients asking you to share your session fee. Disclosing notifies them of your R{profile?.sessionFee || '—'} fee.</p>
+          <div className="space-y-2">
+            {feeRequests.filter(r => r.status === 'pending').map(r => (
+              <div key={r.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-surface-50 dark:bg-surface-900">
+                <span className="flex-1 text-sm text-ink-700 dark:text-ink-200 truncate">{r.patientName || 'A patient'}</span>
+                <Button size="sm" variant="soft" onClick={() => handleDiscloseFee(r)}>Disclose fee</Button>
+              </div>
+            ))}
+          </div>
+        </Card>
       )}
 
       {/* Profile card */}

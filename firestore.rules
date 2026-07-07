@@ -198,6 +198,26 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // Fee-disclosure requests: a patient asks a practitioner (whose fee is
+    // hidden) to share their session fee. The patient creates the request; the
+    // practitioner may only flip status to 'disclosed'. A Cloud Function then
+    // notifies the patient of the fee. Both parties (and admin) can read.
+    match /feeRequests/{id} {
+      allow read: if isSignedIn() && (
+        isAdmin() ||
+        request.auth.uid == resource.data.patientUid ||
+        request.auth.uid == resource.data.providerUid
+      );
+      allow create: if isSignedIn() &&
+        request.resource.data.patientUid == request.auth.uid &&
+        request.resource.data.status == 'pending';
+      allow update: if isSignedIn() &&
+        request.auth.uid == resource.data.providerUid &&
+        changedKeys().hasOnly(['status']) &&
+        request.resource.data.status == 'disclosed';
+      allow delete: if isSignedIn() && (request.auth.uid == resource.data.patientUid || isAdmin());
+    }
+
     // In-app notifications: one document per recipient event (booking
     // requested/confirmed/cancelled, account verified…). Created ONLY by
     // Cloud Functions via the Admin SDK, so clients can never forge one.

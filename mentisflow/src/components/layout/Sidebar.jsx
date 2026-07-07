@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Home, Timer, CheckSquare, Brain, Repeat, Sun, Trophy, Moon, Zap, LogOut, BarChart2, Settings, HeartHandshake, LayoutDashboard, ClipboardList, MoreHorizontal, X, Shield } from 'lucide-react'
+import { Home, Timer, CheckSquare, Brain, Repeat, Sun, Trophy, Moon, Zap, LogOut, BarChart2, Settings, HeartHandshake, LayoutDashboard, ClipboardList, MoreHorizontal, X, Shield, ChevronRight } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { useAuth } from '../../context/AuthContext'
 import { isAdminUser } from '../../utils/admin'
@@ -103,13 +103,16 @@ export function Sidebar({ isProvider }) {
             <span className="text-lg font-bold tracking-tight text-ink-900 dark:text-ink-100">MentisFlow</span>
           </div>
           {user && (
-            <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl bg-surface-50 dark:bg-surface-800 border border-surface-100 dark:border-surface-700/60">
+            <NavLink to="/settings"
+              className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl bg-surface-50 dark:bg-surface-800 border border-surface-100 dark:border-surface-700/60 hover:border-primary-300 dark:hover:border-primary-700 transition-colors group"
+              title="View your profile">
               <span className="text-lg leading-none">{avatar}</span>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold text-ink-900 dark:text-ink-100 truncate">{name}</p>
-                <p className="text-[10px] text-ink-400">{isProvider ? 'Practitioner' : 'Patient'}</p>
+                <p className="text-[10px] text-ink-400">{isProvider ? 'Practitioner' : 'Patient'} · View profile</p>
               </div>
-            </div>
+              <ChevronRight size={13} className="text-ink-400 group-hover:text-primary-500 flex-shrink-0 transition-colors" />
+            </NavLink>
           )}
         </div>
 

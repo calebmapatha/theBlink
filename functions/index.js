@@ -405,22 +405,43 @@ export const notifyBookingRequested = onDocumentCreated('appointments/{id}', asy
   }
 })
 
-/** Tell the patient when their request is confirmed or cancelled. */
+/** Notify the right party when an appointment is confirmed or cancelled. */
 export const notifyBookingStatus = onDocumentUpdated('appointments/{id}', async (event) => {
   const before = event.data?.before.data()
   const after = event.data?.after.data()
   if (!before || !after || before.status === after.status) return
 
-  if (after.status === 'confirmed' || after.status === 'cancelled') {
+  if (after.status === 'confirmed') {
     await writeNotification(after.patientUid, {
-      type: `booking_${after.status}`,
-      title: after.status === 'confirmed' ? 'Appointment confirmed' : 'Appointment cancelled',
-      body: `Your appointment on ${after.date} at ${after.timeSlot} was ${after.status}.`,
+      type: 'booking_confirmed',
+      title: 'Appointment confirmed',
+      body: after.screeningRequired
+        ? `Your appointment on ${after.date} at ${after.timeSlot} was confirmed. Please review and sign the documents your practitioner requires.`
+        : `Your appointment on ${after.date} at ${after.timeSlot} was confirmed.`,
       link: '/connect',
     })
+  } else if (after.status === 'cancelled') {
+    if (after.cancelledBy === 'patient') {
+      // The patient revoked — tell the practitioner.
+      await writeNotification(after.providerUid, {
+        type: 'booking_cancelled',
+        title: 'Appointment cancelled',
+        body: `${after.patientName || 'A patient'} cancelled the ${after.date} at ${after.timeSlot} appointment.`,
+        link: '/',
+      })
+    } else {
+      await writeNotification(after.patientUid, {
+        type: 'booking_cancelled',
+        title: 'Appointment cancelled',
+        body: `Your appointment on ${after.date} at ${after.timeSlot} was cancelled.`,
+        link: '/connect',
+      })
+    }
   }
 
-  if (!after.patientEmail) return
+  // Email the patient on confirm/cancel, but not when they cancelled it
+  // themselves (they already know).
+  if (!after.patientEmail || (after.status === 'cancelled' && after.cancelledBy === 'patient')) return
   try {
     if (after.status === 'confirmed') {
       const link = /^https?:\/\//i.test(after.meetingLink || '')
@@ -451,6 +472,40 @@ export const notifyBookingStatus = onDocumentUpdated('appointments/{id}', async 
     logger.info('notifyBookingStatus: queued', { appointment: event.params.id, status: after.status })
   } catch (err) {
     logger.error('notifyBookingStatus failed', { error: err.message })
+  }
+})
+
+/** A patient asked a practitioner to disclose their (hidden) session fee. */
+export const notifyFeeRequested = onDocumentCreated('feeRequests/{id}', async (event) => {
+  const r = event.data?.data()
+  if (!r?.providerUid) return
+  await writeNotification(r.providerUid, {
+    type: 'fee_requested',
+    title: 'Session fee requested',
+    body: `${r.patientName || 'A patient'} asked you to share your session fee. Open the request to disclose it.`,
+    link: '/',
+  })
+})
+
+/** The practitioner disclosed their fee — tell the patient the amount. */
+export const notifyFeeDisclosed = onDocumentUpdated('feeRequests/{id}', async (event) => {
+  const before = event.data?.before.data()
+  const after = event.data?.after.data()
+  if (!after || before?.status === after.status || after.status !== 'disclosed') return
+  try {
+    const prov = await db.doc(`providers/${after.providerUid}`).get()
+    const fee = prov.data()?.sessionFee
+    const name = prov.data()?.name || 'Your practitioner'
+    await writeNotification(after.patientUid, {
+      type: 'fee_disclosed',
+      title: 'Session fee shared',
+      body: fee
+        ? `${name}'s session fee is R${fee} per session.`
+        : `${name} has shared their session fee — open their profile to view it.`,
+      link: '/connect',
+    })
+  } catch (err) {
+    logger.error('notifyFeeDisclosed failed', { error: err.message })
   }
 })
 

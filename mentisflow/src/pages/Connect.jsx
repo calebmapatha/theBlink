@@ -27,13 +27,23 @@ const DATA_TYPES = [
   { id: 'treatmentPlan', label: 'Treatment plan',    emoji: '📋' },
 ]
 
+// Mental-health-focused KPIs: the things that actually help someone judge
+// whether a practitioner is right for them. Keys are unchanged (validated in
+// firestore.rules and aggregated server-side); only the wording is refined.
 const RATING_METRICS = [
-  { key: 'communication',   label: 'Communication',   desc: 'Explains clearly & listens well' },
-  { key: 'empathy',         label: 'Empathy',         desc: 'Made you feel heard & safe' },
-  { key: 'professionalism', label: 'Professionalism', desc: 'Punctual, prepared & organised' },
-  { key: 'treatmentPlan',   label: 'Treatment plan',  desc: 'Approach felt genuinely helpful' },
-  { key: 'overall',         label: 'Overall',         desc: 'Would you recommend?' },
+  { key: 'communication',   label: 'Listening',       desc: 'Listened and explained things clearly' },
+  { key: 'empathy',         label: 'Felt safe',       desc: 'Made me feel heard, safe and not judged' },
+  { key: 'professionalism', label: 'Professionalism', desc: 'On time, prepared and respectful' },
+  { key: 'treatmentPlan',   label: 'Helpfulness',     desc: 'Their approach felt helpful for me' },
+  { key: 'overall',         label: 'Overall',         desc: "I'd recommend them to others" },
 ]
+
+// A session can only be rated once it has actually taken place — never before.
+const sessionHasPassed = (a) => {
+  if (!a?.date) return false
+  const dt = new Date(`${a.date}T${a.timeSlot || '23:59'}:00`)
+  return !isNaN(dt.getTime()) && dt.getTime() <= Date.now()
+}
 
 function buildDataSnapshot(uid, types) {
   // Guard: only ever read the authenticated user's own data. The caller must
@@ -173,7 +183,7 @@ function ReportModal({ provider, open, onClose, user }) {
   )
 }
 
-function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked, onReport }) {
+function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked, onReport, onRequestFee, feeRequested }) {
   if (!provider) return null
   const rating     = provider.ratingAvg
   const ratingCnt  = provider.ratingCount || 0
@@ -271,25 +281,52 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
           )}
         </div>
 
-        {/* Map of the practice area (keyless Google Maps embed) */}
-        {(provider.city || provider.province) && (
-          <div className="rounded-2xl overflow-hidden border border-surface-100 dark:border-surface-700">
-            <iframe
-              title={`Map of ${[provider.city, provider.province].filter(Boolean).join(', ')}`}
-              src={`https://www.google.com/maps?q=${encodeURIComponent([provider.city, provider.province, 'South Africa'].filter(Boolean).join(', '))}&output=embed`}
-              className="w-full h-40 border-0"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allowFullScreen
-            />
-          </div>
-        )}
+        {/* Consultation mode + location. In-person practices show a precise
+            map of the address; remote-only shows an "online" note (no map). */}
+        {(() => {
+          const mode = provider.consultationType || 'remote'
+          const inPerson = mode === 'in-person' || mode === 'both'
+          const mapQuery = provider.address || [provider.city, provider.province, 'South Africa'].filter(Boolean).join(', ')
+          return (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2.5">
+                {inPerson ? <MapPin size={14} className="text-ink-400 flex-shrink-0" /> : <Video size={14} className="text-ink-400 flex-shrink-0" />}
+                <span className="text-sm text-ink-700 dark:text-ink-300">
+                  {mode === 'both' ? 'Online & in-person sessions' : inPerson ? 'In-person sessions' : 'Online sessions only'}
+                </span>
+              </div>
+              {inPerson && provider.address && (
+                <p className="text-xs text-ink-400 pl-6">{provider.address}</p>
+              )}
+              {inPerson && mapQuery && (
+                <div className="rounded-2xl overflow-hidden border border-surface-100 dark:border-surface-700">
+                  <iframe
+                    title={`Map of ${mapQuery}`}
+                    src={`https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`}
+                    className="w-full h-40 border-0"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    allowFullScreen
+                  />
+                </div>
+              )}
+            </div>
+          )
+        })()}
 
         {/* Fee */}
         <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-surface-50 dark:bg-surface-900">
           <span className="text-sm text-ink-500 dark:text-ink-400">Session fee</span>
           {provider.hideFee ? (
-            <span className="text-sm font-semibold text-ink-700 dark:text-ink-300">On request</span>
+            feeRequested ? (
+              <span className="text-xs font-medium text-success-600 dark:text-success-400 flex items-center gap-1">
+                <Check size={12} /> Requested — you'll be notified
+              </span>
+            ) : (
+              <Button size="sm" variant="soft" onClick={() => onRequestFee?.(provider)}>
+                Request fee
+              </Button>
+            )
           ) : (
             <div>
               <span className="text-xl font-bold text-ink-900 dark:text-ink-100">R{provider.sessionFee}</span>
@@ -834,10 +871,34 @@ export function Connect() {
     getBookingInfo, linkDoctor, getLinkedDoctor, unlinkDoctor,
     searchProviderByHPCSA, getPatientAppointments,
     incrementProfileViews, submitRating, getRating, updateAppointment,
+    createFeeRequest, getMyFeeRequests,
   } = useProviders()
   const { user }        = useAuth()
-  const { userProfile } = useApp()
+  const { userProfile, showToast } = useApp()
   const navigate        = useNavigate()
+
+  // Providers whose (hidden) session fee this patient has already asked to see.
+  const [feeRequestedSet, setFeeRequestedSet] = useState(new Set())
+  useEffect(() => {
+    if (!user) return
+    getMyFeeRequests(user.uid).then(rows => setFeeRequestedSet(new Set(rows.map(r => r.providerUid))))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
+
+  const handleRequestFee = async (provider) => {
+    setFeeRequestedSet(prev => new Set([...prev, provider.id]))
+    try {
+      await createFeeRequest({
+        patientUid: user.uid,
+        patientName: userProfile?.profile?.displayName || user.email?.split('@')[0] || '',
+        providerUid: provider.id,
+        providerName: provider.name,
+      })
+      showToast("Fee requested — you'll be notified when they share it")
+    } catch {
+      showToast('Could not send the request. Please try again.', { variant: 'error' })
+    }
+  }
 
   const [tab, setTab]                   = useState('find')
   const [search, setSearch]             = useState('')
@@ -931,6 +992,21 @@ export function Connect() {
       ...scores,
     })
     setRatedSet(prev => new Set([...prev, ratingAppt.id]))
+  }
+
+  // Revoke a request the patient sent (pending) or cancel a confirmed booking.
+  // cancelledBy lets the notification function alert the practitioner.
+  const [cancelling, setCancelling] = useState(null)
+  const handleCancelAppt = async (a) => {
+    setCancelling(a.id)
+    try {
+      await updateAppointment(a.id, { status: 'cancelled', cancelledBy: 'patient' })
+      setMyAppointments(prev => prev.map(x => x.id === a.id ? { ...x, status: 'cancelled', cancelledBy: 'patient' } : x))
+      showToast(a.status === 'pending' ? 'Request cancelled' : 'Appointment cancelled')
+    } catch {
+      showToast('Could not cancel. Please try again.', { variant: 'error' })
+    }
+    setCancelling(null)
   }
 
   const filtered = providers.filter(p => {
@@ -1166,7 +1242,14 @@ export function Connect() {
                       <Card key={a.id} className="p-3">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-ink-900 dark:text-ink-100">{a.date} at {a.timeSlot}</p>
+                            <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">{linkedDoctor.name}</p>
+                            <p className="text-xs text-ink-400">{[linkedDoctor.type, linkedDoctor.city, linkedDoctor.province].filter(Boolean).join(' · ')}</p>
+                            <p className="text-sm text-ink-700 dark:text-ink-200 mt-1 flex items-center gap-1.5">
+                              <Calendar size={11} className="text-ink-400 flex-shrink-0" /> {a.date} at {a.timeSlot}
+                            </p>
+                            <p className="text-[11px] text-ink-400 mt-0.5 flex items-center gap-1">
+                              <Video size={10} className="flex-shrink-0" /> Online video session
+                            </p>
                             {a.sharedDataTypes?.length > 0 && (
                               <div className="flex gap-1 mt-1.5 flex-wrap">
                                 {a.sharedDataTypes.map(t => {
@@ -1189,12 +1272,12 @@ export function Connect() {
                               : 'bg-surface-100 dark:bg-surface-700 text-ink-400'
                             }`}>{a.status === 'no-show' ? 'missed' : a.status}</span>
 
-                            {['confirmed', 'completed'].includes(a.status) && !ratedSet.has(a.id) && (
+                            {['confirmed', 'completed'].includes(a.status) && sessionHasPassed(a) && !ratedSet.has(a.id) && (
                               <button
                                 onClick={() => setRatingAppt(a)}
                                 className="flex items-center gap-1 text-[10px] text-primary-500 hover:text-primary-600 font-medium"
                               >
-                                <Star size={10} /> Rate session
+                                <Star size={10} /> Rate session <span className="text-ink-400">(optional)</span>
                               </button>
                             )}
                             {ratedSet.has(a.id) && (
@@ -1222,6 +1305,12 @@ export function Connect() {
                             role="patient"
                             className="mt-2.5 pt-2.5 border-t border-surface-100 dark:border-surface-800"
                           />
+                        )}
+                        {['pending', 'confirmed'].includes(a.status) && !sessionHasPassed(a) && (
+                          <button onClick={() => handleCancelAppt(a)} disabled={cancelling === a.id}
+                            className="mt-2.5 w-full text-xs font-medium text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 py-2 rounded-xl transition-colors disabled:opacity-50">
+                            {cancelling === a.id ? 'Cancelling…' : a.status === 'pending' ? 'Cancel request' : 'Cancel appointment'}
+                          </button>
                         )}
                       </Card>
                     ))}
@@ -1306,6 +1395,8 @@ export function Connect() {
         onLink={handleLink}
         linked={linkedDoctor?.id === viewingProvider?.id}
         onReport={setReportingProvider}
+        onRequestFee={handleRequestFee}
+        feeRequested={viewingProvider ? feeRequestedSet.has(viewingProvider.id) : false}
       />
 
       <ReportModal
