@@ -14,6 +14,8 @@ import { availableSlotsForDate } from '../utils/availability'
 import { submitReport } from '../hooks/useAdmin'
 import { getScreeningDocs, signScreeningDocs, openScreeningPDF } from '../utils/screeningDocs'
 import { SignatureField } from '../components/ui/SignatureField'
+import { DatePicker } from '../components/ui/DatePicker'
+import { detectLocation } from '../utils/geolocate'
 
 const SPECIALTIES  = ['ADHD', 'Anxiety', 'Depression', 'OCD', 'PTSD', 'Autism Spectrum', 'Bipolar Disorder', 'Stress Management', 'Sleep Disorders', 'Trauma']
 const SA_PROVINCES = ['Gauteng', 'Western Cape', 'KwaZulu-Natal', 'Eastern Cape', 'Free State', 'Limpopo', 'Mpumalanga', 'North West', 'Northern Cape']
@@ -268,6 +270,20 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
             </div>
           )}
         </div>
+
+        {/* Map of the practice area (keyless Google Maps embed) */}
+        {(provider.city || provider.province) && (
+          <div className="rounded-2xl overflow-hidden border border-surface-100 dark:border-surface-700">
+            <iframe
+              title={`Map of ${[provider.city, provider.province].filter(Boolean).join(', ')}`}
+              src={`https://www.google.com/maps?q=${encodeURIComponent([provider.city, provider.province, 'South Africa'].filter(Boolean).join(', '))}&output=embed`}
+              className="w-full h-40 border-0"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+            />
+          </div>
+        )}
 
         {/* Fee */}
         <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-surface-50 dark:bg-surface-900">
@@ -570,9 +586,12 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-ink-400 mb-1">Preferred date</label>
-            <input type="date" value={date} onChange={e => { setDate(e.target.value); setTimeSlot(null) }}
+            <DatePicker
+              value={date}
+              onChange={d => { setDate(d); setTimeSlot(null) }}
               min={new Date().toISOString().split('T')[0]}
-              className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
+              placeholder="Pick a date"
+            />
           </div>
 
           {date && (
@@ -879,29 +898,16 @@ export function Connect() {
     else setSearchResult(result)
   }
 
-  const handleNearMe = () => {
-    if (!navigator.geolocation) return
+  const handleNearMe = async () => {
     setLocationLoading(true)
-    navigator.geolocation.getCurrentPosition(
-      async ({ coords }) => {
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${coords.latitude}&lon=${coords.longitude}&format=json`,
-            { headers: { 'Accept-Language': 'en' } }
-          )
-          const data = await res.json()
-          const state = data.address?.state || ''
-          const matched = SA_PROVINCES.find(p => state.toLowerCase().includes(p.toLowerCase()) || p.toLowerCase().includes(state.toLowerCase()))
-          if (matched) {
-            setUserProvince(matched)
-            setProvinceFilter(matched)
-          }
-        } catch {}
-        setLocationLoading(false)
-      },
-      () => setLocationLoading(false),
-      { timeout: 8000 }
-    )
+    try {
+      const { province } = await detectLocation()
+      if (province) {
+        setUserProvince(province)
+        setProvinceFilter(province)
+      }
+    } catch { /* denied or offline: user picks a province manually */ }
+    setLocationLoading(false)
   }
 
   const handleLink = async (provider) => {

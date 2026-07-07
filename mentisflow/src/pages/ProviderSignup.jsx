@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Check, CreditCard, ArrowLeft } from 'lucide-react'
+import { Check, CreditCard, ArrowLeft, MapPin, Loader } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { PageHeader } from '../components/layout/PageHeader'
@@ -10,6 +10,7 @@ import { functions } from '../lib/firebase'
 import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
 import { DEFAULT_PRICING, fetchPricing } from '../utils/pricing'
+import { detectLocation } from '../utils/geolocate'
 
 const activateProvider = httpsCallable(functions, 'activateProvider')
 
@@ -114,6 +115,21 @@ export function ProviderSignup() {
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }))
   const toggleList = (key, val) =>
     set(key, form[key].includes(val) ? form[key].filter(x => x !== val) : [...form[key], val])
+
+  const [locating, setLocating]   = useState(false)
+  const [locError, setLocError]   = useState('')
+  const handleUseLocation = async () => {
+    setLocating(true)
+    setLocError('')
+    try {
+      const { city, province } = await detectLocation()
+      if (!city && !province) setLocError('Could not determine your location. Please fill it in manually.')
+      else setForm(f => ({ ...f, city: city || f.city, province: province || f.province }))
+    } catch (e) {
+      setLocError(e.message)
+    }
+    setLocating(false)
+  }
 
   const handleActivate = async () => {
     setSaving(true)
@@ -256,6 +272,12 @@ export function ProviderSignup() {
                 </select>
               </div>
             </div>
+            <button type="button" onClick={handleUseLocation} disabled={locating}
+              className="flex items-center gap-1.5 text-xs font-semibold text-primary-500 hover:text-primary-600 disabled:opacity-50 transition-colors">
+              {locating ? <Loader size={12} className="animate-spin" /> : <MapPin size={12} />}
+              {locating ? 'Finding your location…' : 'Use my current location'}
+            </button>
+            {locError && <p className="text-xs text-red-500">{locError}</p>}
           </Card>
 
           <Card className="p-4">
@@ -449,6 +471,10 @@ export function ProviderSignup() {
               : plan === 'trial' ? `Start ${pricing.trialDays}-day free trial`
               : `Activate for ${pricing.currency}${PLANS.find(p => p.id === plan)?.price}/month`}
           </Button>
+          <p className="text-center text-[11px] text-ink-400">
+            By activating you agree to the{' '}
+            <a href={`${import.meta.env.BASE_URL}terms`} target="_blank" rel="noopener noreferrer" className="text-primary-500 hover:underline">Terms of Service</a>.
+          </p>
         </div>
       )}
     </PageWrapper>

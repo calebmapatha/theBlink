@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Trash2, Check, ChevronRight, ClipboardList, Target, Pill, FileText, Activity, X } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { PageHeader } from '../components/layout/PageHeader'
+import { DatePicker } from '../components/ui/DatePicker'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
@@ -65,7 +66,9 @@ function AddGoalModal({ open, onClose, onAdd }) {
         </div>
         <div>
           <label className="block text-xs font-medium text-ink-400 mb-1">Target date (optional)</label>
-          <input type="date" value={targetDate} onChange={e => setTarget(e.target.value)} className={inputCls} />
+          <DatePicker value={targetDate} onChange={setTarget}
+            min={new Date().toISOString().split('T')[0]}
+            clearable placeholder="Pick a target date" />
         </div>
         <div className="flex gap-2">
           <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>

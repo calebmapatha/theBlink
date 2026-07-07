@@ -190,6 +190,13 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Outbound email queue (Trigger Email extension). Written exclusively by
+    // Cloud Functions via the Admin SDK; clients must never read addresses or
+    // forge messages.
+    match /mail/{id} {
+      allow read, write: if false;
+    }
+
     // Default deny everything else.
     match /{document=**} {
       allow read, write: if false;

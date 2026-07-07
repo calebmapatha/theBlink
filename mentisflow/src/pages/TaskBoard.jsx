@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { format } from 'date-fns'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { PageHeader } from '../components/layout/PageHeader'
+import { DatePicker } from '../components/ui/DatePicker'
 import { Checkbox } from '../components/ui/Checkbox'
 import { Button } from '../components/ui/Button'
 import { Badge } from '../components/ui/Badge'
@@ -113,11 +114,10 @@ export function TaskBoard() {
           <Button onClick={handleAdd} disabled={!input.trim()}>Add</Button>
         </div>
         {showDatePicker && (
-          <div className="mt-2 flex items-center gap-2 px-3.5 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-800">
-            <CalendarDays size={14} className="text-ink-400 flex-shrink-0" />
-            <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)}
-              className="flex-1 bg-transparent text-sm text-ink-900 dark:text-ink-100 focus:outline-none" />
-            {dueDate && <button onClick={() => setDueDate('')} className="text-xs text-ink-400 hover:text-red-400 transition-colors">Clear</button>}
+          <div className="mt-2">
+            <DatePicker value={dueDate} onChange={setDueDate}
+              min={new Date().toISOString().split('T')[0]}
+              clearable placeholder="Due date (optional)" />
           </div>
         )}
       </div>

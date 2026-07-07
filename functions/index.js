@@ -6,7 +6,7 @@
  * forge: rating aggregates and subscription activation. A scheduled job
  * enforces the POPIA data-retention policy.
  */
-import { onDocumentCreated } from 'firebase-functions/v2/firestore'
+import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/firestore'
 import { onCall, onRequest, HttpsError } from 'firebase-functions/v2/https'
 import { onSchedule } from 'firebase-functions/v2/scheduler'
 import { setGlobalOptions } from 'firebase-functions/v2'
@@ -184,6 +184,93 @@ export const expireTrials = onSchedule('every 24 hours', async () => {
  */
 export const paymentWebhook = onRequest({ cors: false }, async (req, res) => {
   res.status(501).send('Payment webhook not yet configured.')
+})
+
+/**
+ * Booking-lifecycle email notifications.
+ *
+ * Emails are queued as documents in the `mail` collection using the format of
+ * the official "Trigger Email from Firestore" extension. Install the extension
+ * (firebase ext:install firebase/firestore-send-email) with your SMTP
+ * credentials and set its collection to `mail`; until then, queued documents
+ * simply sit unsent, so these functions deploy safely with no secrets.
+ * Clients can never read or write `mail` (denied by firestore.rules); only
+ * the Admin SDK writes here.
+ */
+const esc = (s) => String(s ?? '')
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+
+async function queueMail(to, subject, html) {
+  if (!to) return
+  await db.collection('mail').add({
+    to: [to],
+    message: { subject, html },
+    createdAt: Timestamp.now(),
+  })
+}
+
+/** Tell the practitioner a new booking request has arrived. */
+export const notifyBookingRequested = onDocumentCreated('appointments/{id}', async (event) => {
+  const appt = event.data?.data()
+  if (!appt?.providerUid) return
+  try {
+    const prov = await db.doc(`providers/${appt.providerUid}`).get()
+    const email = prov.data()?.email
+    if (!email) return
+    await queueMail(
+      email,
+      `New booking request for ${esc(appt.date)} at ${esc(appt.timeSlot)}`,
+      `<p>Hi ${esc(prov.data()?.name || 'there')},</p>
+       <p><strong>${esc(appt.patientName || 'A patient')}</strong> has requested an appointment
+       on <strong>${esc(appt.date)}</strong> at <strong>${esc(appt.timeSlot)}</strong>.</p>
+       <p>Open your MentisFlow dashboard to confirm or decline the request.</p>
+       <p>MentisFlow</p>`
+    )
+    logger.info('notifyBookingRequested: queued', { appointment: event.params.id })
+  } catch (err) {
+    // Never fail the booking because a notification could not be queued.
+    logger.error('notifyBookingRequested failed', { error: err.message })
+  }
+})
+
+/** Tell the patient when their request is confirmed or cancelled. */
+export const notifyBookingStatus = onDocumentUpdated('appointments/{id}', async (event) => {
+  const before = event.data?.before.data()
+  const after = event.data?.after.data()
+  if (!before || !after || before.status === after.status) return
+  if (!after.patientEmail) return
+  try {
+    if (after.status === 'confirmed') {
+      const link = /^https?:\/\//i.test(after.meetingLink || '')
+        ? `<p>Join here at the scheduled time: <a href="${esc(after.meetingLink)}">${esc(after.meetingLink)}</a></p>`
+        : '<p>Your practitioner will share the session link with you.</p>'
+      await queueMail(
+        after.patientEmail,
+        `Appointment confirmed: ${esc(after.date)} at ${esc(after.timeSlot)}`,
+        `<p>Hi ${esc(after.patientName || 'there')},</p>
+         <p>Your appointment on <strong>${esc(after.date)}</strong> at
+         <strong>${esc(after.timeSlot)}</strong> has been <strong>confirmed</strong>.</p>
+         ${link}
+         <p>MentisFlow</p>`
+      )
+    } else if (after.status === 'cancelled') {
+      await queueMail(
+        after.patientEmail,
+        `Appointment cancelled: ${esc(after.date)} at ${esc(after.timeSlot)}`,
+        `<p>Hi ${esc(after.patientName || 'there')},</p>
+         <p>Your appointment on <strong>${esc(after.date)}</strong> at
+         <strong>${esc(after.timeSlot)}</strong> has been <strong>cancelled</strong>.
+         You can request a new time from the Connect page.</p>
+         <p>MentisFlow</p>`
+      )
+    } else {
+      return
+    }
+    logger.info('notifyBookingStatus: queued', { appointment: event.params.id, status: after.status })
+  } catch (err) {
+    logger.error('notifyBookingStatus failed', { error: err.message })
+  }
 })
 
 /**

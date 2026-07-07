@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { User, Moon, Sun, LogOut, Trash2, Check, ChevronRight, Bell, BellOff, RotateCcw, Camera, Loader, Database, Send, Shield } from 'lucide-react'
+import { User, Moon, Sun, LogOut, Trash2, Check, ChevronRight, Bell, BellOff, RotateCcw, Camera, Loader, Database, Send, Shield, Lock, CheckCircle } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { PageHeader } from '../components/layout/PageHeader'
+import { TimePicker } from '../components/ui/TimePicker'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
@@ -165,21 +166,26 @@ function ClearDataModal({ open, onClose, onConfirm }) {
 
 function ReminderRow({ label, pref, onToggle, onTimeChange, onTest }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-3.5">
-      <span className="flex-1 text-sm font-medium text-ink-900 dark:text-ink-100">{label}</span>
-      <input type="time" value={pref.time} onChange={e => onTimeChange(e.target.value)} disabled={!pref.enabled}
-        className="text-sm text-ink-700 dark:text-ink-300 bg-transparent border border-surface-200 dark:border-surface-700 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary-400 disabled:opacity-40" />
-      {pref.enabled && (
-        <button onClick={onTest} title="Send test notification"
-          className="p-1.5 rounded-lg text-ink-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors flex-shrink-0">
-          <Send size={14} />
+    <div className="px-4 py-3.5">
+      <div className="flex items-center gap-3">
+        <span className="flex-1 text-sm font-medium text-ink-900 dark:text-ink-100">{label}</span>
+        {pref.enabled && (
+          <button onClick={onTest} title="Send test notification"
+            className="p-1.5 rounded-lg text-ink-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors flex-shrink-0">
+            <Send size={14} />
+          </button>
+        )}
+        {/* Toggle — overflow-hidden clips the nub so it never bleeds past the track */}
+        <button onClick={onToggle} aria-pressed={pref.enabled}
+          className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 overflow-hidden ${pref.enabled ? 'bg-primary-500' : 'bg-surface-300 dark:bg-surface-600'}`}>
+          <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${pref.enabled ? 'translate-x-5' : 'translate-x-0'}`} />
         </button>
+      </div>
+      {pref.enabled && (
+        <div className="mt-2.5">
+          <TimePicker value={pref.time} onChange={onTimeChange} />
+        </div>
       )}
-      {/* Toggle — overflow-hidden clips the nub so it never bleeds past the track */}
-      <button onClick={onToggle} aria-pressed={pref.enabled}
-        className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 overflow-hidden ${pref.enabled ? 'bg-primary-500' : 'bg-surface-300 dark:bg-surface-600'}`}>
-        <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${pref.enabled ? 'translate-x-5' : 'translate-x-0'}`} />
-      </button>
     </div>
   )
 }
@@ -242,12 +248,83 @@ function RemindersSection({ notifications }) {
   )
 }
 
+const pwInputCls = 'w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm placeholder-ink-400 focus:outline-none focus:ring-2 focus:ring-primary-400'
+
+function ChangePasswordModal({ open, onClose }) {
+  const { changePassword, authError, clearAuthError } = useAuth()
+  const [current, setCurrent]   = useState('')
+  const [next, setNext]         = useState('')
+  const [confirm, setConfirm]   = useState('')
+  const [saving, setSaving]     = useState(false)
+  const [done, setDone]         = useState(false)
+
+  const mismatch = confirm.length > 0 && next !== confirm
+  const canSave  = current && next.length >= 6 && next === confirm && !saving
+
+  const handleClose = () => {
+    setCurrent(''); setNext(''); setConfirm(''); setDone(false)
+    clearAuthError()
+    onClose()
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    const ok = await changePassword(current, next)
+    setSaving(false)
+    if (ok) setDone(true)
+  }
+
+  return (
+    <Modal open={open} onClose={handleClose} title="Change password">
+      {done ? (
+        <div className="flex flex-col items-center text-center py-4 space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-success-100 dark:bg-success-500/20 flex items-center justify-center">
+            <CheckCircle size={22} className="text-success-600 dark:text-success-400" />
+          </div>
+          <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">Password updated</p>
+          <p className="text-xs text-ink-400">Use your new password the next time you sign in.</p>
+          <Button className="w-full" onClick={handleClose}>Done</Button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-ink-400 mb-1">Current password</label>
+            <input type="password" value={current} onChange={e => setCurrent(e.target.value)}
+              autoComplete="current-password" className={pwInputCls} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-ink-400 mb-1">New password</label>
+            <input type="password" value={next} onChange={e => setNext(e.target.value)}
+              autoComplete="new-password" placeholder="At least 6 characters" className={pwInputCls} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-ink-400 mb-1">Confirm new password</label>
+            <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)}
+              autoComplete="new-password" className={pwInputCls} />
+            {mismatch && <p className="text-xs text-red-500 mt-1">Passwords do not match.</p>}
+          </div>
+          {authError && (
+            <p className="text-xs text-red-500 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30">{authError}</p>
+          )}
+          <div className="flex gap-2">
+            <Button variant="ghost" className="flex-1" onClick={handleClose}>Cancel</Button>
+            <Button className="flex-1" disabled={!canSave} onClick={handleSave}>
+              {saving ? 'Saving…' : 'Update password'}
+            </Button>
+          </div>
+        </div>
+      )}
+    </Modal>
+  )
+}
+
 export function Settings() {
   const { theme, userProfile, userId, notifications } = useApp()
   const { user, signOut }    = useAuth()
   const navigate             = useNavigate()
   const { uploadPhoto, getPatientProfile } = useProviders()
   const [profileOpen, setProfileOpen] = useState(false)
+  const [pwOpen, setPwOpen]           = useState(false)
   const [resetOpen, setResetOpen]     = useState(false)
   const [clearOpen, setClearOpen]     = useState(false)
   const [photoURL, setPhotoURL]       = useState(null)
@@ -332,6 +409,9 @@ export function Settings() {
 
       <Section title="Account">
         <SettingsRow icon={User} label="Edit profile" onClick={() => setProfileOpen(true)} />
+        {user?.providerData?.some(p => p.providerId === 'password') && (
+          <SettingsRow icon={Lock} label="Change password" onClick={() => setPwOpen(true)} />
+        )}
         <SettingsRow icon={LogOut} label="Sign out" onClick={signOut} />
       </Section>
 
@@ -357,11 +437,12 @@ export function Settings() {
         </Section>
       )}
 
-      <p className="text-center text-xs text-ink-400 mt-4">MentisFlow v1.0.0 · Your data stays on your device</p>
+      <p className="text-center text-xs text-ink-400 mt-4">MentisFlow v1.0.0 · Private by design</p>
 
       <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)}
         profile={userProfile.profile} authUser={user} onSave={userProfile.updateProfile}
         photoURL={photoURL} onPhotoUpload={handlePhotoUpload} />
+      <ChangePasswordModal open={pwOpen} onClose={() => setPwOpen(false)} />
       <ResetModal open={resetOpen} onClose={() => setResetOpen(false)} onConfirm={handleResetDefaults} />
       <ClearDataModal open={clearOpen} onClose={() => setClearOpen(false)} onConfirm={handleClearData} />
     </PageWrapper>

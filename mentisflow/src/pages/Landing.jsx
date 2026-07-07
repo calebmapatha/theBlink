@@ -417,6 +417,7 @@ export function Landing({ onSignIn, onGetStarted }) {
           </div>
           <div className="flex items-center gap-6 text-xs text-slate-400">
             <a href={privacyHref} className="hover:text-slate-600 transition-colors">Privacy policy</a>
+            <a href={`${import.meta.env.BASE_URL}terms`} className="hover:text-slate-600 transition-colors">Terms of service</a>
             <button onClick={() => onSignIn()} className="hover:text-slate-600 transition-colors">Sign in</button>
             <span>© {new Date().getFullYear()} MentisFlow</span>
           </div>

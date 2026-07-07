@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, X, Eye, TrendingUp, Camera, Loader, Star, FileText, Trash2, FileSignature } from 'lucide-react'
+import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, X, Eye, TrendingUp, Camera, Loader, Star, FileText, Trash2, FileSignature, MapPin } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { PageHeader } from '../components/layout/PageHeader'
 import { Card } from '../components/ui/Card'
@@ -8,6 +8,8 @@ import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
+import { detectLocation } from '../utils/geolocate'
+import { TimePicker } from '../components/ui/TimePicker'
 import { AddToCalendar } from '../components/ui/AddToCalendar'
 import { slotsForDay, dayMode, DEFAULT_HOURS } from '../utils/availability'
 import { trialDaysLeft } from '../utils/pricing'
@@ -381,7 +383,22 @@ function EditModal({ open, onClose, profile, onSave }) {
     province:        profile?.province || '',
   })
   const [saving, setSaving] = useState(false)
+  const [locating, setLocating] = useState(false)
+  const [locError, setLocError] = useState('')
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+  const handleUseLocation = async () => {
+    setLocating(true)
+    setLocError('')
+    try {
+      const { city, province } = await detectLocation()
+      if (!city && !province) setLocError('Could not determine your location.')
+      else setForm(f => ({ ...f, city: city || f.city, province: province || f.province }))
+    } catch (e) {
+      setLocError(e.message)
+    }
+    setLocating(false)
+  }
 
   const handle = async () => {
     setSaving(true)
@@ -449,6 +466,12 @@ function EditModal({ open, onClose, profile, onSave }) {
             </select>
           </div>
         </div>
+        <button type="button" onClick={handleUseLocation} disabled={locating}
+          className="flex items-center gap-1.5 text-xs font-semibold text-primary-500 hover:text-primary-600 disabled:opacity-50 transition-colors">
+          {locating ? <Loader size={12} className="animate-spin" /> : <MapPin size={12} />}
+          {locating ? 'Finding your location…' : 'Use my current location'}
+        </button>
+        {locError && <p className="text-xs text-red-500">{locError}</p>}
         <div className="flex gap-2">
           <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
           <Button className="flex-1" disabled={saving} onClick={handle}>
@@ -610,14 +633,15 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
 
       <Card className="p-4">
         <p className="text-xs font-medium text-ink-400 mb-3">Add availability slot</p>
-        <div className="flex gap-2">
-          <select value={selectedDay} onChange={e => setSelectedDay(e.target.value)}
-            className="flex-1 px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400">
-            {DAYS.map(d => <option key={d.key} value={d.key}>{d.label}</option>)}
-          </select>
-          <input type="time" value={newTime} onChange={e => setNewTime(e.target.value)}
-            className="flex-1 px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
-          <Button size="sm" onClick={addSlot} disabled={saving}>Add</Button>
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <select value={selectedDay} onChange={e => setSelectedDay(e.target.value)}
+              className="flex-1 px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400">
+              {DAYS.map(d => <option key={d.key} value={d.key}>{d.label}</option>)}
+            </select>
+            <Button size="sm" onClick={addSlot} disabled={saving || !newTime}>Add</Button>
+          </div>
+          <TimePicker value={newTime} onChange={setNewTime} placeholder="Pick a time" />
         </div>
       </Card>
 
