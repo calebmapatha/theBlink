@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { User, Moon, Sun, LogOut, Trash2, Check, ChevronRight, Bell, BellOff, RotateCcw, Camera, Loader, Database, Send, Shield } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
+import { PageHeader } from '../components/layout/PageHeader'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
@@ -305,9 +306,7 @@ export function Settings() {
 
   return (
     <PageWrapper>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-ink-900 dark:text-ink-100">Settings</h1>
-      </div>
+      <PageHeader title="Settings" />
 
       <Card className="p-4 mb-6">
         <div className="flex items-center gap-4">

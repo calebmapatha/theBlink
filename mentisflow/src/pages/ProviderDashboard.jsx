@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, X, Eye, TrendingUp, Camera, Loader, Star, FileText, Trash2, FileSignature } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
+import { PageHeader } from '../components/layout/PageHeader'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
@@ -967,15 +968,15 @@ export function ProviderDashboard() {
 
   return (
     <PageWrapper>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-ink-900 dark:text-ink-100">Provider Dashboard</h1>
-          <p className="text-sm text-ink-400 mt-0.5">{statusLabel}</p>
-        </div>
-        <Button variant="soft" size="sm" onClick={() => setEditOpen(true)}>
-          <Edit2 size={13} /> Edit profile
-        </Button>
-      </div>
+      <PageHeader
+        title="Provider Dashboard"
+        subtitle={statusLabel}
+        action={
+          <Button variant="soft" size="sm" onClick={() => setEditOpen(true)}>
+            <Edit2 size={13} /> Edit profile
+          </Button>
+        }
+      />
 
       {subInactive && (
         <div className="mb-5 p-3.5 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30">

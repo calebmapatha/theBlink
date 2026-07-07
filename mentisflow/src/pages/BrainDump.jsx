@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { Trash2, Zap } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { PageWrapper } from '../components/layout/PageWrapper'
+import { PageHeader } from '../components/layout/PageHeader'
 import { Button } from '../components/ui/Button'
 import { useApp } from '../context/AppContext'
 import { formatRelative, formatTimestamp } from '../utils/dateUtils'
@@ -25,10 +26,7 @@ export function BrainDump() {
 
   return (
     <PageWrapper>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-ink-900 dark:text-ink-100">Brain Dump</h1>
-        <p className="text-sm text-ink-400 mt-0.5">Clear your head, get it out of your brain</p>
-      </div>
+      <PageHeader title="Brain Dump" subtitle="Clear your head, get it out of your brain" />
 
       {/* Editor */}
       <div className="mb-8 rounded-2xl border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-800 overflow-hidden focus-within:border-primary-400 focus-within:ring-1 focus-within:ring-primary-400 transition-all">

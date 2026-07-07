@@ -32,8 +32,8 @@ export function Modal({ open, onClose, title, children }) {
             exit={{ opacity: 0, y: 40 }}
             transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
             className="relative z-10 w-full sm:max-w-md bg-white dark:bg-surface-800
-                       rounded-t-2xl sm:rounded-2xl shadow-2xl border border-surface-200
-                       dark:border-surface-700 flex flex-col max-h-[92dvh] sm:max-h-[90vh]"
+                       rounded-t-3xl sm:rounded-3xl shadow-2xl border border-surface-100
+                       dark:border-surface-700/60 flex flex-col max-h-[92dvh] sm:max-h-[90vh]"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-5 pb-3 flex-shrink-0">

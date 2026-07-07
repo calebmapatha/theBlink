@@ -5,20 +5,6 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "subscriptionActive",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "providers",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
           "fieldPath": "hpcsa",
           "order": "ASCENDING"
         },

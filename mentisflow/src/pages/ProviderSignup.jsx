@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Check, CreditCard, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { PageWrapper } from '../components/layout/PageWrapper'
+import { PageHeader } from '../components/layout/PageHeader'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { httpsCallable } from 'firebase/functions'
@@ -168,10 +169,7 @@ export function ProviderSignup() {
         <ArrowLeft size={15} /> {step > 1 ? 'Back' : 'Back to Connect'}
       </button>
 
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-ink-900 dark:text-ink-100">Join as a Provider</h1>
-        <p className="text-sm text-ink-400 mt-0.5">List your practice on MentisFlow</p>
-      </div>
+      <PageHeader title="Join as a Provider" subtitle="List your practice on MentisFlow" />
 
       <div className="flex items-center gap-1 mb-8">
         {STEPS.map((s, i) => (

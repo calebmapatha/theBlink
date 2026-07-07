@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { CheckCircle, Edit3 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { PageWrapper } from '../components/layout/PageWrapper'
+import { PageHeader } from '../components/layout/PageHeader'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { useApp } from '../context/AppContext'
@@ -129,10 +130,7 @@ export function DailyCheckin() {
 
   return (
     <PageWrapper>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-ink-900 dark:text-ink-100">Daily Check-in</h1>
-        <p className="text-sm text-ink-400 mt-0.5">{formatDayHeader()}</p>
-      </div>
+      <PageHeader title="Daily Check-in" subtitle={formatDayHeader()} />
 
       {!showForm ? (
         <CheckinSummary checkin={checkin.todayCheckin} onEdit={handleEdit} />

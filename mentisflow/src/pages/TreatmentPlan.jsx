@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Trash2, Check, ChevronRight, ClipboardList, Target, Pill, FileText, Activity, X } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
+import { PageHeader } from '../components/layout/PageHeader'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
@@ -502,14 +503,13 @@ export function TreatmentPlan() {
 
   return (
     <PageWrapper>
-      <div className="mb-5">
-        <div className="flex items-center gap-2 mb-1">
-          <ClipboardList size={16} className="text-primary-500" />
-          <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">Treatment Plan</p>
-        </div>
-        <h1 className="text-2xl font-semibold text-ink-900 dark:text-ink-100">My Treatment Plan</h1>
-        <p className="text-sm text-ink-400 mt-1">Track goals, medications, session notes and symptoms. Share with your doctor when booking.</p>
-      </div>
+      <PageHeader
+        icon={ClipboardList}
+        eyebrow="Treatment Plan"
+        title="My Treatment Plan"
+        subtitle="Track goals, medications, session notes and symptoms. Share with your doctor when booking."
+        className="mb-5"
+      />
 
       {/* Summary strip */}
       <div className="grid grid-cols-4 gap-2 mb-5">
@@ -517,8 +517,8 @@ export function TreatmentPlan() {
           <button key={key} onClick={() => setTab(key)}
             className={`p-3 rounded-2xl text-center transition-all ${
               tab === key
-                ? 'bg-primary-500 text-white shadow-sm'
-                : 'bg-white dark:bg-surface-900 border border-surface-200 dark:border-surface-700 text-ink-400 hover:border-primary-300'
+                ? 'bg-primary-500 text-white shadow-md shadow-primary-500/20'
+                : 'bg-white dark:bg-surface-900 border border-surface-100 dark:border-surface-700 text-ink-400 hover:border-primary-300'
             }`}>
             <Icon size={16} className="mx-auto mb-1" />
             <p className="text-[10px] font-semibold">{summary[key]}</p>

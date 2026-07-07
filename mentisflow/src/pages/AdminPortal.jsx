@@ -178,12 +178,12 @@ export function AdminPortal() {
 
   return (
     <PageWrapper>
-      <div className="mb-5 flex items-center gap-2">
-        <div className="w-9 h-9 rounded-xl bg-ink-900 dark:bg-ink-100 flex items-center justify-center">
-          <Shield size={17} className="text-white dark:text-ink-900" />
+      <div className="mb-5 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-2xl bg-ink-900 dark:bg-ink-100 flex items-center justify-center flex-shrink-0">
+          <Shield size={18} className="text-white dark:text-ink-900" />
         </div>
         <div>
-          <h1 className="text-2xl font-semibold text-ink-900 dark:text-ink-100">Super Admin</h1>
+          <h1 className="text-[1.7rem] font-bold tracking-tight text-ink-900 dark:text-ink-100 leading-tight">Super Admin</h1>
           <p className="text-xs text-ink-400">Platform control centre</p>
         </div>
       </div>

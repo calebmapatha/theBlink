@@ -16,7 +16,7 @@ const sizes = {
 export function Button({ variant = 'primary', size = 'md', className = '', children, ...props }) {
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 font-medium transition-all duration-150
+      className={`inline-flex items-center justify-center gap-2 font-semibold transition-all duration-150
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400
         disabled:opacity-40 disabled:cursor-not-allowed
         ${variants[variant]} ${sizes[size]} ${className}`}
