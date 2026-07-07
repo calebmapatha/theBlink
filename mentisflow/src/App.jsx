@@ -34,9 +34,16 @@ import { HeartHandshake } from 'lucide-react'
 function AppShell({ isProvider }) {
   const location = useLocation()
   const navigate  = useNavigate()
-  const { toast, dismissToast } = useApp()
+  const { toast, dismissToast, tools } = useApp()
   const [syncError, setSyncError] = useState(false)
   const [announcement, setAnnouncement] = useState(null)
+
+  // Patients can disable FocusBlink tools; a disabled tool's route (and Home,
+  // when every tool is off) falls back to Connect so the URL is never a
+  // dead end. Guards a route element behind its tool preference.
+  const homeFallback = tools.anyEnabled ? '/' : '/connect'
+  const gate = (key, element) =>
+    tools.isEnabled(key) ? element : <Navigate to={homeFallback} replace />
 
   useEffect(() => {
     if (!isProvider && localStorage.getItem('mf_role') === 'provider') {
@@ -97,16 +104,16 @@ function AppShell({ isProvider }) {
               </>
             ) : (
               <>
-                <Route path="/"                   element={<Dashboard />} />
+                <Route path="/"                   element={tools.anyEnabled ? <Dashboard /> : <Navigate to="/connect" replace />} />
                 <Route path="/connect"            element={<Connect />} />
                 <Route path="/treatment"          element={<TreatmentPlan />} />
-                <Route path="/timer"              element={<FocusTimer />} />
-                <Route path="/tasks"              element={<TaskBoard />} />
-                <Route path="/dump"               element={<BrainDump />} />
-                <Route path="/habits"             element={<HabitTracker />} />
-                <Route path="/monthly"            element={<MonthlyTracker />} />
-                <Route path="/checkin"            element={<DailyCheckin />} />
-                <Route path="/rewards"            element={<Rewards />} />
+                <Route path="/timer"              element={gate('timer', <FocusTimer />)} />
+                <Route path="/tasks"              element={gate('tasks', <TaskBoard />)} />
+                <Route path="/dump"               element={gate('dump', <BrainDump />)} />
+                <Route path="/habits"             element={gate('habits', <HabitTracker />)} />
+                <Route path="/monthly"            element={gate('monthly', <MonthlyTracker />)} />
+                <Route path="/checkin"            element={gate('checkin', <DailyCheckin />)} />
+                <Route path="/rewards"            element={gate('rewards', <Rewards />)} />
                 <Route path="/settings"           element={<Settings />} />
                 <Route path="/provider/signup"    element={<ProviderSignup />} />
                 <Route path="/admin"              element={<AdminPortal />} />

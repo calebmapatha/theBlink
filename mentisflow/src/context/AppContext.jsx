@@ -8,6 +8,7 @@ import { useRewards } from '../hooks/useRewards'
 import { useTheme } from '../hooks/useTheme'
 import { useUserProfile } from '../hooks/useUserProfile'
 import { useNotifications } from '../hooks/useNotifications'
+import { useToolPrefs } from '../hooks/useToolPrefs'
 
 const AppContext = createContext(null)
 
@@ -51,9 +52,10 @@ export function AppProvider({ userId, children }) {
   const theme         = useTheme()
   const userProfile   = useUserProfile(userId)
   const notifications = useNotifications()
+  const tools         = useToolPrefs(userId)
 
   return (
-    <AppContext.Provider value={{ timer, tasks, dump, habits, checkin, rewards, theme, toast, showToast, dismissToast, awardAndToast, userProfile, userId, notifications }}>
+    <AppContext.Provider value={{ timer, tasks, dump, habits, checkin, rewards, theme, toast, showToast, dismissToast, awardAndToast, userProfile, userId, notifications, tools }}>
       {children}
     </AppContext.Provider>
   )

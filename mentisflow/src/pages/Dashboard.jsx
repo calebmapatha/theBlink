@@ -46,7 +46,7 @@ const itemVariants = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, 
 
 export function Dashboard() {
   const navigate = useNavigate()
-  const { habits, tasks, checkin, dump, timer, rewards, userId, awardAndToast, userProfile } = useApp()
+  const { habits, tasks, checkin, dump, timer, rewards, userId, awardAndToast, userProfile, tools } = useApp()
   const treatmentPlan = useTreatmentPlan(userId)
   const [dumpText, setDumpText] = useState('')
   const firstName = (userProfile?.profile?.displayName || '').trim().split(/\s+/)[0] || ''
@@ -133,6 +133,7 @@ export function Dashboard() {
         </motion.div>
 
         {/* Check-in */}
+        {tools.isEnabled('checkin') && (
         <motion.div variants={itemVariants}>
           <Card interactive className="p-4" onClick={() => navigate('/checkin')}>
             {checkin.todayCheckin ? (
@@ -165,9 +166,12 @@ export function Dashboard() {
             )}
           </Card>
         </motion.div>
+        )}
 
         {/* Habits + Tasks */}
+        {(tools.isEnabled('habits') || tools.isEnabled('tasks')) && (
         <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3">
+          {tools.isEnabled('habits') && (
           <button onClick={() => navigate('/habits')} className="text-left">
             <Card interactive className="p-4 h-full">
               <div className="flex items-center justify-between mb-2">
@@ -188,7 +192,9 @@ export function Dashboard() {
               )}
             </Card>
           </button>
+          )}
 
+          {tools.isEnabled('tasks') && (
           <button onClick={() => navigate('/tasks')} className="text-left">
             <Card interactive className="p-4 h-full">
               <div className="flex items-center justify-between mb-2">
@@ -209,9 +215,12 @@ export function Dashboard() {
               {totalTaskCount === 0 && <p className="text-xs text-ink-400 mt-1">No tasks today</p>}
             </Card>
           </button>
+          )}
         </motion.div>
+        )}
 
         {/* Brain Dump */}
+        {tools.isEnabled('dump') && (
         <motion.div variants={itemVariants}>
           <Card className="p-4">
             <button className="w-full flex items-center justify-between mb-3" onClick={() => navigate('/dump')}>
@@ -243,8 +252,10 @@ export function Dashboard() {
             )}
           </Card>
         </motion.div>
+        )}
 
         {/* Timer */}
+        {tools.isEnabled('timer') && (
         <motion.div variants={itemVariants}>
           <Card interactive className="p-4" onClick={() => navigate('/timer')}>
             <div className="flex items-center gap-4">
@@ -285,8 +296,10 @@ export function Dashboard() {
             )}
           </Card>
         </motion.div>
+        )}
 
         {/* Monthly overview */}
+        {tools.isEnabled('monthly') && (
         <motion.div variants={itemVariants}>
           <Card interactive className="p-4" onClick={() => navigate('/monthly')}>
             <div className="flex items-center justify-between mb-3">
@@ -312,6 +325,7 @@ export function Dashboard() {
             </div>
           </Card>
         </motion.div>
+        )}
 
         {/* Treatment Plan */}
         <motion.div variants={itemVariants}>
@@ -356,6 +370,7 @@ export function Dashboard() {
         </motion.div>
 
         {/* XP */}
+        {tools.isEnabled('rewards') && (
         <motion.div variants={itemVariants}>
           <Card interactive className="p-4" onClick={() => navigate('/rewards')}>
             <div className="flex items-center justify-between mb-3">
@@ -380,6 +395,7 @@ export function Dashboard() {
             {!rewards.nextLevel && <p className="text-xs text-primary-500 mt-1.5 font-medium">Max level reached!</p>}
           </Card>
         </motion.div>
+        )}
 
       </motion.div>
     </PageWrapper>
