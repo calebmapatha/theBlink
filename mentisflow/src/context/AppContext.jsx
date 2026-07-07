@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useRef } from 'react'
 import { useTimer } from '../hooks/useTimer'
 import { useTasks } from '../hooks/useTasks'
 import { useBrainDump } from '../hooks/useBrainDump'
@@ -14,15 +14,32 @@ const AppContext = createContext(null)
 export function AppProvider({ userId, children }) {
   const rewards = useRewards(userId)
   const [toast, setToast] = useState(null)
+  const toastTimer = useRef()
 
-  const showToast = useCallback((message, pts) => {
-    setToast({ message, pts, id: Date.now() })
-    setTimeout(() => setToast(null), 2500)
+  const dismissToast = useCallback(() => {
+    clearTimeout(toastTimer.current)
+    setToast(null)
+  }, [])
+
+  // General toast. Second arg is either a number (XP points, back-compat) or
+  // an options object: { pts, variant: 'success'|'error'|'info', action:
+  // { label, onClick } }. Toasts with an action linger longer so it's tappable.
+  const showToast = useCallback((message, opts = {}) => {
+    const o = typeof opts === 'number' ? { pts: opts } : opts
+    clearTimeout(toastTimer.current)
+    setToast({
+      message,
+      pts: o.pts ?? null,
+      variant: o.variant || (o.pts != null ? 'reward' : 'success'),
+      action: o.action || null,
+      id: Date.now(),
+    })
+    toastTimer.current = setTimeout(() => setToast(null), o.action ? 5000 : 2500)
   }, [])
 
   const awardAndToast = useCallback((action, label) => {
     const pts = rewards.awardPoints(action, label)
-    if (pts > 0) showToast(label || action, pts)
+    if (pts > 0) showToast(label || action, { pts })
     return pts
   }, [rewards, showToast])
 
@@ -36,7 +53,7 @@ export function AppProvider({ userId, children }) {
   const notifications = useNotifications()
 
   return (
-    <AppContext.Provider value={{ timer, tasks, dump, habits, checkin, rewards, theme, toast, awardAndToast, userProfile, userId, notifications }}>
+    <AppContext.Provider value={{ timer, tasks, dump, habits, checkin, rewards, theme, toast, showToast, dismissToast, awardAndToast, userProfile, userId, notifications }}>
       {children}
     </AppContext.Provider>
   )

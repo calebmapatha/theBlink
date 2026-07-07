@@ -319,7 +319,7 @@ function ChangePasswordModal({ open, onClose }) {
 }
 
 export function Settings() {
-  const { theme, userProfile, userId, notifications } = useApp()
+  const { theme, userProfile, userId, notifications, showToast } = useApp()
   const { user, signOut }    = useAuth()
   const navigate             = useNavigate()
   const { uploadPhoto, getPatientProfile } = useProviders()
@@ -440,7 +440,8 @@ export function Settings() {
       <p className="text-center text-xs text-ink-400 mt-4">MentisFlow v1.0.0 · Private by design</p>
 
       <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)}
-        profile={userProfile.profile} authUser={user} onSave={userProfile.updateProfile}
+        profile={userProfile.profile} authUser={user}
+        onSave={(u) => { userProfile.updateProfile(u); showToast('Profile updated') }}
         photoURL={photoURL} onPhotoUpload={handlePhotoUpload} />
       <ChangePasswordModal open={pwOpen} onClose={() => setPwOpen(false)} />
       <ResetModal open={resetOpen} onClose={() => setResetOpen(false)} onConfirm={handleResetDefaults} />

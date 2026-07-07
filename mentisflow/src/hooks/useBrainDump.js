@@ -13,5 +13,11 @@ export function useBrainDump(userId) {
     setEntries(prev => prev.filter(e => e.id !== id))
   }, [setEntries])
 
-  return { entries, addEntry, deleteEntry }
+  // Re-insert a previously deleted entry (for undo). Deduped so a double-undo
+  // can't create two copies.
+  const restoreEntry = useCallback((entry) => {
+    setEntries(prev => prev.some(e => e.id === entry.id) ? prev : [entry, ...prev])
+  }, [setEntries])
+
+  return { entries, addEntry, deleteEntry, restoreEntry }
 }

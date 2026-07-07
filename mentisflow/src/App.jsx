@@ -34,7 +34,7 @@ import { HeartHandshake } from 'lucide-react'
 function AppShell({ isProvider }) {
   const location = useLocation()
   const navigate  = useNavigate()
-  const { toast } = useApp()
+  const { toast, dismissToast } = useApp()
   const [syncError, setSyncError] = useState(false)
   const [announcement, setAnnouncement] = useState(null)
 
@@ -116,7 +116,7 @@ function AppShell({ isProvider }) {
           </Routes>
         </AnimatePresence>
       </main>
-      <Toast toast={toast} />
+      <Toast toast={toast} onDismiss={dismissToast} />
     </div>
   )
 }

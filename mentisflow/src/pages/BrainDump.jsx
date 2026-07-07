@@ -8,7 +8,7 @@ import { useApp } from '../context/AppContext'
 import { formatRelative, formatTimestamp } from '../utils/dateUtils'
 
 export function BrainDump() {
-  const { dump, awardAndToast } = useApp()
+  const { dump, awardAndToast, showToast } = useApp()
   const [text, setText] = useState('')
   const textareaRef = useRef(null)
 
@@ -22,6 +22,11 @@ export function BrainDump() {
 
   const handleKeyDown = (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') handleDump()
+  }
+
+  const handleDelete = (entry) => {
+    dump.deleteEntry(entry.id)
+    showToast('Note deleted', { variant: 'info', action: { label: 'Undo', onClick: () => dump.restoreEntry(entry) } })
   }
 
   return (
@@ -83,7 +88,7 @@ export function BrainDump() {
                     </p>
                   </div>
                   <button
-                    onClick={() => dump.deleteEntry(entry.id)}
+                    onClick={() => handleDelete(entry)}
                     className="p-1.5 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
                   >
                     <Trash2 size={14} />
