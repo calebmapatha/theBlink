@@ -10,16 +10,20 @@ const CONNECT_NAV = [
   { to: '/treatment', icon: ClipboardList,  label: 'Treatment Plan' },
 ]
 
-const FOCUSBLINK_NAV = [
-  { to: '/',        icon: Home,        label: 'Home',       end: true },
-  { to: '/timer',   icon: Timer,       label: 'Focus Timer' },
-  { to: '/tasks',   icon: CheckSquare, label: 'Tasks' },
-  { to: '/habits',  icon: Repeat,      label: 'Habits' },
-  { to: '/monthly', icon: BarChart2,   label: 'Monthly' },
-  { to: '/dump',    icon: Brain,       label: 'Brain Dump' },
-  { to: '/checkin', icon: Sun,         label: 'Check-in' },
-  { to: '/rewards', icon: Trophy,      label: 'Rewards' },
+// The dashboard aggregates the FocusBlink tools, so it's shown only when at
+// least one tool is enabled. Each tool item carries its `tool` key so it can
+// be filtered against the user's preferences.
+const HOME_NAV  = { to: '/', icon: Home, label: 'Home', end: true }
+const FOCUS_NAV = [
+  { to: '/checkin', icon: Sun,         label: 'Check-in',    tool: 'checkin' },
+  { to: '/habits',  icon: Repeat,      label: 'Habits',      tool: 'habits' },
+  { to: '/tasks',   icon: CheckSquare, label: 'Tasks',       tool: 'tasks' },
+  { to: '/timer',   icon: Timer,       label: 'Focus Timer', tool: 'timer' },
+  { to: '/dump',    icon: Brain,       label: 'Brain Dump',  tool: 'dump' },
+  { to: '/monthly', icon: BarChart2,   label: 'Monthly',     tool: 'monthly' },
+  { to: '/rewards', icon: Trophy,      label: 'Rewards',     tool: 'rewards' },
 ]
+const TREATMENT_NAV = { to: '/treatment', icon: ClipboardList, label: 'Treatment Plan' }
 
 const PROVIDER_NAV = [
   { to: '/',                   icon: LayoutDashboard, label: 'Dashboard', end: true },
@@ -27,28 +31,13 @@ const PROVIDER_NAV = [
   { to: '/settings',           icon: Settings,        label: 'Settings' },
 ]
 
-const PATIENT_MOBILE_NAV = [
-  { to: '/connect', icon: HeartHandshake, label: 'Connect' },
-  { to: '/',        icon: Home,           label: 'Home',    end: true },
-  { to: '/tasks',   icon: CheckSquare,    label: 'Tasks' },
-  { to: '/habits',  icon: Repeat,         label: 'Habits' },
-]
-
-const PATIENT_MORE_NAV = [
-  { to: '/dump',      icon: Brain,         label: 'Brain Dump' },
-  { to: '/timer',     icon: Timer,         label: 'Focus Timer' },
-  { to: '/monthly',   icon: BarChart2,     label: 'Monthly' },
-  { to: '/checkin',   icon: Sun,           label: 'Check-in' },
-  { to: '/rewards',   icon: Trophy,        label: 'Rewards' },
-  { to: '/treatment', icon: ClipboardList, label: 'Treatment Plan' },
-  { to: '/settings',  icon: Settings,      label: 'Settings' },
-]
-
 const PROVIDER_MOBILE_NAV = [
   { to: '/',                   icon: LayoutDashboard, label: 'Dashboard', end: true },
   { to: '/provider/analytics', icon: BarChart2,       label: 'Analytics' },
   { to: '/settings',           icon: Settings,        label: 'Settings' },
 ]
+
+const CONNECT_ITEM = { to: '/connect', icon: HeartHandshake, label: 'Connect' }
 
 function SectionLabel({ children }) {
   return (
@@ -82,13 +71,26 @@ function NavItem({ to, icon: Icon, label, end }) {
 }
 
 export function Sidebar({ isProvider }) {
-  const { theme, rewards, userProfile } = useApp()
+  const { theme, rewards, userProfile, tools } = useApp()
   const { user, signOut } = useAuth()
   const avatar    = userProfile?.profile?.avatarEmoji || '🧠'
   const name      = userProfile?.profile?.displayName || user?.displayName || user?.email?.split('@')[0] || ''
   const [moreOpen, setMoreOpen] = useState(false)
 
-  const mobileNav = isProvider ? PROVIDER_MOBILE_NAV : PATIENT_MOBILE_NAV
+  // Only the FocusBlink tools the patient has kept enabled.
+  const enabledFocus = FOCUS_NAV.filter(i => tools.isEnabled(i.tool))
+  const anyFocus     = tools.anyEnabled
+
+  // Mobile bottom bar: Connect + Home + up to two enabled tools when any tool
+  // is on; otherwise just the two Care destinations.
+  const patientBar = anyFocus
+    ? [CONNECT_ITEM, HOME_NAV, ...enabledFocus.slice(0, 2)]
+    : [CONNECT_ITEM, TREATMENT_NAV]
+  const barRoutes  = new Set(patientBar.map(i => i.to))
+  const patientMore = [...enabledFocus, TREATMENT_NAV, { to: '/settings', icon: Settings, label: 'Settings' }]
+    .filter(i => !barRoutes.has(i.to))
+
+  const mobileNav = isProvider ? PROVIDER_MOBILE_NAV : patientBar
 
   return (
     <>
@@ -122,13 +124,18 @@ export function Sidebar({ isProvider }) {
               <SectionLabel>Care</SectionLabel>
               {CONNECT_NAV.map(item => <NavItem key={item.to} {...item} />)}
 
-              <SectionLabel>
-                <span className="inline-flex items-center gap-1">
-                  <Zap size={9} className="text-primary-500" />
-                  FocusBlink
-                </span>
-              </SectionLabel>
-              {FOCUSBLINK_NAV.map(item => <NavItem key={item.to} {...item} />)}
+              {anyFocus && (
+                <>
+                  <SectionLabel>
+                    <span className="inline-flex items-center gap-1">
+                      <Zap size={9} className="text-primary-500" />
+                      FocusBlink
+                    </span>
+                  </SectionLabel>
+                  <NavItem {...HOME_NAV} />
+                  {enabledFocus.map(item => <NavItem key={item.to} {...item} />)}
+                </>
+              )}
 
               <SectionLabel>Account</SectionLabel>
               <NavItem to="/settings" icon={Settings} label="Settings" />
@@ -201,7 +208,7 @@ export function Sidebar({ isProvider }) {
               </button>
             </div>
             <div className="grid grid-cols-3 gap-2 px-4 pb-8">
-              {PATIENT_MORE_NAV.map(({ to, icon: Icon, label }) => (
+              {patientMore.map(({ to, icon: Icon, label }) => (
                 <NavLink key={to} to={to} onClick={() => setMoreOpen(false)}
                   className={({ isActive }) =>
                     `flex flex-col items-center gap-1.5 py-3.5 px-2 rounded-2xl text-xs font-medium transition-colors ${

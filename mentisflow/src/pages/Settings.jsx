@@ -12,6 +12,7 @@ import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
 import { seedDemoProviders } from '../utils/seedProviders'
 import { isAdminUser } from '../utils/admin'
+import { FOCUSBLINK_TOOLS } from '../hooks/useToolPrefs'
 
 const AVATAR_OPTIONS = ['🧠','😊','⚡','🎯','🦁','🐢','🦊','🌟','🔥','💎','🏔️','🌊','🎨','🎥','🚀']
 
@@ -318,8 +319,40 @@ function ChangePasswordModal({ open, onClose }) {
   )
 }
 
+function ToggleSwitch({ on, onClick }) {
+  return (
+    <button onClick={onClick} aria-pressed={on}
+      className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 overflow-hidden ${on ? 'bg-primary-500' : 'bg-surface-300 dark:bg-surface-600'}`}>
+      <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${on ? 'translate-x-5' : 'translate-x-0'}`} />
+    </button>
+  )
+}
+
+function ToolsSection({ tools }) {
+  return (
+    <Section title="FocusBlink tools">
+      <div className="flex items-center gap-3 px-4 py-3.5">
+        <div className="flex-1">
+          <p className="text-sm font-medium text-ink-900 dark:text-ink-100">Show FocusBlink tools</p>
+          <p className="text-[11px] text-ink-400">Turn everything off to keep only Connect &amp; Treatment.</p>
+        </div>
+        <ToggleSwitch on={tools.anyEnabled} onClick={() => tools.setAll(!tools.anyEnabled)} />
+      </div>
+      {FOCUSBLINK_TOOLS.map(t => (
+        <div key={t.key} className="flex items-center gap-3 px-4 py-3">
+          <span className="flex-1 text-sm text-ink-700 dark:text-ink-300 pl-1">{t.label}</span>
+          <ToggleSwitch on={tools.isEnabled(t.key)} onClick={() => tools.setEnabled(t.key, !tools.isEnabled(t.key))} />
+        </div>
+      ))}
+      <p className="px-4 py-2.5 text-[11px] text-ink-400 leading-relaxed">
+        Turning a tool off hides it from your menu and dashboard. Your data is kept and reappears when you switch it back on.
+      </p>
+    </Section>
+  )
+}
+
 export function Settings() {
-  const { theme, userProfile, userId, notifications, showToast } = useApp()
+  const { theme, userProfile, userId, notifications, showToast, tools } = useApp()
   const { user, signOut }    = useAuth()
   const navigate             = useNavigate()
   const { uploadPhoto, getPatientProfile } = useProviders()
@@ -405,6 +438,8 @@ export function Settings() {
           label={theme.isDark ? 'Dark mode' : 'Light mode'} value={theme.isDark ? 'On' : 'Off'}
           onClick={theme.toggleTheme} />
       </Section>
+
+      <ToolsSection tools={tools} />
 
       <RemindersSection notifications={notifications} />
 
