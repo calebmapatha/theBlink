@@ -63,6 +63,7 @@ export function ProviderSignup() {
   const [pricing, setPricing]         = useState(DEFAULT_PRICING)
   const [trialUsed, setTrialUsed]     = useState(false)
   const [hasProfile, setHasProfile]   = useState(false)
+  const [pendingPayment, setPendingPayment] = useState(false)
 
   const [form, setForm] = useState({
     name:            '',
@@ -97,6 +98,7 @@ export function ProviderSignup() {
       if (p) {
         setHasProfile(true)
         setTrialUsed(!!p.trialUsed)
+        setPendingPayment(p.subscriptionStatus === 'pending_payment' && !p.subscriptionActive)
         if (p.trialUsed) setPlan('standard')
         // Owner-only fields (meeting link) live in the private subcollection.
         const priv = await getPrivateProfile(user.uid)
@@ -145,8 +147,14 @@ export function ProviderSignup() {
       })
       // activateProvider also queues the doctor for Super Admin approval
       // (approvalStatus: 'pending') — set server-side so it can't be forged.
-      await activateProvider({ plan })
+      const res = await activateProvider({ plan })
       localStorage.setItem('mf_role', 'provider')
+      if (res?.data?.authorizationUrl) {
+        // Paid plan with live billing: complete checkout on Paystack. The
+        // paymentWebhook function activates the subscription on success.
+        window.location.href = res.data.authorizationUrl
+        return
+      }
       window.location.reload()
     } catch (e) {
       setActivateError(e?.message?.includes('trial')
@@ -363,6 +371,13 @@ export function ProviderSignup() {
 
       {step === 3 && (
         <div className="space-y-4">
+          {pendingPayment && (
+            <div className="rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 px-3 py-2.5 text-xs text-amber-700 dark:text-amber-400">
+              We're waiting for Paystack to confirm your payment. This usually takes a few
+              seconds. Refresh this page once you've completed checkout, or choose a plan
+              again to restart payment.
+            </div>
+          )}
           <p className="text-xs font-medium text-ink-400 px-1">Choose your plan</p>
 
           {!trialUsed && (
@@ -435,32 +450,14 @@ export function ProviderSignup() {
           </div>
 
           {plan !== 'trial' && (
-          <Card className="p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-medium text-ink-400">Payment details</p>
-              <div className="flex items-center gap-1 text-xs text-ink-400"><CreditCard size={11} /> Paystack</div>
+            <div className="rounded-xl bg-surface-50 dark:bg-surface-800 px-3.5 py-3 flex items-start gap-2.5">
+              <CreditCard size={15} className="text-primary-500 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-ink-500 dark:text-ink-400 leading-relaxed">
+                <span className="font-semibold text-ink-700 dark:text-ink-300">Secure checkout with Paystack.</span>{' '}
+                You'll be redirected to complete your subscription safely. Your listing goes
+                live as soon as payment is confirmed.
+              </p>
             </div>
-            <div>
-              <label className="block text-xs text-ink-400 mb-1">Card number</label>
-              <input readOnly placeholder="4242 4242 4242 4242"
-                className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-100 dark:bg-surface-800 text-sm text-ink-300 cursor-not-allowed" />
-            </div>
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <label className="block text-xs text-ink-400 mb-1">Expiry</label>
-                <input readOnly placeholder="MM / YY"
-                  className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-100 dark:bg-surface-800 text-sm text-ink-300 cursor-not-allowed" />
-              </div>
-              <div className="flex-1">
-                <label className="block text-xs text-ink-400 mb-1">CVC</label>
-                <input readOnly placeholder="•••"
-                  className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-100 dark:bg-surface-800 text-sm text-ink-300 cursor-not-allowed" />
-              </div>
-            </div>
-            <p className="text-[10px] text-ink-400 bg-surface-50 dark:bg-surface-900 px-2.5 py-1.5 rounded-lg">
-              🔒 Demo mode. No real charge. Paystack billing enabled at launch.
-            </p>
-          </Card>
           )}
 
           {activateError && (
@@ -469,7 +466,7 @@ export function ProviderSignup() {
           <Button className="w-full" disabled={saving} onClick={handleActivate}>
             {saving ? 'Activating…'
               : plan === 'trial' ? `Start ${pricing.trialDays}-day free trial`
-              : `Activate for ${pricing.currency}${PLANS.find(p => p.id === plan)?.price}/month`}
+              : `Subscribe for ${pricing.currency}${PLANS.find(p => p.id === plan)?.price}/month`}
           </Button>
           <p className="text-center text-[11px] text-ink-400">
             By activating you agree to the{' '}

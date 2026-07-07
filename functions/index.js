@@ -13,6 +13,7 @@ import { setGlobalOptions } from 'firebase-functions/v2'
 import { logger } from 'firebase-functions'
 import { initializeApp } from 'firebase-admin/app'
 import { getFirestore, Timestamp } from 'firebase-admin/firestore'
+import { createHmac, timingSafeEqual } from 'node:crypto'
 
 // europe-west1 is the closest Functions v2 region to South Africa (no af-south1
 // for gen-2 yet) — keeps latency reasonable and data in-region for POPIA.
@@ -77,6 +78,61 @@ async function configuredTrialDays() {
   }
 }
 
+// ── Paystack billing ─────────────────────────────────────────────────────────
+// Stripe does not onboard South African merchants; Paystack does. The secret
+// key comes from the functions environment (functions/.env or
+// `firebase functions:secrets:set` + params). When it is NOT configured, paid
+// plans fall back to demo activation so the platform stays demoable before
+// the merchant account exists.
+//
+// Go-live steps:
+//  1. Create a Paystack business, get the live secret key.
+//  2. Create two subscription Plans (monthly, ZAR) in the Paystack dashboard
+//     and store their codes on config/platform:
+//       paystack: { plans: { standard: 'PLN_...', featured: 'PLN_...' } }
+//  3. Set PAYSTACK_SECRET_KEY in functions/.env and redeploy functions.
+//  4. Point a Paystack webhook at the paymentWebhook function URL.
+const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY || ''
+// Where Paystack sends the customer after checkout (the deployed web app).
+const PAYMENT_CALLBACK_URL = process.env.PAYMENT_CALLBACK_URL || 'https://calebmapatha.github.io/theBlink/'
+
+async function platformConfig() {
+  try {
+    const snap = await db.doc('config/platform').get()
+    return snap.data() || {}
+  } catch {
+    return {}
+  }
+}
+
+// Create a Paystack checkout for a plan and return its authorization URL.
+// With a plan code Paystack creates a recurring subscription on first charge;
+// without one it falls back to a once-off charge of the monthly amount.
+async function paystackInitialize({ email, uid, plan }) {
+  const cfg = await platformConfig()
+  const monthly = Number(cfg.pricing?.plans?.[plan]?.monthly) ||
+    (plan === 'featured' ? 895 : 495)
+  const planCode = cfg.paystack?.plans?.[plan] || ''
+
+  const res = await fetch('https://api.paystack.co/transaction/initialize', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${PAYSTACK_SECRET}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email,
+      amount: Math.round(monthly * 100), // ZAR cents
+      currency: 'ZAR',
+      ...(planCode ? { plan: planCode } : {}),
+      metadata: { providerUid: uid, plan },
+      callback_url: PAYMENT_CALLBACK_URL,
+    }),
+  })
+  const json = await res.json()
+  if (!json.status || !json.data?.authorization_url) {
+    throw new Error(json.message || 'Paystack transaction initialization failed')
+  }
+  return json.data.authorization_url
+}
+
 /**
  * Activate a provider's subscription, or start their one-time free trial.
  *
@@ -86,11 +142,9 @@ async function configuredTrialDays() {
  * from writing these fields in firestore.rules — a doctor must not be able to
  * grant themselves an endless trial or an active subscription.
  *
- * Paid plans are DEMO MODE: they activate immediately on request.
- * TODO (real billing): Paystack, not Stripe — Stripe does not onboard South
- * African merchants. Replace the paid branch with Paystack transaction
- * initialization (subscription plan codes) and return the authorization_url;
- * activation then happens exclusively in `paymentWebhook` on charge.success.
+ * Trials activate immediately. Paid plans return a Paystack checkout URL and
+ * are activated exclusively by `paymentWebhook` on charge.success. If no
+ * Paystack key is configured yet, paid plans activate in demo mode.
  */
 export const activateProvider = onCall(async (request) => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'You must be signed in.')
@@ -128,6 +182,23 @@ export const activateProvider = onCall(async (request) => {
   }
 
   const plan = requested === 'featured' ? 'featured' : 'standard'
+
+  // Real billing: hand the doctor to Paystack checkout. Activation happens in
+  // paymentWebhook once Paystack reports charge.success.
+  if (PAYSTACK_SECRET) {
+    const email = existing.email || request.auth.token.email
+    if (!email) throw new HttpsError('failed-precondition', 'Your profile has no email address for billing.')
+    const authorizationUrl = await paystackInitialize({ email, uid, plan })
+    await provRef.set({
+      subscriptionStatus: 'pending_payment',
+      subscriptionPlan:   plan,
+      approvalStatus,
+    }, { merge: true })
+    logger.info('activateProvider: checkout created', { uid, plan })
+    return { activated: false, authorizationUrl }
+  }
+
+  // Demo mode (no Paystack key configured): activate immediately.
   await provRef.set({
     subscriptionActive:  true,
     subscriptionStatus:  'active',
@@ -136,7 +207,7 @@ export const activateProvider = onCall(async (request) => {
     approvalStatus,
   }, { merge: true })
 
-  logger.info('activateProvider: activated', { uid, plan, approvalStatus })
+  logger.info('activateProvider: activated (demo mode, no Paystack key)', { uid, plan, approvalStatus })
   return { activated: true }
 })
 
@@ -169,21 +240,67 @@ export const expireTrials = onSchedule('every 24 hours', async () => {
 })
 
 /**
- * Payment webhook endpoint (stub) — intended for Paystack.
+ * Paystack webhook. The ONLY writer that activates paid subscriptions.
  *
- * Wire-up steps when going live:
- *  1. Add `paystack` API calls (plain fetch is enough) and set the
- *     PAYSTACK_SECRET_KEY secret (firebase functions:secrets:set ...).
- *  2. Verify the x-paystack-signature header (HMAC-SHA512 of the raw body
- *     with the secret key).
- *  3. On charge.success / subscription.create: read metadata.providerUid and
- *     set subscriptionActive: true, subscriptionStatus: 'active'.
- *  4. On subscription.disable / invoice.payment_failed: set
- *     subscriptionActive: false, subscriptionStatus: 'past_due' | 'cancelled'.
- *  5. Always 200 on success, 401 on signature failure.
+ * Every request must carry a valid x-paystack-signature (HMAC-SHA512 of the
+ * raw body with the secret key); anything else is rejected before any data
+ * is touched. Events without a resolvable provider are acknowledged with 200
+ * so Paystack does not retry them forever.
  */
 export const paymentWebhook = onRequest({ cors: false }, async (req, res) => {
-  res.status(501).send('Payment webhook not yet configured.')
+  if (!PAYSTACK_SECRET) {
+    res.status(501).send('Payment webhook not yet configured.')
+    return
+  }
+
+  const signature = req.headers['x-paystack-signature']
+  const digest = createHmac('sha512', PAYSTACK_SECRET).update(req.rawBody).digest('hex')
+  const valid = typeof signature === 'string' &&
+    signature.length === digest.length &&
+    timingSafeEqual(Buffer.from(signature), Buffer.from(digest))
+  if (!valid) {
+    logger.warn('paymentWebhook: invalid signature')
+    res.status(401).send('Invalid signature')
+    return
+  }
+
+  const event = req.body || {}
+  const data = event.data || {}
+
+  // Resolve the provider: transaction events carry our metadata; subscription
+  // lifecycle events may only carry the customer, so fall back to email.
+  let uid = data.metadata?.providerUid || null
+  if (!uid && data.customer?.email) {
+    const snap = await db.collection('providers')
+      .where('email', '==', data.customer.email).limit(1).get()
+    if (!snap.empty) uid = snap.docs[0].id
+  }
+
+  try {
+    if (event.event === 'charge.success' && uid) {
+      const plan = data.metadata?.plan === 'featured' ? 'featured' : 'standard'
+      await db.doc(`providers/${uid}`).set({
+        subscriptionActive:  true,
+        subscriptionStatus:  'active',
+        subscriptionPlan:    plan,
+        subscriptionStarted: new Date().toISOString(),
+        paystackCustomerCode: data.customer?.customer_code || '',
+      }, { merge: true })
+      logger.info('paymentWebhook: subscription activated', { uid, plan })
+    } else if ((event.event === 'subscription.disable' || event.event === 'invoice.payment_failed') && uid) {
+      await db.doc(`providers/${uid}`).set({
+        subscriptionActive: false,
+        subscriptionStatus: event.event === 'subscription.disable' ? 'cancelled' : 'past_due',
+      }, { merge: true })
+      logger.info('paymentWebhook: subscription deactivated', { uid, event: event.event })
+    } else {
+      logger.info('paymentWebhook: event ignored', { event: event.event, resolved: !!uid })
+    }
+    res.status(200).send('ok')
+  } catch (err) {
+    logger.error('paymentWebhook failed', { event: event.event, error: err.message })
+    res.status(500).send('error')
+  }
 })
 
 /**
