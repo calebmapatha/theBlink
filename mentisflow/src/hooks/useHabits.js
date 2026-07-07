@@ -55,6 +55,18 @@ export function useHabits(userId) {
     setState(prev => ({ ...prev, definitions: prev.definitions.filter(h => h.id !== id) }))
   }, [setState])
 
+  // Re-insert a removed habit at its original position (for undo). Its
+  // completion history was never deleted, so the streak comes back intact.
+  // Deduped and still bound by the 10-habit cap.
+  const restoreHabit = useCallback((habit, index = 0) => {
+    setState(prev => {
+      if (prev.definitions.some(h => h.id === habit.id) || prev.definitions.length >= 10) return prev
+      const defs = [...prev.definitions]
+      defs.splice(Math.min(Math.max(index, 0), defs.length), 0, habit)
+      return { ...prev, definitions: defs }
+    })
+  }, [setState])
+
   const isCheckedToday = (id) => (state.completions[todayKey()] || []).includes(id)
 
   const isCheckedOn = (id, dateKey) => (state.completions[dateKey] || []).includes(id)
@@ -94,7 +106,7 @@ export function useHabits(userId) {
       color: h.color || HABIT_COLORS[i % HABIT_COLORS.length],
     })),
     completions: state.completions,
-    toggleHabit, addHabit, editHabit, removeHabit,
+    toggleHabit, addHabit, editHabit, removeHabit, restoreHabit,
     isCheckedToday, isCheckedOn, getStreak, getWeeklyCount, getMonthlyData,
     todayCount: (state.completions[todayKey()] || []).length,
     totalHabits: state.definitions.length,

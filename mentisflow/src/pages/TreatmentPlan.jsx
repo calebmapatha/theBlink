@@ -493,9 +493,24 @@ const TABS = [
 ]
 
 export function TreatmentPlan() {
-  const { userId } = useApp()
+  const { userId, showToast } = useApp()
   const plan       = useTreatmentPlan(userId)
   const [tab, setTab] = useState('goals')
+
+  // Wrap a delete so removing health data shows an Undo toast and restores
+  // the item in place instead of a silent permanent delete.
+  const undoableDelete = (key, deleteFn, label) => (id) => {
+    const list  = plan.plan[key]
+    const index = list.findIndex(x => x.id === id)
+    const item  = list[index]
+    if (!item) return
+    deleteFn(id)
+    showToast(`${label} deleted`, { variant: 'info', action: { label: 'Undo', onClick: () => plan.restoreItem(key, item, index) } })
+  }
+  const deleteGoal       = undoableDelete('goals', plan.deleteGoal, 'Goal')
+  const deleteMedication = undoableDelete('medications', plan.deleteMedication, 'Medication')
+  const deleteNote       = undoableDelete('sessionNotes', plan.deleteNote, 'Note')
+  const deleteSymptom    = undoableDelete('symptoms', plan.deleteSymptom, 'Symptom')
 
   const summary = {
     goals:       plan.plan.goals.filter(g => g.status === 'active').length,
@@ -537,10 +552,10 @@ export function TreatmentPlan() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}>
-          {tab === 'goals'       && <GoalsTab       plan={plan.plan} addGoal={plan.addGoal} updateGoal={plan.updateGoal} deleteGoal={plan.deleteGoal} />}
-          {tab === 'medications' && <MedicationsTab plan={plan.plan} addMedication={plan.addMedication} toggleMedication={plan.toggleMedication} deleteMedication={plan.deleteMedication} />}
-          {tab === 'notes'       && <NotesTab       plan={plan.plan} addNote={plan.addNote} deleteNote={plan.deleteNote} />}
-          {tab === 'symptoms'    && <SymptomsTab    plan={plan.plan} addSymptom={plan.addSymptom} updateSymptom={plan.updateSymptom} deleteSymptom={plan.deleteSymptom} />}
+          {tab === 'goals'       && <GoalsTab       plan={plan.plan} addGoal={plan.addGoal} updateGoal={plan.updateGoal} deleteGoal={deleteGoal} />}
+          {tab === 'medications' && <MedicationsTab plan={plan.plan} addMedication={plan.addMedication} toggleMedication={plan.toggleMedication} deleteMedication={deleteMedication} />}
+          {tab === 'notes'       && <NotesTab       plan={plan.plan} addNote={plan.addNote} deleteNote={deleteNote} />}
+          {tab === 'symptoms'    && <SymptomsTab    plan={plan.plan} addSymptom={plan.addSymptom} updateSymptom={plan.updateSymptom} deleteSymptom={deleteSymptom} />}
         </motion.div>
       </AnimatePresence>
 

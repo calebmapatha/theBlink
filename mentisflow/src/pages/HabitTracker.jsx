@@ -242,8 +242,18 @@ function ManageModal({ open, onClose, habits, onAdd, onEdit, onRemove }) {
 }
 
 export function HabitTracker() {
-  const { habits, awardAndToast } = useApp()
+  const { habits, awardAndToast, showToast } = useApp()
   const [manageOpen, setManageOpen] = useState(false)
+
+  // Delete with an Undo toast; the habit's completion history is preserved,
+  // so restoring brings back its streak too.
+  const handleRemove = (id) => {
+    const index = habits.habits.findIndex(h => h.id === id)
+    const habit = habits.habits[index]
+    if (!habit) return
+    habits.removeHabit(id)
+    showToast('Habit deleted', { variant: 'info', action: { label: 'Undo', onClick: () => habits.restoreHabit(habit, index) } })
+  }
 
   const handleToggle = (id) => {
     const wasChecked = habits.isCheckedToday(id)
@@ -297,7 +307,7 @@ export function HabitTracker() {
         habits={habits.habits}
         onAdd={habits.addHabit}
         onEdit={habits.editHabit}
-        onRemove={habits.removeHabit} />
+        onRemove={handleRemove} />
     </PageWrapper>
   )
 }

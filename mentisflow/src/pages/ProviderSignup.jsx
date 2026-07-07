@@ -170,7 +170,10 @@ export function ProviderSignup() {
 
   const hpcsaHint   = form.type === 'Psychiatrist' ? 'MP0123456' : 'PS0123456'
   const STEPS       = ['Profile', 'Session Setup', 'Subscribe']
-  const canProceed1 = form.name.trim() && form.bio.trim() && form.specialties.length > 0 && form.hpcsa.trim()
+  // Two letters + at least four digits covers MP/PS registration numbers
+  // without hard-coding a single prefix; blocks obvious typos and garbage.
+  const hpcsaValid  = /^[A-Z]{2}\d{4,}$/.test(form.hpcsa.trim())
+  const canProceed1 = form.name.trim() && form.bio.trim() && form.specialties.length > 0 && hpcsaValid
   const canProceed2 = form.sessionFee && Number(form.sessionFee) > 0
 
   const PLANS = [
@@ -251,11 +254,19 @@ export function ProviderSignup() {
               <label className="block text-xs font-medium text-ink-400 mb-1">
                 HPCSA practice number <span className="text-red-400">*</span>
               </label>
-              <input value={form.hpcsa} onChange={e => set('hpcsa', e.target.value.toUpperCase())}
-                className={inputCls} placeholder={`e.g. ${hpcsaHint}`} />
-              <p className="text-[10px] text-ink-400 mt-1">
-                Psychiatrists: MP + digits · Psychologists: PS + digits
-              </p>
+              <input value={form.hpcsa}
+                onChange={e => set('hpcsa', e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+                className={`${inputCls} ${form.hpcsa && !hpcsaValid ? 'border-red-300 dark:border-red-500/40 focus:ring-red-400' : ''}`}
+                placeholder={`e.g. ${hpcsaHint}`} />
+              {form.hpcsa && !hpcsaValid ? (
+                <p className="text-[10px] text-red-500 mt-1">
+                  Enter two letters followed by digits, e.g. {hpcsaHint}.
+                </p>
+              ) : (
+                <p className="text-[10px] text-ink-400 mt-1">
+                  Psychiatrists: MP + digits · Psychologists: PS + digits
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-xs font-medium text-ink-400 mb-1">Years of experience</label>
