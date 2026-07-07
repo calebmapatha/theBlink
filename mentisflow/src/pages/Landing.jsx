@@ -20,7 +20,7 @@ const NAV_LINKS = [
 ]
 
 const HOW_IT_WORKS = [
-  { icon: Search,        step: '1', title: 'Find a practitioner',  desc: 'Browse HPCSA-verified psychiatrists and psychologists near you.' },
+  { icon: Search,        step: '1', title: 'Find a practitioner',  desc: 'Browse HPCSA-registered psychiatrists and psychologists near you.' },
   { icon: CalendarCheck, step: '2', title: 'Book via their diary', desc: 'Pick an available slot and confirm your appointment instantly.' },
   { icon: TrendingUp,    step: '3', title: 'Track your progress',  desc: 'Share mood, habit, and task data securely with your doctor.' },
 ]
@@ -202,7 +202,7 @@ export function Landing({ onSignIn, onGetStarted }) {
               </button>
             </div>
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-7 text-xs text-slate-400">
-              <span className="flex items-center gap-1.5"><Shield size={12} className="text-teal-400" /> HPCSA-verified practitioners</span>
+              <span className="flex items-center gap-1.5"><Shield size={12} className="text-teal-400" /> HPCSA-registered practitioners</span>
               <span className="flex items-center gap-1.5"><Lock size={12} className="text-teal-400" /> Your data stays yours</span>
               <span className="flex items-center gap-1.5"><Zap size={12} className="text-teal-400" /> Installs as an app (PWA)</span>
             </div>
@@ -223,7 +223,7 @@ export function Landing({ onSignIn, onGetStarted }) {
       <section className="border-y border-slate-100 bg-slate-50/60">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
-            ['R0', 'Doctors keep 100% of session fees'],
+            ['HPCSA', 'registered psychiatrists & psychologists'],
             ['2 months', 'free trial for every new practice'],
             ['9 provinces', 'find practitioners anywhere in SA'],
             ['2 roles', 'one platform for patients & practitioners'],
@@ -267,11 +267,12 @@ export function Landing({ onSignIn, onGetStarted }) {
         <motion.div {...fadeUp} className="max-w-2xl">
           <p className="text-sm font-bold text-teal-600 uppercase tracking-wide">For practitioners</p>
           <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">
-            Grow your practice. Keep every rand you earn.
+            Grow your practice. Focus on your patients.
           </h2>
           <p className="text-slate-500 mt-4 leading-relaxed">
-            A simple monthly subscription and nothing else. MentisFlow never takes a cut of your
-            session fees. Patients find you, book into your diary, and arrive with context.
+            Patients discover you, book straight into your diary, and arrive with context — the mood,
+            habit and check-in trends they choose to share. Less phone tag and paperwork, more time
+            for care.
           </p>
         </motion.div>
 
@@ -292,11 +293,10 @@ export function Landing({ onSignIn, onGetStarted }) {
           className="mt-14 rounded-3xl bg-slate-50 border border-slate-100 p-8 sm:p-10 text-center max-w-3xl mx-auto"
         >
           <p className="text-sm font-bold text-teal-600 uppercase tracking-wide">Start with a 2-month free trial</p>
-          <h3 className="text-2xl font-extrabold tracking-tight mt-2">Try everything first. Pay nothing today.</h3>
+          <h3 className="text-2xl font-extrabold tracking-tight mt-2">Try everything, commitment-free.</h3>
           <p className="text-slate-500 mt-3 leading-relaxed max-w-xl mx-auto">
-            Every new practice starts with a 2-month ({trialDays}-day) free trial, with no card
-            required and no per-session commission. Plan options are shown when you create your
-            practice profile.
+            Every new practice starts with a full 2-month ({trialDays}-day) free trial, no card
+            required. Set up your profile, open your diary, and start meeting patients right away.
           </p>
           <button
             onClick={() => onGetStarted('provider')}
