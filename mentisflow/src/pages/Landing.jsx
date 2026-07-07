@@ -291,11 +291,11 @@ export function Landing({ onSignIn, onGetStarted }) {
           <div className="grid md:grid-cols-3 gap-6 mt-12">
             {HOW_IT_WORKS.map(({ icon: Icon, step, title, desc }) => (
               <motion.div key={step} {...fadeUp} className="rounded-3xl bg-slate-800/60 border border-slate-700/60 p-7">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-9 h-9 rounded-full bg-teal-500 flex items-center justify-center text-sm font-bold">{step}</div>
-                  <Icon size={20} className="text-teal-300" />
-                </div>
-                <h3 className="font-bold text-lg">{title}</h3>
+                <div className="w-9 h-9 rounded-full bg-teal-500 flex items-center justify-center text-sm font-bold mb-4">{step}</div>
+                <h3 className="font-bold text-lg flex items-center gap-2">
+                  <Icon size={20} className="text-teal-300 flex-shrink-0" />
+                  {title}
+                </h3>
                 <p className="text-sm text-slate-400 mt-2 leading-relaxed">{desc}</p>
               </motion.div>
             ))}
