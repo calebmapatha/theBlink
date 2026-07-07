@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   HeartHandshake, Shield, Zap, Search, CalendarCheck, TrendingUp, Timer,
-  Stethoscope, LineChart, Lock, Trash2, FileCheck, CheckCircle2, ArrowRight, Menu, X,
+  Stethoscope, Lock, Trash2, CheckCircle2, ArrowRight, Menu, X,
 } from 'lucide-react'
 import { DEFAULT_PRICING } from '../utils/pricing'
 
@@ -23,13 +23,6 @@ const HOW_IT_WORKS = [
   { icon: Search,        step: '1', title: 'Find a practitioner',  desc: 'Browse HPCSA-registered psychiatrists and psychologists near you.' },
   { icon: CalendarCheck, step: '2', title: 'Book via their diary', desc: 'Pick an available slot and confirm your appointment instantly.' },
   { icon: TrendingUp,    step: '3', title: 'Track your progress',  desc: 'Share mood, habit, and task data securely with your doctor.' },
-]
-
-const PROVIDER_POINTS = [
-  { icon: Stethoscope,   title: 'Verified listing',        desc: 'List your practice with your HPCSA number and reach patients across South Africa.' },
-  { icon: CalendarCheck, title: 'Diary & availability',    desc: 'Set your available slots once. Patients book directly, no phone tag.' },
-  { icon: FileCheck,     title: 'Patient snapshots',       desc: 'See mood, habit, and check-in trends your patients consent to share at booking.' },
-  { icon: LineChart,     title: 'Practice analytics',      desc: 'Appointment volumes, ratings, and growth trends for your practice at a glance.' },
 ]
 
 const SECURITY_POINTS = [
@@ -275,18 +268,6 @@ export function Landing({ onSignIn, onGetStarted }) {
             for care.
           </p>
         </motion.div>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-12">
-          {PROVIDER_POINTS.map(({ icon: Icon, title, desc }) => (
-            <motion.div key={title} {...fadeUp} className="p-1">
-              <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center mb-3">
-                <Icon size={18} className="text-teal-600" />
-              </div>
-              <h3 className="font-bold text-slate-900 text-[15px]">{title}</h3>
-              <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">{desc}</p>
-            </motion.div>
-          ))}
-        </div>
 
         <motion.div
           {...fadeUp}
