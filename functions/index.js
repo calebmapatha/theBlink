@@ -105,24 +105,37 @@ async function platformConfig() {
   }
 }
 
-// Create a Paystack checkout for a plan and return its authorization URL.
-// With a plan code Paystack creates a recurring subscription on first charge;
-// without one it falls back to a once-off charge of the monthly amount.
-async function paystackInitialize({ email, uid, plan }) {
+// Fallback prices when config/platform carries no override. Annual = 10x
+// monthly (2 months free), matching DEFAULT_PRICING in the web app.
+const FALLBACK_PRICES = {
+  standard: { monthly: 495, annual: 4950 },
+  featured: { monthly: 895, annual: 8950 },
+}
+
+// Create a Paystack checkout for a plan/cycle and return its authorization
+// URL. With a plan code Paystack creates a recurring subscription on first
+// charge; without one it falls back to a once-off charge of the amount.
+// Plan codes on config/platform support both shapes:
+//   paystack.plans.standard = 'PLN_...'                        (monthly only)
+//   paystack.plans.standard = { monthly: 'PLN_..', annual: 'PLN_..' }
+async function paystackInitialize({ email, uid, plan, cycle }) {
   const cfg = await platformConfig()
-  const monthly = Number(cfg.pricing?.plans?.[plan]?.monthly) ||
-    (plan === 'featured' ? 895 : 495)
-  const planCode = cfg.paystack?.plans?.[plan] || ''
+  const amount = Number(cfg.pricing?.plans?.[plan]?.[cycle]) ||
+    FALLBACK_PRICES[plan][cycle]
+  const rawCode = cfg.paystack?.plans?.[plan]
+  const planCode = typeof rawCode === 'string'
+    ? (cycle === 'monthly' ? rawCode : '')
+    : (rawCode?.[cycle] || '')
 
   const res = await fetch('https://api.paystack.co/transaction/initialize', {
     method: 'POST',
     headers: { Authorization: `Bearer ${PAYSTACK_SECRET}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       email,
-      amount: Math.round(monthly * 100), // ZAR cents
+      amount: Math.round(amount * 100), // ZAR cents
       currency: 'ZAR',
       ...(planCode ? { plan: planCode } : {}),
-      metadata: { providerUid: uid, plan },
+      metadata: { providerUid: uid, plan, cycle },
       callback_url: PAYMENT_CALLBACK_URL,
     }),
   })
@@ -182,19 +195,21 @@ export const activateProvider = onCall(async (request) => {
   }
 
   const plan = requested === 'featured' ? 'featured' : 'standard'
+  const cycle = request.data?.cycle === 'annual' ? 'annual' : 'monthly'
 
   // Real billing: hand the doctor to Paystack checkout. Activation happens in
   // paymentWebhook once Paystack reports charge.success.
   if (PAYSTACK_SECRET) {
     const email = existing.email || request.auth.token.email
     if (!email) throw new HttpsError('failed-precondition', 'Your profile has no email address for billing.')
-    const authorizationUrl = await paystackInitialize({ email, uid, plan })
+    const authorizationUrl = await paystackInitialize({ email, uid, plan, cycle })
     await provRef.set({
       subscriptionStatus: 'pending_payment',
       subscriptionPlan:   plan,
+      subscriptionCycle:  cycle,
       approvalStatus,
     }, { merge: true })
-    logger.info('activateProvider: checkout created', { uid, plan })
+    logger.info('activateProvider: checkout created', { uid, plan, cycle })
     return { activated: false, authorizationUrl }
   }
 
@@ -203,11 +218,12 @@ export const activateProvider = onCall(async (request) => {
     subscriptionActive:  true,
     subscriptionStatus:  'active',
     subscriptionPlan:    plan,
+    subscriptionCycle:   cycle,
     subscriptionStarted: new Date().toISOString(),
     approvalStatus,
   }, { merge: true })
 
-  logger.info('activateProvider: activated (demo mode, no Paystack key)', { uid, plan, approvalStatus })
+  logger.info('activateProvider: activated (demo mode, no Paystack key)', { uid, plan, cycle, approvalStatus })
   return { activated: true }
 })
 
@@ -279,14 +295,16 @@ export const paymentWebhook = onRequest({ cors: false }, async (req, res) => {
   try {
     if (event.event === 'charge.success' && uid) {
       const plan = data.metadata?.plan === 'featured' ? 'featured' : 'standard'
+      const cycle = data.metadata?.cycle === 'annual' ? 'annual' : 'monthly'
       await db.doc(`providers/${uid}`).set({
         subscriptionActive:  true,
         subscriptionStatus:  'active',
         subscriptionPlan:    plan,
+        subscriptionCycle:   cycle,
         subscriptionStarted: new Date().toISOString(),
         paystackCustomerCode: data.customer?.customer_code || '',
       }, { merge: true })
-      logger.info('paymentWebhook: subscription activated', { uid, plan })
+      logger.info('paymentWebhook: subscription activated', { uid, plan, cycle })
     } else if ((event.event === 'subscription.disable' || event.event === 'invoice.payment_failed') && uid) {
       await db.doc(`providers/${uid}`).set({
         subscriptionActive: false,

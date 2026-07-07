@@ -58,6 +58,7 @@ export function ProviderSignup() {
   const [step, setStep]               = useState(1)
   const [checking, setChecking]       = useState(true)
   const [plan, setPlan]               = useState('trial')
+  const [cycle, setCycle]             = useState('monthly')
   const [saving, setSaving]           = useState(false)
   const [activateError, setActivateError] = useState('')
   const [pricing, setPricing]         = useState(DEFAULT_PRICING)
@@ -147,7 +148,7 @@ export function ProviderSignup() {
       })
       // activateProvider also queues the doctor for Super Admin approval
       // (approvalStatus: 'pending') — set server-side so it can't be forged.
-      const res = await activateProvider({ plan })
+      const res = await activateProvider({ plan, cycle })
       localStorage.setItem('mf_role', 'provider')
       if (res?.data?.authorizationUrl) {
         // Paid plan with live billing: complete checkout on Paystack. The
@@ -173,9 +174,10 @@ export function ProviderSignup() {
   const canProceed2 = form.sessionFee && Number(form.sessionFee) > 0
 
   const PLANS = [
-    { id: 'standard', price: pricing.plans.standard.monthly, label: 'Standard', features: PLAN_FEATURES.standard },
-    { id: 'featured', price: pricing.plans.featured.monthly, label: 'Featured', features: PLAN_FEATURES.featured },
+    { id: 'standard', price: pricing.plans.standard[cycle], label: 'Standard', features: PLAN_FEATURES.standard },
+    { id: 'featured', price: pricing.plans.featured[cycle], label: 'Featured', features: PLAN_FEATURES.featured },
   ]
+  const perCycle = cycle === 'annual' ? '/yr' : '/mo'
 
   const meetingPlaceholder = form.meetingPlatform === 'meet'
     ? 'https://meet.google.com/abc-defg-hij'
@@ -414,6 +416,20 @@ export function ProviderSignup() {
             </div>
           )}
 
+          {/* Billing cycle for the paid plans */}
+          <div className="flex p-1 bg-surface-100 dark:bg-surface-800/60 rounded-xl">
+            {[['monthly', 'Monthly'], ['annual', 'Annual · 2 months free']].map(([c, label]) => (
+              <button key={c} onClick={() => setCycle(c)}
+                className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+                  cycle === c
+                    ? 'bg-white dark:bg-surface-700 text-ink-900 dark:text-ink-100 shadow-sm'
+                    : 'text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
+                }`}>
+                {label}
+              </button>
+            ))}
+          </div>
+
           {PLANS.map(p => (
             <button key={p.id} onClick={() => setPlan(p.id)}
               className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${
@@ -433,7 +449,14 @@ export function ProviderSignup() {
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-warm-400 text-white font-medium">Popular</span>
                   )}
                 </div>
-                <span className="font-bold text-ink-900 dark:text-ink-100 text-base">{pricing.currency}{p.price}<span className="text-xs font-normal text-ink-400">/mo</span></span>
+                <div className="text-right">
+                  <span className="font-bold text-ink-900 dark:text-ink-100 text-base">{pricing.currency}{p.price}<span className="text-xs font-normal text-ink-400">{perCycle}</span></span>
+                  {cycle === 'annual' && (
+                    <p className="text-[10px] text-success-600 dark:text-success-400 font-medium">
+                      2 months free vs monthly
+                    </p>
+                  )}
+                </div>
               </div>
               <ul className="space-y-1">
                 {p.features.map(f => (
@@ -466,7 +489,7 @@ export function ProviderSignup() {
           <Button className="w-full" disabled={saving} onClick={handleActivate}>
             {saving ? 'Activating…'
               : plan === 'trial' ? `Start ${pricing.trialDays}-day free trial`
-              : `Subscribe for ${pricing.currency}${PLANS.find(p => p.id === plan)?.price}/month`}
+              : `Subscribe for ${pricing.currency}${PLANS.find(p => p.id === plan)?.price}/${cycle === 'annual' ? 'year' : 'month'}`}
           </Button>
           <p className="text-center text-[11px] text-ink-400">
             By activating you agree to the{' '}

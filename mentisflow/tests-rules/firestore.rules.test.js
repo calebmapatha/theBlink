@@ -118,6 +118,8 @@ describe('providers', () => {
     await assertFails(updateDoc(doc(provider(), 'providers/provider1'), { trialUsed: false }))
     await assertFails(updateDoc(doc(provider(), 'providers/provider1'), { subscriptionStatus: 'active' }))
     await assertFails(updateDoc(doc(provider(), 'providers/provider1'), { subscriptionPlan: 'featured' }))
+    await assertFails(updateDoc(doc(provider(), 'providers/provider1'), { subscriptionCycle: 'annual' }))
+    await assertFails(updateDoc(doc(provider(), 'providers/provider1'), { paystackCustomerCode: 'CUS_forged' }))
   })
 
   it('anyone signed in may bump profileViews by exactly one — nothing else', async () => {
