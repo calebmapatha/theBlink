@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { User, Moon, Sun, LogOut, Trash2, Check, ChevronRight, Bell, BellOff, RotateCcw, Camera, Loader, Database, Send, Shield, Lock, CheckCircle } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { PageHeader } from '../components/layout/PageHeader'
+import { TimePicker } from '../components/ui/TimePicker'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
@@ -165,21 +166,26 @@ function ClearDataModal({ open, onClose, onConfirm }) {
 
 function ReminderRow({ label, pref, onToggle, onTimeChange, onTest }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-3.5">
-      <span className="flex-1 text-sm font-medium text-ink-900 dark:text-ink-100">{label}</span>
-      <input type="time" value={pref.time} onChange={e => onTimeChange(e.target.value)} disabled={!pref.enabled}
-        className="text-sm text-ink-700 dark:text-ink-300 bg-transparent border border-surface-200 dark:border-surface-700 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary-400 disabled:opacity-40" />
-      {pref.enabled && (
-        <button onClick={onTest} title="Send test notification"
-          className="p-1.5 rounded-lg text-ink-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors flex-shrink-0">
-          <Send size={14} />
+    <div className="px-4 py-3.5">
+      <div className="flex items-center gap-3">
+        <span className="flex-1 text-sm font-medium text-ink-900 dark:text-ink-100">{label}</span>
+        {pref.enabled && (
+          <button onClick={onTest} title="Send test notification"
+            className="p-1.5 rounded-lg text-ink-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors flex-shrink-0">
+            <Send size={14} />
+          </button>
+        )}
+        {/* Toggle — overflow-hidden clips the nub so it never bleeds past the track */}
+        <button onClick={onToggle} aria-pressed={pref.enabled}
+          className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 overflow-hidden ${pref.enabled ? 'bg-primary-500' : 'bg-surface-300 dark:bg-surface-600'}`}>
+          <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${pref.enabled ? 'translate-x-5' : 'translate-x-0'}`} />
         </button>
+      </div>
+      {pref.enabled && (
+        <div className="mt-2.5">
+          <TimePicker value={pref.time} onChange={onTimeChange} />
+        </div>
       )}
-      {/* Toggle — overflow-hidden clips the nub so it never bleeds past the track */}
-      <button onClick={onToggle} aria-pressed={pref.enabled}
-        className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 overflow-hidden ${pref.enabled ? 'bg-primary-500' : 'bg-surface-300 dark:bg-surface-600'}`}>
-        <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${pref.enabled ? 'translate-x-5' : 'translate-x-0'}`} />
-      </button>
     </div>
   )
 }

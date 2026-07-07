@@ -9,6 +9,7 @@ import { Modal } from '../components/ui/Modal'
 import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
 import { detectLocation } from '../utils/geolocate'
+import { TimePicker } from '../components/ui/TimePicker'
 import { AddToCalendar } from '../components/ui/AddToCalendar'
 import { slotsForDay, dayMode, DEFAULT_HOURS } from '../utils/availability'
 import { trialDaysLeft } from '../utils/pricing'
@@ -632,14 +633,15 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
 
       <Card className="p-4">
         <p className="text-xs font-medium text-ink-400 mb-3">Add availability slot</p>
-        <div className="flex gap-2">
-          <select value={selectedDay} onChange={e => setSelectedDay(e.target.value)}
-            className="flex-1 px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400">
-            {DAYS.map(d => <option key={d.key} value={d.key}>{d.label}</option>)}
-          </select>
-          <input type="time" value={newTime} onChange={e => setNewTime(e.target.value)}
-            className="flex-1 px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
-          <Button size="sm" onClick={addSlot} disabled={saving}>Add</Button>
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <select value={selectedDay} onChange={e => setSelectedDay(e.target.value)}
+              className="flex-1 px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400">
+              {DAYS.map(d => <option key={d.key} value={d.key}>{d.label}</option>)}
+            </select>
+            <Button size="sm" onClick={addSlot} disabled={saving || !newTime}>Add</Button>
+          </div>
+          <TimePicker value={newTime} onChange={setNewTime} placeholder="Pick a time" />
         </div>
       </Card>
 
