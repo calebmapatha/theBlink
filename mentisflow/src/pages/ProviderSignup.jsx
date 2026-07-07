@@ -469,7 +469,7 @@ export function ProviderSignup() {
           ))}
 
           <div className="rounded-xl bg-surface-50 dark:bg-surface-800 px-3 py-2.5 text-xs text-ink-500 dark:text-ink-400">
-            <span className="font-semibold text-ink-700 dark:text-ink-300">No per-session commission.</span> You keep 100% of your session fees. Your monthly plan is MentisFlow's only charge.
+            <span className="font-semibold text-ink-700 dark:text-ink-300">No per-session commission.</span> You keep 100% of your session fees. Your subscription is MentisFlow's only charge.
           </div>
 
           {plan !== 'trial' && (
