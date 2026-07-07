@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, X, Eye, TrendingUp, Camera, Loader, Star, FileText, Trash2, FileSignature, MapPin } from 'lucide-react'
+import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, Eye, TrendingUp, Camera, Loader, Star, FileText, Trash2, FileSignature, MapPin } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { PageHeader } from '../components/layout/PageHeader'
 import { Card } from '../components/ui/Card'
@@ -10,7 +10,6 @@ import { useAuth } from '../context/AuthContext'
 import { useApp } from '../context/AppContext'
 import { useProviders } from '../hooks/useProviders'
 import { detectLocation } from '../utils/geolocate'
-import { TimePicker } from '../components/ui/TimePicker'
 import { AddToCalendar } from '../components/ui/AddToCalendar'
 import { slotsForDay, dayMode, DEFAULT_HOURS } from '../utils/availability'
 import { trialDaysLeft } from '../utils/pricing'
@@ -742,11 +741,12 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
   )
 }
 
+// Hourly slots shown on the weekly availability grid (07:00–18:00).
+const GRID_TIMES = Array.from({ length: 12 }, (_, i) => `${String(7 + i).padStart(2, '0')}:00`)
+
 function DiaryManager({ providerUid, getDiary, saveDiary }) {
   const [diary, setDiary]               = useState({})
   const [diaryLoading, setDiaryLoading] = useState(true)
-  const [selectedDay, setSelectedDay]   = useState('mon')
-  const [newTime, setNewTime]           = useState('09:00')
   const [saving, setSaving]             = useState(false)
 
   useEffect(() => {
@@ -760,92 +760,82 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
     setSaving(false)
   }
 
-  // Adding/removing a slot on a default-hours day first materialises the
-  // defaults as a custom list, then applies the change.
-  const addSlot = async () => {
-    if (!newTime) return
-    const base = slotsForDay(diary, selectedDay)
-    if (base.includes(newTime)) return
-    await persist({ ...diary, [selectedDay]: [...base, newTime].sort() })
-  }
-
-  const removeSlot = async (day, time) => {
-    const base = slotsForDay(diary, day)
-    await persist({ ...diary, [day]: base.filter(t => t !== time) })
+  // Tap a cell to open/close that time on that day. Toggling a default-hours
+  // day first materialises the defaults as a custom list, then applies it.
+  const toggleSlot = (dayKey, time) => {
+    const base = slotsForDay(diary, dayKey)
+    const next = base.includes(time) ? base.filter(t => t !== time) : [...base, time].sort()
+    persist({ ...diary, [dayKey]: next })
   }
 
   const closeDay = (day) => persist({ ...diary, [day]: [] })
-
   const resetDay = (day) => {
     const updated = { ...diary }
     delete updated[day]
     return persist(updated)
   }
 
-  if (diaryLoading) return <div className="h-20 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />
-
-  const MODE_BADGES = {
-    default: { label: 'Default hours', cls: 'bg-surface-100 dark:bg-surface-700 text-ink-400' },
-    custom:  { label: 'Custom',        cls: 'bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400' },
-    closed:  { label: 'Closed',        cls: 'bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400' },
-  }
+  if (diaryLoading) return <div className="h-40 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />
 
   return (
     <div className="space-y-4">
       <p className="text-xs text-ink-400 leading-relaxed">
-        Weekday slots ({DEFAULT_HOURS[0]} to {DEFAULT_HOURS[DEFAULT_HOURS.length - 1]}, hourly) are{' '}
-        <strong className="text-ink-600 dark:text-ink-300">open by default</strong>. Add or remove times to
-        customise a day, or close it entirely. Confirmed bookings hide their slot automatically.
+        Tap a cell to open or close that time. Weekdays are open <strong className="text-ink-600 dark:text-ink-300">08:00–16:00</strong> by
+        default. Confirmed bookings hide their slot from patients automatically.
       </p>
 
-      <Card className="p-4">
-        <p className="text-xs font-medium text-ink-400 mb-3">Add availability slot</p>
-        <div className="space-y-2">
-          <div className="flex gap-2">
-            <select value={selectedDay} onChange={e => setSelectedDay(e.target.value)}
-              className="flex-1 px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400">
-              {DAYS.map(d => <option key={d.key} value={d.key}>{d.label}</option>)}
-            </select>
-            <Button size="sm" onClick={addSlot} disabled={saving || !newTime}>Add</Button>
+      <Card className="p-3 overflow-x-auto">
+        <div className="min-w-[460px]">
+          {/* Header: day names */}
+          <div className="grid gap-1 mb-1" style={{ gridTemplateColumns: '2.6rem repeat(7, 1fr)' }}>
+            <div />
+            {DAYS.map(d => {
+              const closed = dayMode(diary, d.key) === 'closed'
+              return (
+                <div key={d.key} className="text-center">
+                  <p className={`text-[10px] font-bold uppercase ${closed ? 'text-ink-300 dark:text-ink-600' : 'text-ink-500 dark:text-ink-300'}`}>{d.label.slice(0, 3)}</p>
+                </div>
+              )
+            })}
           </div>
-          <TimePicker value={newTime} onChange={setNewTime} placeholder="Pick a time" />
+
+          {/* Time rows */}
+          {GRID_TIMES.map(time => (
+            <div key={time} className="grid gap-1 mb-1" style={{ gridTemplateColumns: '2.6rem repeat(7, 1fr)' }}>
+              <div className="text-[9px] text-ink-400 flex items-center justify-end pr-1 timer-nums">{time}</div>
+              {DAYS.map(d => {
+                const open = slotsForDay(diary, d.key).includes(time)
+                return (
+                  <button key={d.key + time} onClick={() => toggleSlot(d.key, time)} disabled={saving}
+                    title={`${d.label} ${time} — ${open ? 'open' : 'closed'}`}
+                    className={`h-6 rounded-md transition-colors ${
+                      open
+                        ? 'bg-primary-500 hover:bg-primary-600'
+                        : 'bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700'
+                    }`} />
+                )
+              })}
+            </div>
+          ))}
         </div>
       </Card>
 
-      <div className="space-y-3">
-        {DAYS.map(({ key, label }) => {
-          const mode  = dayMode(diary, key)
-          const slots = slotsForDay(diary, key)
-          const badge = MODE_BADGES[mode]
+      {/* Legend + per-day quick actions */}
+      <div className="flex items-center gap-3 text-[10px] text-ink-400">
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-primary-500 inline-block" /> Open</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-surface-200 dark:bg-surface-700 inline-block" /> Closed</span>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {DAYS.map(d => {
+          const closed = dayMode(diary, d.key) === 'closed'
+          const custom = dayMode(diary, d.key) === 'custom'
           return (
-            <div key={key} className="rounded-xl border border-surface-100 dark:border-surface-800 p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <p className="text-xs font-semibold text-ink-700 dark:text-ink-200 flex-1">{label}</p>
-                <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${badge.cls}`}>{badge.label}</span>
-                {mode !== 'closed' && (
-                  <button onClick={() => closeDay(key)} disabled={saving}
-                    className="text-[10px] text-ink-400 hover:text-red-500 transition-colors">Close day</button>
-                )}
-                {mode !== 'default' && (
-                  <button onClick={() => resetDay(key)} disabled={saving}
-                    className="text-[10px] text-ink-400 hover:text-primary-500 transition-colors">Reset to default</button>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {slots.length === 0 ? (
-                  <span className="text-xs text-ink-400 italic">No slots. Patients can't book this day</span>
-                ) : (
-                  slots.map(time => (
-                    <span key={time}
-                      className="flex items-center gap-1 text-xs bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400 px-2 py-1 rounded-lg">
-                      {time}
-                      <button onClick={() => removeSlot(key, time)} disabled={saving} className="hover:text-red-500 transition-colors">
-                        <X size={9} />
-                      </button>
-                    </span>
-                  ))
-                )}
-              </div>
+            <div key={d.key} className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg bg-surface-50 dark:bg-surface-800">
+              <span className="font-semibold text-ink-600 dark:text-ink-300">{d.label.slice(0, 3)}</span>
+              {closed
+                ? <button onClick={() => resetDay(d.key)} disabled={saving} className="text-primary-500 hover:underline">reopen</button>
+                : <button onClick={() => closeDay(d.key)} disabled={saving} className="text-ink-400 hover:text-red-500">close</button>}
+              {custom && !closed && <button onClick={() => resetDay(d.key)} disabled={saving} className="text-ink-400 hover:text-primary-500">reset</button>}
             </div>
           )
         })}
