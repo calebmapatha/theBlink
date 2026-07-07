@@ -1061,7 +1061,9 @@ export function ProviderDashboard() {
       const res = await confirmAppointment(appt)
       extra = { screeningRequired: res?.screeningRequired || false }
     } else {
-      await updateAppointment(id, { status })
+      // Tag provider-initiated cancellations so the patient (not the doctor)
+      // gets the notification.
+      await updateAppointment(id, status === 'cancelled' ? { status, cancelledBy: 'provider' } : { status })
     }
     setAppointments(prev => prev.map(a => a.id === id ? { ...a, status, ...extra } : a))
   }

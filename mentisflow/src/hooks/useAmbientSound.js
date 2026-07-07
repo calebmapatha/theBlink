@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from 'react'
+import { useRef, useState, useCallback, useEffect } from 'react'
 
 function buildNoiseBuffer(ctx, type) {
   const len = ctx.sampleRate * 3
@@ -57,6 +57,16 @@ export function useAmbientSound() {
   const setVolume = useCallback((v) => {
     setVolumeVal(v)
     if (gainRef.current) gainRef.current.gain.value = v
+  }, [])
+
+  // Stop and tear down the audio when the component using this hook unmounts
+  // (leaving the timer, logging out, or switching accounts). Without this the
+  // WebAudio source keeps looping until the browser tab is closed.
+  useEffect(() => () => {
+    try { sourceRef.current?.stop() } catch { /* already stopped */ }
+    try { ctxRef.current?.close() } catch { /* already closed */ }
+    sourceRef.current = null
+    ctxRef.current = null
   }, [])
 
   return { active, play, stop, volume, setVolume }

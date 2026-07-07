@@ -405,22 +405,41 @@ export const notifyBookingRequested = onDocumentCreated('appointments/{id}', asy
   }
 })
 
-/** Tell the patient when their request is confirmed or cancelled. */
+/** Notify the right party when an appointment is confirmed or cancelled. */
 export const notifyBookingStatus = onDocumentUpdated('appointments/{id}', async (event) => {
   const before = event.data?.before.data()
   const after = event.data?.after.data()
   if (!before || !after || before.status === after.status) return
 
-  if (after.status === 'confirmed' || after.status === 'cancelled') {
+  if (after.status === 'confirmed') {
     await writeNotification(after.patientUid, {
-      type: `booking_${after.status}`,
-      title: after.status === 'confirmed' ? 'Appointment confirmed' : 'Appointment cancelled',
-      body: `Your appointment on ${after.date} at ${after.timeSlot} was ${after.status}.`,
+      type: 'booking_confirmed',
+      title: 'Appointment confirmed',
+      body: `Your appointment on ${after.date} at ${after.timeSlot} was confirmed.`,
       link: '/connect',
     })
+  } else if (after.status === 'cancelled') {
+    if (after.cancelledBy === 'patient') {
+      // The patient revoked — tell the practitioner.
+      await writeNotification(after.providerUid, {
+        type: 'booking_cancelled',
+        title: 'Appointment cancelled',
+        body: `${after.patientName || 'A patient'} cancelled the ${after.date} at ${after.timeSlot} appointment.`,
+        link: '/',
+      })
+    } else {
+      await writeNotification(after.patientUid, {
+        type: 'booking_cancelled',
+        title: 'Appointment cancelled',
+        body: `Your appointment on ${after.date} at ${after.timeSlot} was cancelled.`,
+        link: '/connect',
+      })
+    }
   }
 
-  if (!after.patientEmail) return
+  // Email the patient on confirm/cancel, but not when they cancelled it
+  // themselves (they already know).
+  if (!after.patientEmail || (after.status === 'cancelled' && after.cancelledBy === 'patient')) return
   try {
     if (after.status === 'confirmed') {
       const link = /^https?:\/\//i.test(after.meetingLink || '')

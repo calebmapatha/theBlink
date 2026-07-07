@@ -27,13 +27,23 @@ const DATA_TYPES = [
   { id: 'treatmentPlan', label: 'Treatment plan',    emoji: '📋' },
 ]
 
+// Mental-health-focused KPIs: the things that actually help someone judge
+// whether a practitioner is right for them. Keys are unchanged (validated in
+// firestore.rules and aggregated server-side); only the wording is refined.
 const RATING_METRICS = [
-  { key: 'communication',   label: 'Communication',   desc: 'Explains clearly & listens well' },
-  { key: 'empathy',         label: 'Empathy',         desc: 'Made you feel heard & safe' },
-  { key: 'professionalism', label: 'Professionalism', desc: 'Punctual, prepared & organised' },
-  { key: 'treatmentPlan',   label: 'Treatment plan',  desc: 'Approach felt genuinely helpful' },
-  { key: 'overall',         label: 'Overall',         desc: 'Would you recommend?' },
+  { key: 'communication',   label: 'Listening',       desc: 'Listened and explained things clearly' },
+  { key: 'empathy',         label: 'Felt safe',       desc: 'Made me feel heard, safe and not judged' },
+  { key: 'professionalism', label: 'Professionalism', desc: 'On time, prepared and respectful' },
+  { key: 'treatmentPlan',   label: 'Helpfulness',     desc: 'Their approach felt helpful for me' },
+  { key: 'overall',         label: 'Overall',         desc: "I'd recommend them to others" },
 ]
+
+// A session can only be rated once it has actually taken place — never before.
+const sessionHasPassed = (a) => {
+  if (!a?.date) return false
+  const dt = new Date(`${a.date}T${a.timeSlot || '23:59'}:00`)
+  return !isNaN(dt.getTime()) && dt.getTime() <= Date.now()
+}
 
 function buildDataSnapshot(uid, types) {
   // Guard: only ever read the authenticated user's own data. The caller must
@@ -836,7 +846,7 @@ export function Connect() {
     incrementProfileViews, submitRating, getRating, updateAppointment,
   } = useProviders()
   const { user }        = useAuth()
-  const { userProfile } = useApp()
+  const { userProfile, showToast } = useApp()
   const navigate        = useNavigate()
 
   const [tab, setTab]                   = useState('find')
@@ -931,6 +941,21 @@ export function Connect() {
       ...scores,
     })
     setRatedSet(prev => new Set([...prev, ratingAppt.id]))
+  }
+
+  // Revoke a request the patient sent (pending) or cancel a confirmed booking.
+  // cancelledBy lets the notification function alert the practitioner.
+  const [cancelling, setCancelling] = useState(null)
+  const handleCancelAppt = async (a) => {
+    setCancelling(a.id)
+    try {
+      await updateAppointment(a.id, { status: 'cancelled', cancelledBy: 'patient' })
+      setMyAppointments(prev => prev.map(x => x.id === a.id ? { ...x, status: 'cancelled', cancelledBy: 'patient' } : x))
+      showToast(a.status === 'pending' ? 'Request cancelled' : 'Appointment cancelled')
+    } catch {
+      showToast('Could not cancel. Please try again.', { variant: 'error' })
+    }
+    setCancelling(null)
   }
 
   const filtered = providers.filter(p => {
@@ -1189,12 +1214,12 @@ export function Connect() {
                               : 'bg-surface-100 dark:bg-surface-700 text-ink-400'
                             }`}>{a.status === 'no-show' ? 'missed' : a.status}</span>
 
-                            {['confirmed', 'completed'].includes(a.status) && !ratedSet.has(a.id) && (
+                            {['confirmed', 'completed'].includes(a.status) && sessionHasPassed(a) && !ratedSet.has(a.id) && (
                               <button
                                 onClick={() => setRatingAppt(a)}
                                 className="flex items-center gap-1 text-[10px] text-primary-500 hover:text-primary-600 font-medium"
                               >
-                                <Star size={10} /> Rate session
+                                <Star size={10} /> Rate session <span className="text-ink-400">(optional)</span>
                               </button>
                             )}
                             {ratedSet.has(a.id) && (
@@ -1222,6 +1247,12 @@ export function Connect() {
                             role="patient"
                             className="mt-2.5 pt-2.5 border-t border-surface-100 dark:border-surface-800"
                           />
+                        )}
+                        {['pending', 'confirmed'].includes(a.status) && !sessionHasPassed(a) && (
+                          <button onClick={() => handleCancelAppt(a)} disabled={cancelling === a.id}
+                            className="mt-2.5 w-full text-xs font-medium text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 py-2 rounded-xl transition-colors disabled:opacity-50">
+                            {cancelling === a.id ? 'Cancelling…' : a.status === 'pending' ? 'Cancel request' : 'Cancel appointment'}
+                          </button>
                         )}
                       </Card>
                     ))}
