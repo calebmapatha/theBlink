@@ -313,7 +313,7 @@ function ProviderCard({ provider, onBook, onLink, linked, onViewProfile }) {
   const ratingCnt = provider.ratingCount || 0
 
   return (
-    <Card className="p-4 hover:shadow-md transition-shadow">
+    <Card interactive className="p-4">
       {/* Tappable profile area */}
       <button className="w-full text-left" onClick={() => onViewProfile?.(provider)}>
         <div className="flex items-start gap-3">
