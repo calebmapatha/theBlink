@@ -560,6 +560,66 @@ function PrescriptionModal({ open, onClose, appt, onSubmit }) {
   )
 }
 
+const VERIFICATION_DOCS = [
+  { key: 'id',       label: 'Certified ID copy' },
+  { key: 'academic', label: 'Academic certificate' },
+  { key: 'hpcsa',    label: 'HPCSA certificate' },
+]
+
+function VerificationSection({ uid, upload, getMeta, getUrl, showToast }) {
+  const [meta, setMeta] = useState({})
+  const [busy, setBusy] = useState('')
+  const fileRefs = useRef({})
+
+  useEffect(() => { if (uid) getMeta(uid).then(setMeta) }, [uid, getMeta])
+
+  const handleFile = async (docType, e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setBusy(docType)
+    const res = await upload(uid, docType, file)
+    if (res.ok) { setMeta(m => ({ ...m, [docType]: { path: res.path } })); showToast('Document uploaded') }
+    else showToast(res.error || 'Upload failed', { variant: 'error' })
+    setBusy('')
+    e.target.value = ''
+  }
+
+  const view = async (path) => {
+    const url = await getUrl(path)
+    if (url) window.open(url, '_blank', 'noopener')
+  }
+
+  const uploadedCount = VERIFICATION_DOCS.filter(d => meta[d.key]?.path).length
+
+  return (
+    <Card className="p-4 mb-5 border-amber-200 dark:border-amber-500/30 bg-amber-50/50 dark:bg-amber-500/5">
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">Verification documents</p>
+        <span className="text-[10px] font-medium text-ink-400">{uploadedCount}/{VERIFICATION_DOCS.length} uploaded</span>
+      </div>
+      <p className="text-xs text-ink-400 mb-3 leading-relaxed">
+        Please upload these during your trial so we can verify your practice. PDF or image, up to 10 MB. Only you and our team can view them.
+      </p>
+      <div className="space-y-2">
+        {VERIFICATION_DOCS.map(d => {
+          const uploaded = !!meta[d.key]?.path
+          return (
+            <div key={d.key} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white dark:bg-surface-800 border border-surface-100 dark:border-surface-700">
+              <FileText size={15} className={uploaded ? 'text-success-500' : 'text-ink-400'} />
+              <span className="flex-1 text-sm text-ink-700 dark:text-ink-200 min-w-0 truncate">{d.label}</span>
+              {uploaded && <button onClick={() => view(meta[d.key].path)} className="text-[10px] font-semibold text-primary-500 hover:underline flex-shrink-0">View</button>}
+              <input ref={el => (fileRefs.current[d.key] = el)} type="file" accept="image/png,image/jpeg,image/webp,application/pdf" className="hidden" onChange={e => handleFile(d.key, e)} />
+              <Button size="sm" variant={uploaded ? 'ghost' : 'soft'} disabled={busy === d.key} onClick={() => fileRefs.current[d.key]?.click()}>
+                {busy === d.key ? <Loader size={12} className="animate-spin" /> : uploaded ? 'Replace' : 'Upload'}
+              </Button>
+            </div>
+          )
+        })}
+      </div>
+    </Card>
+  )
+}
+
 function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, onViewConsents, onPrescribe }) {
   const todayStr = new Date().toISOString().split('T')[0]
   const isPast = appt.date && appt.date < todayStr
@@ -958,7 +1018,7 @@ function DocumentsManager({ providerUid }) {
 export function ProviderDashboard() {
   const { user }                                                                                                    = useAuth()
   const { showToast }                                                                                               = useApp()
-  const { getProvider, getPrivateProfile, getAppointments, updateAppointment, confirmAppointment, saveProvider, getDiary, saveDiary, uploadPhoto, getProviderRatings, createPrescription } = useProviders()
+  const { getProvider, getPrivateProfile, getAppointments, updateAppointment, confirmAppointment, saveProvider, getDiary, saveDiary, uploadPhoto, getProviderRatings, createPrescription, uploadVerificationDoc, getVerification, getVerificationURL } = useProviders()
   const navigate                                                                                                    = useNavigate()
   const [profile, setProfile]           = useState(null)
   const [appointments, setAppointments] = useState([])
@@ -1149,6 +1209,11 @@ export function ProviderDashboard() {
             {profile.suspensionReason ? ` Reason: ${profile.suspensionReason}` : ''} Contact support to resolve this.
           </p>
         </div>
+      )}
+
+      {/* Verification documents — required while the account is not yet approved. */}
+      {profile && profile.approvalStatus !== 'approved' && (
+        <VerificationSection uid={user.uid} upload={uploadVerificationDoc} getMeta={getVerification} getUrl={getVerificationURL} showToast={showToast} />
       )}
 
       {/* Profile card */}

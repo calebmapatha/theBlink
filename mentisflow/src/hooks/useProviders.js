@@ -225,6 +225,40 @@ export function useProviders() {
     }
   }
 
+  // Upload a practitioner verification document (certified ID, academic
+  // certificate, HPCSA certificate). Stored under verification-docs/{uid}/,
+  // readable only by the owner and admin (storage.rules). Metadata (the path,
+  // never a public URL) lives in the owner-only private subcollection so a
+  // patient can't discover it. Returns { ok, error? }.
+  const uploadVerificationDoc = async (uid, docType, file) => {
+    try {
+      const EXT_BY_TYPE = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'application/pdf': 'pdf' }
+      const ext = EXT_BY_TYPE[file.type]
+      if (!ext) return { ok: false, error: 'Upload a PDF or image (PNG, JPG, WebP).' }
+      if (file.size > 10 * 1024 * 1024) return { ok: false, error: 'File must be under 10 MB.' }
+      const path = `verification-docs/${uid}/${docType}.${ext}`
+      await uploadBytes(ref(storage, path), file)
+      await setDoc(doc(db, 'providers', uid, 'private', 'verification'),
+        { [docType]: { path, uploadedAt: serverTimestamp() } }, { merge: true })
+      return { ok: true, path }
+    } catch {
+      return { ok: false, error: 'Upload failed. Please try again.' }
+    }
+  }
+
+  // Verification metadata (owner or admin only, per firestore.rules).
+  const getVerification = async (uid) => {
+    try {
+      const snap = await getDoc(doc(db, 'providers', uid, 'private', 'verification'))
+      return snap.exists() ? snap.data() : {}
+    } catch { return {} }
+  }
+
+  // A short-lived download URL for a stored verification doc (owner/admin only).
+  const getVerificationURL = async (path) => {
+    try { return await getDownloadURL(ref(storage, path)) } catch { return null }
+  }
+
   // Fetch a patient's Firestore profile (photoURL, etc.)
   const getPatientProfile = async (patientUid) => {
     try {
@@ -304,6 +338,7 @@ export function useProviders() {
     linkDoctor, getLinkedDoctor, unlinkDoctor, searchProviderByHPCSA,
     incrementProfileViews,
     uploadPhoto, getPatientProfile,
+    uploadVerificationDoc, getVerification, getVerificationURL,
     submitRating, getRating, getProviderRatings,
     createPrescription, getMyPrescriptions, getAuthoredPrescriptions, deletePrescription,
   }

@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import {
   Shield, Users, Stethoscope, Flag, Megaphone, ScrollText, Settings2,
   CheckCircle, XCircle, Ban, RotateCcw, Trash2, Download, Search, BadgeCheck,
-  TrendingUp, Loader, ExternalLink,
+  TrendingUp, Loader, ExternalLink, FileText,
 } from 'lucide-react'
+import { doc, getDoc } from 'firebase/firestore'
+import { ref, getDownloadURL } from 'firebase/storage'
+import { db, storage } from '../lib/firebase'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -27,6 +30,43 @@ const TABS = [
 ]
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+const VDOC_LABELS = { id: 'ID copy', academic: 'Academic', hpcsa: 'HPCSA' }
+
+// Admin-only viewer for a provider's verification documents. Reads the
+// owner/admin-only metadata doc on demand, then resolves download URLs.
+function VerificationDocsButton({ uid }) {
+  const [state, setState] = useState('idle') // idle | loading | loaded
+  const [docs, setDocs] = useState([])
+
+  const load = async () => {
+    setState('loading')
+    try {
+      const snap = await getDoc(doc(db, 'providers', uid, 'private', 'verification'))
+      const meta = snap.exists() ? snap.data() : {}
+      const entries = await Promise.all(
+        Object.entries(meta).filter(([, v]) => v?.path).map(async ([key, v]) => {
+          let url = null
+          try { url = await getDownloadURL(ref(storage, v.path)) } catch { /* ignore */ }
+          return { key, url }
+        }),
+      )
+      setDocs(entries)
+    } catch { setDocs([]) }
+    setState('loaded')
+  }
+
+  if (state === 'idle') return <Button size="sm" variant="ghost" onClick={load}><FileText size={12} /> Documents</Button>
+  if (state === 'loading') return <Button size="sm" variant="ghost" disabled><Loader size={12} className="animate-spin" /></Button>
+  if (docs.length === 0) return <span className="text-[10px] text-ink-400 self-center">No documents uploaded</span>
+  return (
+    <div className="flex flex-wrap items-center gap-2 self-center">
+      {docs.map(d => d.url
+        ? <a key={d.key} href={d.url} target="_blank" rel="noopener noreferrer" className="text-[10px] font-semibold text-primary-500 hover:underline flex items-center gap-0.5">{VDOC_LABELS[d.key] || d.key} <ExternalLink size={9} /></a>
+        : <span key={d.key} className="text-[10px] text-ink-400">{VDOC_LABELS[d.key] || d.key} (error)</span>)}
+    </div>
+  )
+}
 
 function providerState(p) {
   if (p.suspended) return { label: 'Suspended', cls: 'bg-red-50 dark:bg-red-500/10 text-red-500' }
@@ -309,6 +349,7 @@ export function AdminPortal() {
                             <RotateCcw size={12} /> Reactivate
                           </Button>
                         )}
+                        <VerificationDocsButton uid={p.id} />
                         <button onClick={() => setModal({ type: 'delete', provider: p })}
                           className="ml-auto p-1.5 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title="Delete account">
                           <Trash2 size={14} />
