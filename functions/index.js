@@ -475,6 +475,40 @@ export const notifyBookingStatus = onDocumentUpdated('appointments/{id}', async 
   }
 })
 
+/** A patient asked a practitioner to disclose their (hidden) session fee. */
+export const notifyFeeRequested = onDocumentCreated('feeRequests/{id}', async (event) => {
+  const r = event.data?.data()
+  if (!r?.providerUid) return
+  await writeNotification(r.providerUid, {
+    type: 'fee_requested',
+    title: 'Session fee requested',
+    body: `${r.patientName || 'A patient'} asked you to share your session fee. Open the request to disclose it.`,
+    link: '/',
+  })
+})
+
+/** The practitioner disclosed their fee — tell the patient the amount. */
+export const notifyFeeDisclosed = onDocumentUpdated('feeRequests/{id}', async (event) => {
+  const before = event.data?.before.data()
+  const after = event.data?.after.data()
+  if (!after || before?.status === after.status || after.status !== 'disclosed') return
+  try {
+    const prov = await db.doc(`providers/${after.providerUid}`).get()
+    const fee = prov.data()?.sessionFee
+    const name = prov.data()?.name || 'Your practitioner'
+    await writeNotification(after.patientUid, {
+      type: 'fee_disclosed',
+      title: 'Session fee shared',
+      body: fee
+        ? `${name}'s session fee is R${fee} per session.`
+        : `${name} has shared their session fee — open their profile to view it.`,
+      link: '/connect',
+    })
+  } catch (err) {
+    logger.error('notifyFeeDisclosed failed', { error: err.message })
+  }
+})
+
 /**
  * Notify a practitioner when moderation changes their account state:
  * verified (approved), rejected, or suspended. Fires server-side on the

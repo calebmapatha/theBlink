@@ -15,7 +15,10 @@ import { detectLocation } from '../utils/geolocate'
 const activateProvider = httpsCallable(functions, 'activateProvider')
 
 const SPECIALTIES = ['ADHD', 'Anxiety', 'Depression', 'OCD', 'PTSD', 'Autism Spectrum', 'Bipolar Disorder', 'Stress Management', 'Sleep Disorders', 'Trauma', 'Life Transitions', 'Executive Function']
-const LANGUAGES   = ['English', 'Zulu', 'Xhosa', 'Afrikaans', 'Sotho', 'Tswana', 'Venda', 'Tsonga', 'Spanish', 'French', 'Portuguese', 'Mandarin']
+// All 12 official South African languages (11 + South African Sign Language),
+// followed by other commonly-spoken languages.
+const SA_LANGUAGES = ['English', 'Afrikaans', 'Zulu', 'Xhosa', 'Ndebele', 'Swati', 'Sotho', 'Northern Sotho', 'Tswana', 'Tsonga', 'Venda', 'South African Sign Language']
+const LANGUAGES   = [...SA_LANGUAGES, 'Spanish', 'French', 'Portuguese', 'Mandarin']
 const SA_PROVINCES = ['Gauteng', 'Western Cape', 'KwaZulu-Natal', 'Eastern Cape', 'Free State', 'Limpopo', 'Mpumalanga', 'North West', 'Northern Cape']
 const TIMEZONES   = ['South Africa (SAST, UTC+2)', 'GMT', 'Eastern (ET)', 'Central (CT)', 'Western Europe (CET)', 'India (IST)', 'Australia (AEST)']
 const AVATARS     = ['🧠', '😊', '⚕️', '🌟', '💙', '🌿', '🔬', '🏥', '💊', '🌸', '🌊', '☀️']
@@ -83,6 +86,8 @@ export function ProviderSignup() {
     timezone:        'South Africa (SAST, UTC+2)',
     city:            '',
     province:        '',
+    consultationType: 'remote',   // remote | in-person | both
+    address:         '',          // physical practice address (in-person only)
   })
 
   useEffect(() => {
@@ -174,7 +179,8 @@ export function ProviderSignup() {
   // without hard-coding a single prefix; blocks obvious typos and garbage.
   const hpcsaValid  = /^[A-Z]{2}\d{4,}$/.test(form.hpcsa.trim())
   const canProceed1 = form.name.trim() && form.bio.trim() && form.specialties.length > 0 && hpcsaValid
-  const canProceed2 = form.sessionFee && Number(form.sessionFee) > 0
+  const needsAddress = form.consultationType === 'in-person' || form.consultationType === 'both'
+  const canProceed2 = form.sessionFee && Number(form.sessionFee) > 0 && (!needsAddress || form.address.trim().length > 4)
 
   const PLANS = [
     { id: 'standard', price: pricing.plans.standard[cycle], label: 'Standard', features: PLAN_FEATURES.standard },
@@ -355,28 +361,57 @@ export function ProviderSignup() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-ink-400 mb-2">Video platform</label>
+              <label className="block text-xs font-medium text-ink-400 mb-2">Consultation type</label>
               <div className="grid grid-cols-3 gap-2">
-                {PLATFORMS.map(p => (
-                  <button key={p.value} type="button" onClick={() => set('meetingPlatform', p.value)}
+                {[['remote', 'Online only'], ['in-person', 'In person'], ['both', 'Both']].map(([v, label]) => (
+                  <button key={v} type="button" onClick={() => set('consultationType', v)}
                     className={`py-2 px-2 rounded-xl text-xs font-medium border transition-colors ${
-                      form.meetingPlatform === p.value
+                      form.consultationType === v
                         ? 'border-primary-400 bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400'
                         : 'border-surface-200 dark:border-surface-700 text-ink-400 hover:border-surface-300'
                     }`}>
-                    {p.label}
+                    {label}
                   </button>
                 ))}
               </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-ink-400 mb-1">
-                Meeting link <span className="text-ink-400 font-normal">(optional, can be added later)</span>
-              </label>
-              <p className="text-xs text-ink-400 mb-1">Shared with patients only after you confirm their appointment.</p>
-              <input value={form.meetingLink} onChange={e => set('meetingLink', e.target.value)}
-                className={inputCls} placeholder={meetingPlaceholder} />
-            </div>
+            {needsAddress && (
+              <div>
+                <label className="block text-xs font-medium text-ink-400 mb-1">
+                  Practice address <span className="text-red-400">*</span>
+                </label>
+                <input value={form.address} onChange={e => set('address', e.target.value)}
+                  className={inputCls} placeholder="e.g. 12 Oak Ave, Rosebank, Johannesburg" />
+                <p className="text-[10px] text-ink-400 mt-1">Patients see this on a map, so enter a full address Google Maps can find.</p>
+              </div>
+            )}
+            {form.consultationType !== 'in-person' && (
+              <>
+                <div>
+                  <label className="block text-xs font-medium text-ink-400 mb-2">Video platform</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {PLATFORMS.map(p => (
+                      <button key={p.value} type="button" onClick={() => set('meetingPlatform', p.value)}
+                        className={`py-2 px-2 rounded-xl text-xs font-medium border transition-colors ${
+                          form.meetingPlatform === p.value
+                            ? 'border-primary-400 bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400'
+                            : 'border-surface-200 dark:border-surface-700 text-ink-400 hover:border-surface-300'
+                        }`}>
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-ink-400 mb-1">
+                    Meeting link <span className="text-ink-400 font-normal">(optional, can be added later)</span>
+                  </label>
+                  <p className="text-xs text-ink-400 mb-1">Shared with patients only after you confirm their appointment.</p>
+                  <input value={form.meetingLink} onChange={e => set('meetingLink', e.target.value)}
+                    className={inputCls} placeholder={meetingPlaceholder} />
+                </div>
+              </>
+            )}
           </Card>
           <Button className="w-full" disabled={!canProceed2} onClick={() => setStep(3)}>Continue →</Button>
         </div>

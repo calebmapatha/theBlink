@@ -183,7 +183,7 @@ function ReportModal({ provider, open, onClose, user }) {
   )
 }
 
-function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked, onReport }) {
+function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked, onReport, onRequestFee, feeRequested }) {
   if (!provider) return null
   const rating     = provider.ratingAvg
   const ratingCnt  = provider.ratingCount || 0
@@ -281,25 +281,52 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
           )}
         </div>
 
-        {/* Map of the practice area (keyless Google Maps embed) */}
-        {(provider.city || provider.province) && (
-          <div className="rounded-2xl overflow-hidden border border-surface-100 dark:border-surface-700">
-            <iframe
-              title={`Map of ${[provider.city, provider.province].filter(Boolean).join(', ')}`}
-              src={`https://www.google.com/maps?q=${encodeURIComponent([provider.city, provider.province, 'South Africa'].filter(Boolean).join(', '))}&output=embed`}
-              className="w-full h-40 border-0"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allowFullScreen
-            />
-          </div>
-        )}
+        {/* Consultation mode + location. In-person practices show a precise
+            map of the address; remote-only shows an "online" note (no map). */}
+        {(() => {
+          const mode = provider.consultationType || 'remote'
+          const inPerson = mode === 'in-person' || mode === 'both'
+          const mapQuery = provider.address || [provider.city, provider.province, 'South Africa'].filter(Boolean).join(', ')
+          return (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2.5">
+                {inPerson ? <MapPin size={14} className="text-ink-400 flex-shrink-0" /> : <Video size={14} className="text-ink-400 flex-shrink-0" />}
+                <span className="text-sm text-ink-700 dark:text-ink-300">
+                  {mode === 'both' ? 'Online & in-person sessions' : inPerson ? 'In-person sessions' : 'Online sessions only'}
+                </span>
+              </div>
+              {inPerson && provider.address && (
+                <p className="text-xs text-ink-400 pl-6">{provider.address}</p>
+              )}
+              {inPerson && mapQuery && (
+                <div className="rounded-2xl overflow-hidden border border-surface-100 dark:border-surface-700">
+                  <iframe
+                    title={`Map of ${mapQuery}`}
+                    src={`https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`}
+                    className="w-full h-40 border-0"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    allowFullScreen
+                  />
+                </div>
+              )}
+            </div>
+          )
+        })()}
 
         {/* Fee */}
         <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-surface-50 dark:bg-surface-900">
           <span className="text-sm text-ink-500 dark:text-ink-400">Session fee</span>
           {provider.hideFee ? (
-            <span className="text-sm font-semibold text-ink-700 dark:text-ink-300">On request</span>
+            feeRequested ? (
+              <span className="text-xs font-medium text-success-600 dark:text-success-400 flex items-center gap-1">
+                <Check size={12} /> Requested — you'll be notified
+              </span>
+            ) : (
+              <Button size="sm" variant="soft" onClick={() => onRequestFee?.(provider)}>
+                Request fee
+              </Button>
+            )
           ) : (
             <div>
               <span className="text-xl font-bold text-ink-900 dark:text-ink-100">R{provider.sessionFee}</span>
@@ -844,10 +871,34 @@ export function Connect() {
     getBookingInfo, linkDoctor, getLinkedDoctor, unlinkDoctor,
     searchProviderByHPCSA, getPatientAppointments,
     incrementProfileViews, submitRating, getRating, updateAppointment,
+    createFeeRequest, getMyFeeRequests,
   } = useProviders()
   const { user }        = useAuth()
   const { userProfile, showToast } = useApp()
   const navigate        = useNavigate()
+
+  // Providers whose (hidden) session fee this patient has already asked to see.
+  const [feeRequestedSet, setFeeRequestedSet] = useState(new Set())
+  useEffect(() => {
+    if (!user) return
+    getMyFeeRequests(user.uid).then(rows => setFeeRequestedSet(new Set(rows.map(r => r.providerUid))))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
+
+  const handleRequestFee = async (provider) => {
+    setFeeRequestedSet(prev => new Set([...prev, provider.id]))
+    try {
+      await createFeeRequest({
+        patientUid: user.uid,
+        patientName: userProfile?.profile?.displayName || user.email?.split('@')[0] || '',
+        providerUid: provider.id,
+        providerName: provider.name,
+      })
+      showToast("Fee requested — you'll be notified when they share it")
+    } catch {
+      showToast('Could not send the request. Please try again.', { variant: 'error' })
+    }
+  }
 
   const [tab, setTab]                   = useState('find')
   const [search, setSearch]             = useState('')
@@ -1344,6 +1395,8 @@ export function Connect() {
         onLink={handleLink}
         linked={linkedDoctor?.id === viewingProvider?.id}
         onReport={setReportingProvider}
+        onRequestFee={handleRequestFee}
+        feeRequested={viewingProvider ? feeRequestedSet.has(viewingProvider.id) : false}
       />
 
       <ReportModal

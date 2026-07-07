@@ -330,6 +330,32 @@ export function useProviders() {
 
   const deletePrescription = (id) => deleteDoc(doc(db, 'prescriptions', id))
 
+  // ── Fee-disclosure requests ───────────────────────────────────────────────
+  const createFeeRequest = ({ patientUid, patientName, providerUid, providerName }) =>
+    addDoc(collection(db, 'feeRequests'), {
+      patientUid, patientName: patientName || '',
+      providerUid, providerName: providerName || '',
+      status: 'pending', createdAt: serverTimestamp(),
+    })
+
+  // A patient's own fee requests (single equality filter — rule-safe).
+  const getMyFeeRequests = async (patientUid) => {
+    try {
+      const snap = await getDocs(query(collection(db, 'feeRequests'), where('patientUid', '==', patientUid)))
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    } catch { return [] }
+  }
+
+  // Requests addressed to a practitioner.
+  const getProviderFeeRequests = async (providerUid) => {
+    try {
+      const snap = await getDocs(query(collection(db, 'feeRequests'), where('providerUid', '==', providerUid)))
+      return snap.docs.map(d => ({ id: d.id, ...d.data() })).sort(byNewest)
+    } catch { return [] }
+  }
+
+  const discloseFee = (id) => updateDoc(doc(db, 'feeRequests', id), { status: 'disclosed' })
+
   return {
     providers, loading, reload, loadMore, hasMore,
     getProvider, saveProvider, getPrivateProfile,
@@ -341,5 +367,6 @@ export function useProviders() {
     uploadVerificationDoc, getVerification, getVerificationURL,
     submitRating, getRating, getProviderRatings,
     createPrescription, getMyPrescriptions, getAuthoredPrescriptions, deletePrescription,
+    createFeeRequest, getMyFeeRequests, getProviderFeeRequests, discloseFee,
   }
 }
