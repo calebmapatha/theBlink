@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
-  HeartHandshake, Shield, Zap, Search, CalendarCheck, TrendingUp, Smile,
-  Repeat, Timer, Lightbulb, ListChecks, Award, Stethoscope, LineChart,
-  Lock, Trash2, FileCheck, CheckCircle2, ArrowRight, Menu, X,
+  HeartHandshake, Shield, Zap, Search, CalendarCheck, TrendingUp, Timer,
+  Stethoscope, LineChart, Lock, Trash2, FileCheck, CheckCircle2, ArrowRight, Menu, X,
 } from 'lucide-react'
 import { DEFAULT_PRICING } from '../utils/pricing'
 
@@ -15,21 +14,9 @@ const fadeUp = {
 }
 
 const NAV_LINKS = [
-  { href: '#features',      label: 'Features' },
   { href: '#how-it-works',  label: 'How it works' },
   { href: '#practitioners', label: 'For practitioners' },
   { href: '#security',      label: 'Security' },
-]
-
-const PATIENT_FEATURES = [
-  { icon: Search,     title: 'Find your practitioner', desc: 'Browse HPCSA-registered psychiatrists and psychologists, filtered by province or near you, and book directly into their diary.' },
-  { icon: Smile,      title: 'Daily mood check-ins',   desc: 'A gentle daily pulse on how you are doing: mood, sleep, and energy. Over time it builds a picture you can share with your doctor.' },
-  { icon: Repeat,     title: 'Habit tracking',         desc: 'Build routines that stick with streaks, reminders, and progress views designed for ADHD brains.' },
-  { icon: Timer,      title: 'Focus timer',            desc: 'Pomodoro-style focus sessions with ambient sound that help you start, and finish, what matters.' },
-  { icon: Lightbulb,  title: 'Brain dump',             desc: 'Capture racing thoughts the moment they arrive, then sort them into tasks when you are ready.' },
-  { icon: ListChecks, title: 'Tasks & monthly goals',  desc: 'A simple task board and monthly tracker that turn overwhelm into small, doable steps.' },
-  { icon: Award,      title: 'Rewards',                desc: 'Earn points and level up for showing up. Positive reinforcement is built into every feature.' },
-  { icon: FileCheck,  title: 'Treatment plan',         desc: 'Keep your treatment plan in one place and share a secure snapshot of your progress with your doctor.' },
 ]
 
 const HOW_IT_WORKS = [
@@ -236,7 +223,7 @@ export function Landing({ onSignIn, onGetStarted }) {
       <section className="border-y border-slate-100 bg-slate-50/60">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
-            ['R0', 'commission. Doctors keep 100% of session fees'],
+            ['R0', 'Doctors keep 100% of session fees'],
             ['2 months', 'free trial for every new practice'],
             ['9 provinces', 'find practitioners anywhere in SA'],
             ['2 roles', 'one platform for patients & practitioners'],
@@ -249,37 +236,7 @@ export function Landing({ onSignIn, onGetStarted }) {
         </div>
       </section>
 
-      {/* ── Patient features ────────────────────────────────── */}
-      <section id="features" className="scroll-mt-20 max-w-6xl mx-auto px-5 sm:px-8 py-16 lg:py-24">
-        <motion.div {...fadeUp} className="max-w-2xl">
-          <p className="text-sm font-bold text-teal-600 uppercase tracking-wide">For patients</p>
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">
-            Everything between appointments, handled.
-          </h2>
-          <p className="text-slate-500 mt-4 leading-relaxed">
-            MentisFlow includes <strong className="text-slate-700">FocusBlink</strong>, an ADHD-friendly
-            companion that keeps your daily mental health work (moods, habits, focus, and tasks) in one
-            place, ready to share with your doctor.
-          </p>
-        </motion.div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-12">
-          {PATIENT_FEATURES.map(({ icon: Icon, title, desc }) => (
-            <motion.div
-              key={title}
-              {...fadeUp}
-              className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm hover:shadow-md hover:border-teal-100 transition-all"
-            >
-              <div className="w-11 h-11 rounded-2xl bg-teal-50 flex items-center justify-center mb-4">
-                <Icon size={19} className="text-teal-600" />
-              </div>
-              <h3 className="font-bold text-slate-900 text-[15px]">{title}</h3>
-              <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">{desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── How it works ────────────────────────────────────── */}
+      {/* ── How it works (also the patient overview) ────────── */}
       <section id="how-it-works" className="scroll-mt-20 bg-slate-900 text-white">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 lg:py-24">
           <motion.div {...fadeUp} className="max-w-2xl">
@@ -287,6 +244,11 @@ export function Landing({ onSignIn, onGetStarted }) {
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">
               From “I need help” to a booked appointment in minutes.
             </h2>
+            <p className="text-slate-300 mt-4 leading-relaxed">
+              MentisFlow includes <strong className="text-white">FocusBlink</strong>, an ADHD-friendly
+              companion that keeps your daily mental health work (moods, habits, focus, and tasks) in one
+              place, ready to share with your doctor.
+            </p>
           </motion.div>
           <div className="grid md:grid-cols-3 gap-6 mt-12">
             {HOW_IT_WORKS.map(({ step, title, desc }) => (
