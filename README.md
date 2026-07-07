@@ -76,7 +76,7 @@ theBlink/
 
 ```bash
 git clone https://github.com/calebmapatha/theBlink.git
-cd theBlink/adhd-app
+cd theBlink/mentisflow
 npm install
 ```
 
@@ -151,9 +151,14 @@ For automated Firebase deploys, add a `FIREBASE_TOKEN` secret (from `firebase lo
 | Function | Trigger | Purpose |
 |---|---|---|
 | `aggregateRating` | Firestore `onCreate` on `ratings/{id}` | Recomputes `ratingCount` and `ratingAvg` on the provider document — idempotent, race-condition safe |
-| `activateProvider` | HTTPS Callable | Sets `subscriptionActive: true` on a provider document using Admin SDK (bypasses client rules) |
+| `activateProvider` | HTTPS Callable | Starts the 2-month free trial or activates a plan on a provider document using the Admin SDK (bypasses client rules) |
+| `expireTrials` | Scheduled (every 24 h) | Deactivates providers whose free trial has ended |
+| `notifyBookingRequested` | Firestore `onCreate` on `appointments/{id}` | Queues an email to the practitioner about a new booking request (Trigger Email extension) |
+| `notifyBookingStatus` | Firestore `onUpdate` on `appointments/{id}` | Queues an email to the patient when an appointment is confirmed or cancelled |
 | `purgeOldAppointments` | Scheduled (every 24 h) | Deletes appointments older than 2 years — POPIA data retention compliance |
-| `stripeWebhook` | HTTPS Request | Stub for future Stripe subscription webhooks |
+| `paymentWebhook` | HTTPS Request | Stub for future Paystack subscription webhooks |
+
+Booking emails are queued into the `mail` collection in the format used by the official **Trigger Email from Firestore** extension. Install it once with your SMTP credentials (`firebase ext:install firebase/firestore-send-email`, collection `mail`) and the queued emails start sending; until then they sit unsent.
 
 ---
 

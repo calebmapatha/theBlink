@@ -321,6 +321,14 @@ export function Login({ onBack, initialRole = null }) {
                 <Shield size={12} className="text-teal-400 flex-shrink-0" />
                 Your data is private and only visible to you and your chosen practitioner.
               </p>
+              {mode === 'signup' && (
+                <p className="text-center text-[11px] text-slate-400 mt-2">
+                  By creating an account you agree to our{' '}
+                  <a href={`${import.meta.env.BASE_URL}terms`} target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:underline">Terms of Service</a>{' '}
+                  and{' '}
+                  <a href={`${import.meta.env.BASE_URL}privacy`} target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:underline">Privacy Policy</a>.
+                </p>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

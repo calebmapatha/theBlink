@@ -27,6 +27,7 @@ import { fetchLatestAnnouncement } from './hooks/useAdmin'
 import { Login } from './pages/Login'
 import { Landing } from './pages/Landing'
 import { Privacy } from './pages/Privacy'
+import { Terms } from './pages/Terms'
 import { useApp } from './context/AppContext'
 import { HeartHandshake } from 'lucide-react'
 
@@ -165,9 +166,11 @@ function AuthGate() {
       .catch(() => setIsProvider(false))
   }, [user?.uid])
 
-  // Privacy policy is public — viewable without authentication. Robust to the
+  // Legal pages are public — viewable without authentication. Robust to the
   // deploy base path (/theBlink/) since we match on the path suffix.
-  if (window.location.pathname.replace(/\/$/, '').endsWith('/privacy')) return <Privacy />
+  const publicPath = window.location.pathname.replace(/\/$/, '')
+  if (publicPath.endsWith('/privacy')) return <Privacy />
+  if (publicPath.endsWith('/terms')) return <Terms />
 
   if (user === undefined || (user !== null && isProvider === undefined)) return <LoadingScreen />
   if (!user) return <PublicSite />

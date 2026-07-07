@@ -449,6 +449,10 @@ export function ProviderSignup() {
               : plan === 'trial' ? `Start ${pricing.trialDays}-day free trial`
               : `Activate for ${pricing.currency}${PLANS.find(p => p.id === plan)?.price}/month`}
           </Button>
+          <p className="text-center text-[11px] text-ink-400">
+            By activating you agree to the{' '}
+            <a href={`${import.meta.env.BASE_URL}terms`} target="_blank" rel="noopener noreferrer" className="text-primary-500 hover:underline">Terms of Service</a>.
+          </p>
         </div>
       )}
     </PageWrapper>

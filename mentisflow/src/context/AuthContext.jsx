@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { onAuthStateChanged, signInWithPopup, signInWithEmailAndPassword,
          createUserWithEmailAndPassword, sendPasswordResetEmail,
+         EmailAuthProvider, reauthenticateWithCredential, updatePassword,
          signOut as firebaseSignOut } from 'firebase/auth'
 import { auth, googleProvider } from '../lib/firebase'
 
@@ -56,6 +57,22 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // In-app password change for email/password accounts. Requires the current
+  // password (recent re-authentication is a Firebase requirement) so a stolen
+  // unlocked session cannot silently take over the account.
+  const changePassword = async (currentPassword, newPassword) => {
+    setAuthError(null)
+    try {
+      const cred = EmailAuthProvider.credential(auth.currentUser.email, currentPassword)
+      await reauthenticateWithCredential(auth.currentUser, cred)
+      await updatePassword(auth.currentUser, newPassword)
+      return true
+    } catch (e) {
+      setAuthError(friendlyError(e.code))
+      return false
+    }
+  }
+
   const clearAuthError = () => setAuthError(null)
 
   const signOut = async () => {
@@ -71,7 +88,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, authError, clearAuthError, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, signOut }}>
+    <AuthContext.Provider value={{ user, authError, clearAuthError, signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, changePassword, signOut }}>
       {children}
     </AuthContext.Provider>
   )

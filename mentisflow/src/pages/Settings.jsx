@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { User, Moon, Sun, LogOut, Trash2, Check, ChevronRight, Bell, BellOff, RotateCcw, Camera, Loader, Database, Send, Shield } from 'lucide-react'
+import { User, Moon, Sun, LogOut, Trash2, Check, ChevronRight, Bell, BellOff, RotateCcw, Camera, Loader, Database, Send, Shield, Lock, CheckCircle } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { PageHeader } from '../components/layout/PageHeader'
 import { Card } from '../components/ui/Card'
@@ -242,12 +242,83 @@ function RemindersSection({ notifications }) {
   )
 }
 
+const pwInputCls = 'w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm placeholder-ink-400 focus:outline-none focus:ring-2 focus:ring-primary-400'
+
+function ChangePasswordModal({ open, onClose }) {
+  const { changePassword, authError, clearAuthError } = useAuth()
+  const [current, setCurrent]   = useState('')
+  const [next, setNext]         = useState('')
+  const [confirm, setConfirm]   = useState('')
+  const [saving, setSaving]     = useState(false)
+  const [done, setDone]         = useState(false)
+
+  const mismatch = confirm.length > 0 && next !== confirm
+  const canSave  = current && next.length >= 6 && next === confirm && !saving
+
+  const handleClose = () => {
+    setCurrent(''); setNext(''); setConfirm(''); setDone(false)
+    clearAuthError()
+    onClose()
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    const ok = await changePassword(current, next)
+    setSaving(false)
+    if (ok) setDone(true)
+  }
+
+  return (
+    <Modal open={open} onClose={handleClose} title="Change password">
+      {done ? (
+        <div className="flex flex-col items-center text-center py-4 space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-success-100 dark:bg-success-500/20 flex items-center justify-center">
+            <CheckCircle size={22} className="text-success-600 dark:text-success-400" />
+          </div>
+          <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">Password updated</p>
+          <p className="text-xs text-ink-400">Use your new password the next time you sign in.</p>
+          <Button className="w-full" onClick={handleClose}>Done</Button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-ink-400 mb-1">Current password</label>
+            <input type="password" value={current} onChange={e => setCurrent(e.target.value)}
+              autoComplete="current-password" className={pwInputCls} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-ink-400 mb-1">New password</label>
+            <input type="password" value={next} onChange={e => setNext(e.target.value)}
+              autoComplete="new-password" placeholder="At least 6 characters" className={pwInputCls} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-ink-400 mb-1">Confirm new password</label>
+            <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)}
+              autoComplete="new-password" className={pwInputCls} />
+            {mismatch && <p className="text-xs text-red-500 mt-1">Passwords do not match.</p>}
+          </div>
+          {authError && (
+            <p className="text-xs text-red-500 px-3 py-2 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30">{authError}</p>
+          )}
+          <div className="flex gap-2">
+            <Button variant="ghost" className="flex-1" onClick={handleClose}>Cancel</Button>
+            <Button className="flex-1" disabled={!canSave} onClick={handleSave}>
+              {saving ? 'Saving…' : 'Update password'}
+            </Button>
+          </div>
+        </div>
+      )}
+    </Modal>
+  )
+}
+
 export function Settings() {
   const { theme, userProfile, userId, notifications } = useApp()
   const { user, signOut }    = useAuth()
   const navigate             = useNavigate()
   const { uploadPhoto, getPatientProfile } = useProviders()
   const [profileOpen, setProfileOpen] = useState(false)
+  const [pwOpen, setPwOpen]           = useState(false)
   const [resetOpen, setResetOpen]     = useState(false)
   const [clearOpen, setClearOpen]     = useState(false)
   const [photoURL, setPhotoURL]       = useState(null)
@@ -332,6 +403,9 @@ export function Settings() {
 
       <Section title="Account">
         <SettingsRow icon={User} label="Edit profile" onClick={() => setProfileOpen(true)} />
+        {user?.providerData?.some(p => p.providerId === 'password') && (
+          <SettingsRow icon={Lock} label="Change password" onClick={() => setPwOpen(true)} />
+        )}
         <SettingsRow icon={LogOut} label="Sign out" onClick={signOut} />
       </Section>
 
@@ -357,11 +431,12 @@ export function Settings() {
         </Section>
       )}
 
-      <p className="text-center text-xs text-ink-400 mt-4">MentisFlow v1.0.0 · Your data stays on your device</p>
+      <p className="text-center text-xs text-ink-400 mt-4">MentisFlow v1.0.0 · Private by design</p>
 
       <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)}
         profile={userProfile.profile} authUser={user} onSave={userProfile.updateProfile}
         photoURL={photoURL} onPhotoUpload={handlePhotoUpload} />
+      <ChangePasswordModal open={pwOpen} onClose={() => setPwOpen(false)} />
       <ResetModal open={resetOpen} onClose={() => setResetOpen(false)} onConfirm={handleResetDefaults} />
       <ClearDataModal open={clearOpen} onClose={() => setClearOpen(false)} onConfirm={handleClearData} />
     </PageWrapper>
