@@ -75,6 +75,18 @@ export function useTreatmentPlan(userId) {
     setPlan(p => ({ ...p, symptoms: p.symptoms.filter(s => s.id !== id) }))
   }, [setPlan])
 
+  // Re-insert a deleted item into any collection at its original position
+  // (for undo). key ∈ goals | medications | sessionNotes | symptoms. Deduped.
+  const restoreItem = useCallback((key, item, index = 0) => {
+    setPlan(p => {
+      const list = p[key] || []
+      if (list.some(x => x.id === item.id)) return p
+      const next = [...list]
+      next.splice(Math.min(Math.max(index, 0), next.length), 0, item)
+      return { ...p, [key]: next }
+    })
+  }, [setPlan])
+
   // Build a snapshot for sharing with a doctor
   const buildSnapshot = useCallback(() => ({
     goals:        plan.goals.filter(g => g.status === 'active'),
@@ -89,6 +101,7 @@ export function useTreatmentPlan(userId) {
     addMedication, toggleMedication, deleteMedication,
     addNote, deleteNote,
     addSymptom, updateSymptom, deleteSymptom,
+    restoreItem,
     buildSnapshot,
   }
 }
