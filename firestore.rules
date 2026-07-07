@@ -177,6 +177,19 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // In-app notifications: one document per recipient event (booking
+    // requested/confirmed/cancelled, account verified…). Created ONLY by
+    // Cloud Functions via the Admin SDK, so clients can never forge one.
+    // The recipient may read their own, mark it read, or delete it — nothing
+    // else. Admin may read for support.
+    match /notifications/{id} {
+      allow read: if isSignedIn() && (isAdmin() || request.auth.uid == resource.data.uid);
+      allow update: if isSignedIn() && request.auth.uid == resource.data.uid &&
+        changedKeys().hasOnly(['read']) && request.resource.data.read == true;
+      allow delete: if isSignedIn() && (request.auth.uid == resource.data.uid || isAdmin());
+      allow create: if false;
+    }
+
     // Admin audit log: append-only by admin, readable by admin.
     match /adminLogs/{id} {
       allow create: if isAdmin();

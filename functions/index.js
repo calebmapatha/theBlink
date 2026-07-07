@@ -345,10 +345,46 @@ async function queueMail(to, subject, html) {
   })
 }
 
+// Cap each recipient's in-app notifications so the feed stays bounded ("with
+// limits"): keep the newest MAX_NOTIFICATIONS and delete the rest.
+const MAX_NOTIFICATIONS = 30
+
+// Write an in-app notification for one recipient. Only Cloud Functions can
+// create these (clients are denied in firestore.rules). Failures are logged,
+// never thrown, so they can't break the action that triggered them.
+async function writeNotification(uid, { type, title, body, link = '' }) {
+  if (!uid) return
+  try {
+    await db.collection('notifications').add({
+      uid, type, title, body, link,
+      read: false,
+      createdAt: Timestamp.now(),
+    })
+    const extra = await db.collection('notifications')
+      .where('uid', '==', uid)
+      .orderBy('createdAt', 'desc')
+      .offset(MAX_NOTIFICATIONS)
+      .get()
+    if (!extra.empty) {
+      const batch = db.batch()
+      extra.docs.forEach(d => batch.delete(d.ref))
+      await batch.commit()
+    }
+  } catch (err) {
+    logger.error('writeNotification failed', { uid, type, error: err.message })
+  }
+}
+
 /** Tell the practitioner a new booking request has arrived. */
 export const notifyBookingRequested = onDocumentCreated('appointments/{id}', async (event) => {
   const appt = event.data?.data()
   if (!appt?.providerUid) return
+  await writeNotification(appt.providerUid, {
+    type: 'booking_requested',
+    title: 'New consultation request',
+    body: `${appt.patientName || 'A patient'} requested ${appt.date} at ${appt.timeSlot}.`,
+    link: '/',
+  })
   try {
     const prov = await db.doc(`providers/${appt.providerUid}`).get()
     const email = prov.data()?.email
@@ -374,6 +410,16 @@ export const notifyBookingStatus = onDocumentUpdated('appointments/{id}', async 
   const before = event.data?.before.data()
   const after = event.data?.after.data()
   if (!before || !after || before.status === after.status) return
+
+  if (after.status === 'confirmed' || after.status === 'cancelled') {
+    await writeNotification(after.patientUid, {
+      type: `booking_${after.status}`,
+      title: after.status === 'confirmed' ? 'Appointment confirmed' : 'Appointment cancelled',
+      body: `Your appointment on ${after.date} at ${after.timeSlot} was ${after.status}.`,
+      link: '/connect',
+    })
+  }
+
   if (!after.patientEmail) return
   try {
     if (after.status === 'confirmed') {
@@ -405,6 +451,42 @@ export const notifyBookingStatus = onDocumentUpdated('appointments/{id}', async 
     logger.info('notifyBookingStatus: queued', { appointment: event.params.id, status: after.status })
   } catch (err) {
     logger.error('notifyBookingStatus failed', { error: err.message })
+  }
+})
+
+/**
+ * Notify a practitioner when moderation changes their account state:
+ * verified (approved), rejected, or suspended. Fires server-side on the
+ * providers doc so the message can't be forged from a client.
+ */
+export const notifyProviderModeration = onDocumentUpdated('providers/{uid}', async (event) => {
+  const before = event.data?.before.data() || {}
+  const after = event.data?.after.data() || {}
+  const uid = event.params.uid
+
+  if (before.approvalStatus !== 'approved' && after.approvalStatus === 'approved') {
+    await writeNotification(uid, {
+      type: 'account_verified',
+      title: 'Your account has been verified',
+      body: 'Your practice has been approved and is now visible to patients on MentisFlow.',
+      link: '/',
+    })
+  } else if (before.approvalStatus !== 'rejected' && after.approvalStatus === 'rejected') {
+    await writeNotification(uid, {
+      type: 'account_rejected',
+      title: 'Verification unsuccessful',
+      body: 'We could not verify your practice. Please contact support to resolve this.',
+      link: '/',
+    })
+  }
+
+  if (!before.suspended && after.suspended) {
+    await writeNotification(uid, {
+      type: 'account_suspended',
+      title: 'Account suspended',
+      body: 'Your profile has been suspended and is hidden from patients. Contact support.',
+      link: '/',
+    })
   }
 })
 
