@@ -27,6 +27,7 @@ import { AdminPortal } from './pages/AdminPortal'
 import { fetchLatestAnnouncement } from './hooks/useAdmin'
 import { Login } from './pages/Login'
 import { Landing } from './pages/Landing'
+import { Practitioners } from './pages/Practitioners'
 import { Privacy } from './pages/Privacy'
 import { Terms } from './pages/Terms'
 import { useApp } from './context/AppContext'
@@ -149,8 +150,19 @@ function LoadingScreen() {
 // The landing page is ALWAYS the default; the login form only appears after
 // an explicit tap on a sign-in / get-started button.
 function PublicSite() {
-  const [view, setView] = useState('landing')
-  const [role, setRole] = useState(null)
+  // The dedicated /practitioners page links here with ?role=provider so a
+  // visitor lands straight in the practitioner sign-up flow.
+  const queryRole = new URLSearchParams(window.location.search).get('role')
+  const startRole = queryRole === 'provider' || queryRole === 'patient' ? queryRole : null
+  const [view, setView] = useState(startRole ? 'login' : 'landing')
+  const [role, setRole] = useState(startRole)
+
+  // Persist the role from ?role= so the post-sign-up redirect (which reads
+  // mf_role) routes a practitioner arriving from /practitioners correctly.
+  useEffect(() => {
+    if (startRole) localStorage.setItem('mf_role', startRole)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const openLogin = (r = null) => {
     if (r) localStorage.setItem('mf_role', r)
@@ -180,6 +192,7 @@ function AuthGate() {
   const publicPath = window.location.pathname.replace(/\/$/, '')
   if (publicPath.endsWith('/privacy')) return <Privacy />
   if (publicPath.endsWith('/terms')) return <Terms />
+  if (publicPath.endsWith('/practitioners')) return <Practitioners />
 
   if (user === undefined || (user !== null && isProvider === undefined)) return <LoadingScreen />
   if (!user) return <PublicSite />

@@ -4,7 +4,6 @@ import {
   HeartHandshake, Shield, Zap, Search, CalendarCheck, TrendingUp, Timer,
   Stethoscope, Lock, Trash2, CheckCircle2, ArrowRight, Menu, X,
 } from 'lucide-react'
-import { DEFAULT_PRICING } from '../utils/pricing'
 
 const fadeUp = {
   initial: { opacity: 0, y: 18 },
@@ -15,7 +14,7 @@ const fadeUp = {
 
 const NAV_LINKS = [
   { href: '#how-it-works',  label: 'For patients' },
-  { href: '#practitioners', label: 'For practitioners' },
+  { href: `${import.meta.env.BASE_URL}practitioners`, label: 'For practitioners' },
   { href: '#security',      label: 'Security' },
 ]
 
@@ -111,7 +110,6 @@ function PhoneMock() {
 
 export function Landing({ onSignIn, onGetStarted }) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const { trialDays } = DEFAULT_PRICING
   const privacyHref = `${import.meta.env.BASE_URL}privacy`
 
   return (
@@ -253,40 +251,6 @@ export function Landing({ onSignIn, onGetStarted }) {
             ))}
           </div>
         </div>
-      </section>
-
-      {/* ── Practitioners ───────────────────────────────────── */}
-      <section id="practitioners" className="scroll-mt-20 max-w-6xl mx-auto px-5 sm:px-8 py-16 lg:py-24">
-        <motion.div {...fadeUp} className="max-w-2xl">
-          <p className="text-sm font-bold text-teal-600 uppercase tracking-wide">For practitioners</p>
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">
-            Grow your practice. Focus on your patients.
-          </h2>
-          <p className="text-slate-500 mt-4 leading-relaxed">
-            Patients discover you, book straight into your diary, and arrive with context — the mood,
-            habit and check-in trends they choose to share. Less phone tag and paperwork, more time
-            for care.
-          </p>
-        </motion.div>
-
-        <motion.div
-          {...fadeUp}
-          className="mt-14 rounded-3xl bg-slate-50 border border-slate-100 p-8 sm:p-10 text-center max-w-3xl mx-auto"
-        >
-          <p className="text-sm font-bold text-teal-600 uppercase tracking-wide">Start with a 2-month free trial</p>
-          <h3 className="text-2xl font-extrabold tracking-tight mt-2">Try everything, commitment-free.</h3>
-          <p className="text-slate-500 mt-3 leading-relaxed max-w-xl mx-auto">
-            Every new practice starts with a full 2-month ({trialDays}-day) free trial, no card
-            required. Set up your profile, open your diary, and start meeting patients right away.
-          </p>
-          <button
-            onClick={() => onGetStarted('provider')}
-            className="mt-6 inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-700 text-white font-semibold px-7 py-3.5 rounded-2xl transition-colors"
-          >
-            Start your free trial
-            <ArrowRight size={16} />
-          </button>
-        </motion.div>
       </section>
 
       {/* ── Security ────────────────────────────────────────── */}
