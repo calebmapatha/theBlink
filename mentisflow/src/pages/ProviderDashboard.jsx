@@ -359,6 +359,13 @@ function StatDetailModal({ kind, onClose, stats }) {
   )
 }
 
+function greeting() {
+  const h = new Date().getHours()
+  if (h < 12) return 'Good morning'
+  if (h < 18) return 'Good afternoon'
+  return 'Good evening'
+}
+
 const DAYS = [
   { key: 'mon', label: 'Monday' },
   { key: 'tue', label: 'Tuesday' },
@@ -1190,7 +1197,7 @@ export function ProviderDashboard() {
   return (
     <PageWrapper>
       <PageHeader
-        title="Provider Dashboard"
+        title={`${greeting()}${profile?.name ? `, ${profile.name}` : ''} 👋`}
         subtitle={statusLabel}
         action={
           <Button variant="soft" size="sm" onClick={() => setEditOpen(true)}>
