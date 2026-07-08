@@ -1,16 +1,16 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Play, ChevronRight, Sun, HeartHandshake, Zap, Brain, BarChart2, ClipboardList } from 'lucide-react'
+import { Play, ChevronRight, Sun, HeartHandshake, Zap, Brain, BarChart2, ClipboardList, Calendar, Video, MapPin } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { useApp } from '../context/AppContext'
+import { useProviders } from '../hooks/useProviders'
 import { useTreatmentPlan } from '../hooks/useTreatmentPlan'
 import { formatDayHeader } from '../utils/dateUtils'
 
 const MOOD_EMOJI   = { 1: '😔', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' }
-const ENERGY_EMOJI = { 1: '🪴', 2: '😴', 3: '⚡', 4: '🔥', 5: '🚀' }
 
 function greeting() {
   const h = new Date().getHours()
@@ -47,9 +47,33 @@ const itemVariants = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, 
 export function Dashboard() {
   const navigate = useNavigate()
   const { habits, tasks, checkin, dump, timer, rewards, userId, awardAndToast, userProfile, tools } = useApp()
+  const { getPatientAppointments, getProvider } = useProviders()
   const treatmentPlan = useTreatmentPlan(userId)
   const [dumpText, setDumpText] = useState('')
   const firstName = (userProfile?.profile?.displayName || '').trim().split(/\s+/)[0] || ''
+
+  // Soonest upcoming appointment (for the "Next appointment" card).
+  const [nextAppt, setNextAppt]   = useState(null)
+  const [apptDoctor, setApptDoctor] = useState(null)
+  useEffect(() => {
+    if (!userId) return
+    const today = new Date().toISOString().split('T')[0]
+    getPatientAppointments(userId).then(async appts => {
+      const upcoming = appts
+        .filter(a => a.date >= today && ['pending', 'confirmed'].includes(a.status))
+        .sort((a, b) => (a.date + a.timeSlot).localeCompare(b.date + b.timeSlot))
+      const next = upcoming[0] || null
+      setNextAppt(next)
+      if (next?.providerUid) setApptDoctor(await getProvider(next.providerUid))
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId])
+
+  const saveMood = (mood) => {
+    const isFirst = !checkin.todayCheckin
+    checkin.saveCheckin({ mood, energy: checkin.todayCheckin?.energy || 3, intention: checkin.todayCheckin?.intention || '' })
+    if (isFirst) awardAndToast('DAILY_CHECKIN', 'Daily check-in complete!')
+  }
 
   const checkedTodayCount  = habits.habits.filter(h => habits.isCheckedToday(h.id)).length
   const completedTaskCount = tasks.completedToday.length
@@ -97,30 +121,91 @@ export function Dashboard() {
 
       <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-3">
 
-        {/* Connect — hero card */}
+        {/* How are you feeling — inline daily mood */}
+        {tools.isEnabled('checkin') && (
         <motion.div variants={itemVariants}>
-          <button
-            onClick={() => navigate('/connect')}
-            className="relative w-full text-left p-5 rounded-3xl bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-md shadow-primary-500/20 hover:shadow-lg hover:shadow-primary-500/30 transition-shadow overflow-hidden"
-          >
-            <div className="absolute -top-10 -right-8 w-36 h-36 bg-white/10 rounded-full blur-2xl" aria-hidden="true" />
-            <div className="relative flex items-start justify-between gap-3">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <HeartHandshake size={16} className="opacity-80" />
-                  <p className="text-xs font-bold opacity-80 uppercase tracking-wider">MentisFlow Connect</p>
-                </div>
-                <p className="text-lg font-bold leading-snug mb-1">Mental Health Support</p>
-                <p className="text-sm opacity-80 leading-relaxed">
-                  Connect with HPCSA-registered psychiatrists &amp; psychologists. Book appointments and share your wellness data.
-                </p>
+          <Card className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-xs text-ink-400">{greeting()}</p>
+                <p className="text-sm font-bold text-ink-900 dark:text-ink-100">How are you feeling?</p>
               </div>
-              <span className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0 mt-1">
-                <ChevronRight size={16} />
-              </span>
+              <button onClick={() => navigate('/checkin')} title="Full check-in"
+                className="w-8 h-8 rounded-lg bg-primary-500 hover:bg-primary-600 flex items-center justify-center transition-colors">
+                <HeartHandshake size={15} className="text-white" />
+              </button>
             </div>
-          </button>
+            <div className="flex justify-between gap-1.5">
+              {[1, 2, 3, 4, 5].map(m => (
+                <button key={m} onClick={() => saveMood(m)}
+                  className={`flex-1 h-11 rounded-xl text-xl flex items-center justify-center transition-all active:scale-90 ${
+                    checkin.todayCheckin?.mood === m
+                      ? 'bg-primary-100 dark:bg-primary-700/30 ring-2 ring-primary-400'
+                      : 'bg-surface-50 dark:bg-surface-900 hover:bg-surface-100 dark:hover:bg-surface-800'
+                  }`}>
+                  {MOOD_EMOJI[m]}
+                </button>
+              ))}
+            </div>
+            {checkin.todayCheckin?.intention && (
+              <p className="text-xs text-ink-500 dark:text-ink-400 mt-2.5 italic truncate">"{checkin.todayCheckin.intention}"</p>
+            )}
+          </Card>
         </motion.div>
+        )}
+
+        {/* Next appointment, or a prompt to connect */}
+        {nextAppt ? (
+          <motion.div variants={itemVariants}>
+            <Card interactive onClick={() => navigate('/connect')}
+              className="p-4 border-primary-100 dark:border-primary-700/40 bg-primary-50/40 dark:bg-primary-700/10">
+              <div className="flex items-center justify-between mb-1.5">
+                <p className="text-xs font-semibold text-primary-700 dark:text-primary-300 uppercase tracking-wide">Next appointment</p>
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                  nextAppt.status === 'confirmed'
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
+                }`}>
+                  {nextAppt.status === 'confirmed' ? 'Confirmed' : 'Pending'}
+                </span>
+              </div>
+              <p className="text-sm font-bold text-ink-900 dark:text-ink-100">{apptDoctor?.name || nextAppt.providerName || 'Your practitioner'}</p>
+              <p className="text-xs text-ink-400 mt-0.5 flex items-center gap-1 flex-wrap">
+                {apptDoctor?.type && <span>{apptDoctor.type}</span>}
+                <span className="flex items-center gap-1">
+                  {apptDoctor?.consultationType === 'in-person'
+                    ? <><MapPin size={10} /> {apptDoctor.city || 'In person'}</>
+                    : <><Video size={10} /> Online</>}
+                </span>
+                <span className="flex items-center gap-1"><Calendar size={10} /> {nextAppt.date} · {nextAppt.timeSlot}</span>
+              </p>
+            </Card>
+          </motion.div>
+        ) : (
+          <motion.div variants={itemVariants}>
+            <button
+              onClick={() => navigate('/connect')}
+              className="relative w-full text-left p-5 rounded-3xl bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-md shadow-primary-500/20 hover:shadow-lg hover:shadow-primary-500/30 transition-shadow overflow-hidden"
+            >
+              <div className="absolute -top-10 -right-8 w-36 h-36 bg-white/10 rounded-full blur-2xl" aria-hidden="true" />
+              <div className="relative flex items-start justify-between gap-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <HeartHandshake size={16} className="opacity-80" />
+                    <p className="text-xs font-bold opacity-80 uppercase tracking-wider">MentisFlow Connect</p>
+                  </div>
+                  <p className="text-lg font-bold leading-snug mb-1">Find your practitioner</p>
+                  <p className="text-sm opacity-80 leading-relaxed">
+                    Book HPCSA-registered psychiatrists &amp; psychologists and share your wellness data.
+                  </p>
+                </div>
+                <span className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0 mt-1">
+                  <ChevronRight size={16} />
+                </span>
+              </div>
+            </button>
+          </motion.div>
+        )}
 
         {/* FocusBlink section divider */}
         <motion.div variants={itemVariants} className="flex items-center gap-3 pt-1">
@@ -131,42 +216,6 @@ export function Dashboard() {
           </div>
           <div className="flex-1 h-px bg-surface-200 dark:bg-surface-700" />
         </motion.div>
-
-        {/* Check-in */}
-        {tools.isEnabled('checkin') && (
-        <motion.div variants={itemVariants}>
-          <Card interactive className="p-4" onClick={() => navigate('/checkin')}>
-            {checkin.todayCheckin ? (
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{MOOD_EMOJI[checkin.todayCheckin.mood] ?? '😐'}</span>
-                  <span className="text-2xl">{ENERGY_EMOJI[checkin.todayCheckin.energy] ?? '⚡'}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-0.5">Today's check-in</p>
-                  {checkin.todayCheckin.intention ? (
-                    <p className="text-sm text-ink-700 dark:text-ink-200 truncate">"{checkin.todayCheckin.intention}"</p>
-                  ) : (
-                    <p className="text-sm text-ink-500 dark:text-ink-400">No intention set</p>
-                  )}
-                </div>
-                <ChevronRight size={16} className="text-ink-400 flex-shrink-0" />
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-yellow-50 dark:bg-yellow-500/10 flex items-center justify-center flex-shrink-0">
-                  <Sun size={18} className="text-yellow-500" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-ink-900 dark:text-ink-100">Start your day</p>
-                  <p className="text-xs text-ink-400">Log mood, energy &amp; set an intention</p>
-                </div>
-                <ChevronRight size={16} className="text-ink-400 flex-shrink-0" />
-              </div>
-            )}
-          </Card>
-        </motion.div>
-        )}
 
         {/* Habits + Tasks */}
         {(tools.isEnabled('habits') || tools.isEnabled('tasks')) && (
