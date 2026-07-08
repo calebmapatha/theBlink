@@ -14,7 +14,7 @@ const fadeUp = {
 }
 
 const NAV_LINKS = [
-  { href: '#how-it-works',  label: 'How it works' },
+  { href: '#how-it-works',  label: 'For patients' },
   { href: '#practitioners', label: 'For practitioners' },
   { href: '#security',      label: 'Security' },
 ]
@@ -233,7 +233,7 @@ export function Landing({ onSignIn, onGetStarted }) {
       <section id="how-it-works" className="scroll-mt-20 bg-slate-900 text-white">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 lg:py-24">
           <motion.div {...fadeUp} className="max-w-2xl">
-            <p className="text-sm font-bold text-teal-300 uppercase tracking-wide">How it works</p>
+            <p className="text-sm font-bold text-teal-300 uppercase tracking-wide">For patients</p>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">
               From “I need help” to a booked appointment in minutes.
             </h2>
