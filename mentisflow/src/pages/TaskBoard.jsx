@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Plus, Star, Trash2, ArrowUp, ArrowDown, CalendarDays, GripVertical } from 'lucide-react'
+import { Plus, Star, Trash2, ArrowUp, ArrowDown, CalendarDays, GripVertical, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { format } from 'date-fns'
 import { PageWrapper } from '../components/layout/PageWrapper'
@@ -149,7 +149,7 @@ export function TaskBoard() {
         <AnimatePresence mode="popLayout">
           {currentTasks.length === 0 ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-12 text-center">
-              <p className="text-4xl mb-3">✨</p>
+              <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center"><Sparkles size={22} className="text-ink-400" /></div>
               <p className="text-sm text-ink-400">{tab === 'today' ? 'Nothing here. Add a task above!' : 'Backlog is clear'}</p>
             </motion.div>
           ) : (

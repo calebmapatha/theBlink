@@ -397,7 +397,7 @@ export function AdminPortal() {
           {/* ---------------- REPORTS ---------------- */}
           {tab === 'reports' && (
             <div className="space-y-3">
-              {reports.length === 0 && <p className="text-sm text-ink-400 text-center py-8">No reports filed. 🎉</p>}
+              {reports.length === 0 && <p className="text-sm text-ink-400 text-center py-8">No reports filed.</p>}
               {[...reports].sort((a, b) => (a.status === 'open' ? 0 : 1) - (b.status === 'open' ? 0 : 1)).map(r => (
                 <Card key={r.id} className="p-4">
                   <div className="flex items-center gap-2 mb-1">

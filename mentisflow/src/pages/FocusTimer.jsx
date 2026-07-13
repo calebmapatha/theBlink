@@ -10,9 +10,9 @@ import { useApp } from '../context/AppContext'
 import { useAmbientSound, SOUNDS } from '../hooks/useAmbientSound'
 
 const MODE_LABELS = {
-  work:       '🎯 Focus',
-  shortBreak: '☕ Short Break',
-  longBreak:  '🌿 Long Break',
+  work:       'Focus',
+  shortBreak: 'Short Break',
+  longBreak:  'Long Break',
 }
 
 const MODE_COLORS = {
@@ -145,7 +145,7 @@ export function FocusTimer() {
         <Card className="p-4 text-center">
           <p className="text-sm text-ink-400">
             <span className="text-ink-900 dark:text-ink-100 font-semibold">{timer.sessionCount}</span>{' '}
-            focus session{timer.sessionCount !== 1 ? 's' : ''} completed today 🎉
+            focus session{timer.sessionCount !== 1 ? 's' : ''} completed today
           </p>
         </Card>
       )}

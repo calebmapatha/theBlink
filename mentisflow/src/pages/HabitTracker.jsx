@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Settings, Edit2, Trash2, Check } from 'lucide-react'
+import { Plus, Settings, Edit2, Trash2, Check, Sprout, Flame } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { PageHeader } from '../components/layout/PageHeader'
@@ -15,7 +15,7 @@ const FREQ_OPTIONS  = [
   { value: 'weekly', label: 'Times per week' },
 ]
 
-function ProgressRing({ progress, size = 80, strokeWidth = 8, color = '#007AFF', children }) {
+function ProgressRing({ progress, size = 80, strokeWidth = 8, color = '#14b8a6', children }) {
   const radius        = (size - strokeWidth) / 2
   const circumference = 2 * Math.PI * radius
   const dashOffset    = circumference * (1 - Math.min(Math.max(progress, 0), 1))
@@ -42,14 +42,14 @@ function SummaryRing({ checked, total }) {
   const allDone  = checked === total && total > 0
   return (
     <div className="flex flex-col items-center py-6">
-      <ProgressRing progress={progress} size={156} strokeWidth={15} color="#007AFF">
+      <ProgressRing progress={progress} size={156} strokeWidth={15} color="#14b8a6">
         <div className="text-center">
           <p className="text-4xl font-bold text-ink-900 dark:text-ink-100 leading-none">{checked}</p>
           <p className="text-sm text-ink-400 mt-1">of {total}</p>
         </div>
       </ProgressRing>
-      <p className={`text-sm font-medium mt-4 transition-colors ${allDone ? 'text-green-500' : 'text-ink-400'}`}>
-        {allDone ? '🎉 All habits complete!' : 'habits today'}
+      <p className={`text-sm font-medium mt-4 transition-colors ${allDone ? 'text-success-500' : 'text-ink-400'}`}>
+        {allDone ? 'All habits complete!' : 'habits today'}
       </p>
     </div>
   )
@@ -86,7 +86,7 @@ function HabitCard({ habit, checked, onToggle, streak, weeklyCount }) {
         {isWeekly ? (
           <p className="text-[10px] text-ink-400 mt-0.5">{weeklyCount}/{habit.weeklyTarget}× week</p>
         ) : streak > 0 ? (
-          <p className="text-[10px] text-ink-400 mt-0.5">🔥 {streak} day{streak !== 1 ? 's' : ''}</p>
+          <p className="flex items-center justify-center gap-0.5 text-[10px] text-ink-400 mt-0.5"><Flame size={10} className="text-warm-500" /> {streak} day{streak !== 1 ? 's' : ''}</p>
         ) : null}
       </div>
     </motion.button>
@@ -285,7 +285,7 @@ export function HabitTracker() {
 
       {habits.habits.length === 0 ? (
         <div className="py-12 text-center">
-          <p className="text-4xl mb-3">🌱</p>
+          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center"><Sprout size={22} className="text-ink-400" /></div>
           <p className="text-sm text-ink-400 mb-4">No habits yet.</p>
           <Button onClick={() => setManageOpen(true)}><Plus size={15} /> Add habits</Button>
         </div>
