@@ -157,14 +157,14 @@ export function Sidebar({ isProvider }) {
           )}
           <button
             onClick={theme.toggleTheme}
-            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-sm text-ink-400 hover:text-ink-700 dark:hover:text-ink-100 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
+            className="focus-ring flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-sm text-ink-400 hover:text-ink-700 dark:hover:text-ink-100 hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors"
           >
             {theme.isDark ? <Sun size={15} /> : <Moon size={15} />}
             {theme.isDark ? 'Light mode' : 'Dark mode'}
           </button>
           <button
             onClick={signOut}
-            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-sm text-ink-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+            className="focus-ring flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-sm text-ink-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
           >
             <LogOut size={15} />Sign out
           </button>

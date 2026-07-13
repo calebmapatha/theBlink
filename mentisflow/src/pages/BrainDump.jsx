@@ -87,7 +87,7 @@ export function BrainDump() {
                   </div>
                   <button
                     onClick={() => handleDelete(entry)}
-                    className="p-1.5 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
+                    className="focus-ring p-1.5 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-all flex-shrink-0"
                   >
                     <Trash2 size={14} />
                   </button>

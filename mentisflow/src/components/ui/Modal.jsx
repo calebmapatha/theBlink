@@ -38,7 +38,7 @@ export function Modal({ open, onClose, title, children }) {
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-5 pb-3 flex-shrink-0">
               <h3 className="text-base font-semibold text-ink-900 dark:text-ink-100">{title}</h3>
-              <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 text-ink-400 transition-colors">
+              <button onClick={onClose} aria-label="Close" className="focus-ring p-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 text-ink-400 transition-colors">
                 <X size={16} />
               </button>
             </div>

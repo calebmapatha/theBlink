@@ -40,13 +40,13 @@ function TaskItem({ task, onComplete, onDelete, onToggleUrgent, onMove, isToday,
       <DueDateBadge dueDate={task.dueDate} />
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <button onClick={() => onToggleUrgent(task.id)}
-          className={`p-1.5 rounded-lg transition-colors ${task.urgent ? 'text-warm-500' : 'text-ink-400 hover:text-warm-500'}`}>
+          className={`focus-ring p-1.5 rounded-lg transition-colors ${task.urgent ? 'text-warm-500' : 'text-ink-400 hover:text-warm-500'}`}>
           <Star size={14} fill={task.urgent ? 'currentColor' : 'none'} />
         </button>
-        <button onClick={() => onMove(task.id)} className="p-1.5 rounded-lg text-ink-400 hover:text-primary-500 transition-colors">
+        <button onClick={() => onMove(task.id)} className="focus-ring p-1.5 rounded-lg text-ink-400 hover:text-primary-500 transition-colors">
           {isToday ? <ArrowDown size={14} /> : <ArrowUp size={14} />}
         </button>
-        <button onClick={() => onDelete(task.id)} className="p-1.5 rounded-lg text-ink-400 hover:text-red-500 transition-colors">
+        <button onClick={() => onDelete(task.id)} className="focus-ring p-1.5 rounded-lg text-ink-400 hover:text-red-500 transition-colors">
           <Trash2 size={14} />
         </button>
       </div>

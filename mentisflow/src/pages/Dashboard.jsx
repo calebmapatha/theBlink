@@ -288,7 +288,7 @@ export function Dashboard() {
                 onChange={e => setDumpText(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleQuickDump()}
                 placeholder="What's on your mind? (Enter to save)"
-                className="flex-1 px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-sm text-ink-900 dark:text-ink-100 placeholder-ink-400 focus:outline-none focus:ring-1 focus:ring-primary-400"
+                className="flex-1 px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-sm text-ink-900 dark:text-ink-100 placeholder-ink-400 focus:outline-none focus:ring-2 focus:ring-primary-400"
               />
               <Button size="sm" onClick={handleQuickDump} disabled={!dumpText.trim()}>
                 <Zap size={13} /> Dump
