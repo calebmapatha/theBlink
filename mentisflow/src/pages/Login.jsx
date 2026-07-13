@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mail, Lock, Eye, EyeOff, AlertCircle, HeartHandshake, Shield, ArrowLeft, CheckCircle2 } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, AlertCircle, HeartHandshake, Shield, ArrowLeft, CheckCircle2, UserRound, Stethoscope } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 const GoogleIcon = () => (
@@ -106,7 +106,7 @@ export function Login({ onBack, initialRole = null }) {
                   className="bg-white border-2 border-slate-200 hover:border-teal-400 active:border-teal-500 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all text-center group"
                 >
                   <div className="w-11 h-11 rounded-xl bg-teal-50 group-hover:bg-teal-100 flex items-center justify-center transition-colors">
-                    <span className="text-2xl">🧑</span>
+                    <UserRound size={20} className="text-teal-600" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-slate-900">Seeking care</p>
@@ -118,7 +118,7 @@ export function Login({ onBack, initialRole = null }) {
                   className="bg-white border-2 border-slate-200 hover:border-teal-400 active:border-teal-500 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all text-center group"
                 >
                   <div className="w-11 h-11 rounded-xl bg-teal-50 group-hover:bg-teal-100 flex items-center justify-center transition-colors">
-                    <span className="text-2xl">⚕️</span>
+                    <Stethoscope size={20} className="text-teal-600" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-slate-900">Practitioner</p>
@@ -143,12 +143,13 @@ export function Login({ onBack, initialRole = null }) {
                 >
                   ← Change role
                 </button>
-                <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+                <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ${
                   role === 'provider'
                     ? 'bg-teal-100 text-teal-700'
                     : 'bg-slate-100 text-slate-600'
                 }`}>
-                  {role === 'provider' ? '⚕️ Practitioner' : '🧑 Patient'}
+                  {role === 'provider' ? <Stethoscope size={12} /> : <UserRound size={12} />}
+                  {role === 'provider' ? 'Practitioner' : 'Patient'}
                 </span>
               </div>
 
