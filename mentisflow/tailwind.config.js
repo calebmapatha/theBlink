@@ -26,15 +26,18 @@ export default {
         success: {
           50:  '#f0fdf4',
           100: '#dcfce7',
+          200: '#bbf7d0',
           400: '#4ade80',
           500: '#22c55e',
           600: '#16a34a',
           700: '#15803d',
         },
         warm: {
+          50:  '#fefce8',
           100: '#fef9c3',
           400: '#facc15',
           500: '#eab308',
+          600: '#ca8a04',
         },
         surface: {
           50:  '#f8f9ff',

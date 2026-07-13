@@ -43,7 +43,7 @@ function StarDisplay({ value, size = 14 }) {
     <div className="flex gap-0.5">
       {[1,2,3,4,5].map(n => (
         <Star key={n} size={size}
-          className={n <= Math.round(value || 0) ? 'text-yellow-400 fill-yellow-400' : 'text-surface-300 dark:text-surface-600'}
+          className={n <= Math.round(value || 0) ? 'text-warm-400 fill-warm-400' : 'text-surface-300 dark:text-surface-600'}
         />
       ))}
     </div>

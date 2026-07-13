@@ -112,7 +112,7 @@ function StarRating({ value, onChange }) {
         >
           <Star
             size={28}
-            className={n <= (hovered || value) ? 'text-yellow-400 fill-yellow-400' : 'text-surface-300 dark:text-surface-600'}
+            className={n <= (hovered || value) ? 'text-warm-400 fill-warm-400' : 'text-surface-300 dark:text-surface-600'}
           />
         </button>
       ))}
@@ -124,7 +124,7 @@ function StarDisplay({ value, count }) {
   if (!value) return null
   return (
     <div className="flex items-center gap-1">
-      <Star size={11} className="text-yellow-400 fill-yellow-400" />
+      <Star size={11} className="text-warm-400 fill-warm-400" />
       <span className="text-xs font-medium text-ink-700 dark:text-ink-300">{value.toFixed(1)}</span>
       {count != null && <span className="text-[10px] text-ink-400">({count})</span>}
     </div>
@@ -1282,7 +1282,7 @@ export function Connect() {
                             )}
                             {ratedSet.has(a.id) && (
                               <span className="text-[10px] text-ink-400 flex items-center gap-1">
-                                <Star size={10} className="text-yellow-400 fill-yellow-400" /> Rated
+                                <Star size={10} className="text-warm-400 fill-warm-400" /> Rated
                               </span>
                             )}
                           </div>

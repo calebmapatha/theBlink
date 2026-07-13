@@ -18,7 +18,7 @@ const SYMPTOM_FREQS    = ['Daily', 'Several times a week', 'Weekly', 'Occasional
 
 const SEVERITY_LABELS = { 1: 'Mild', 2: 'Moderate', 3: 'Noticeable', 4: 'Severe', 5: 'Very severe' }
 const SEVERITY_COLORS = {
-  1: 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400',
+  1: 'bg-success-100 text-success-700 dark:bg-success-500/20 dark:text-success-400',
   2: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400',
   3: 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400',
   4: 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400',
