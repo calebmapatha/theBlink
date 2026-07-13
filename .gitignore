@@ -7,3 +7,4 @@ blink_blogging/settings_conf/development.py
 media/headerImg
 blog/static/css/thirdparty
 blog/static/js/thirdparty
+.gstack/
