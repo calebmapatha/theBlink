@@ -25,7 +25,7 @@ service cloud.firestore {
     function touchesProviderTrustedKeys(keys) {
       return keys.hasAny([
         'subscriptionActive', 'subscriptionStatus', 'subscriptionPlan', 'subscriptionStarted',
-        'subscriptionCycle', 'paystackCustomerCode',
+        'subscriptionCycle', 'paymentReference',
         'trialUsed', 'trialStarted', 'trialEndsAt',
         'ratingCount', 'ratingAvg', 'suspended'
       ]);

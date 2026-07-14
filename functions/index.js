@@ -13,7 +13,7 @@ import { setGlobalOptions } from 'firebase-functions/v2'
 import { logger } from 'firebase-functions'
 import { initializeApp } from 'firebase-admin/app'
 import { getFirestore, Timestamp } from 'firebase-admin/firestore'
-import { createHmac, timingSafeEqual } from 'node:crypto'
+import { createHash, timingSafeEqual } from 'node:crypto'
 
 // europe-west1 is the closest Functions v2 region to South Africa (no af-south1
 // for gen-2 yet) — keeps latency reasonable and data in-region for POPIA.
@@ -78,23 +78,47 @@ async function configuredTrialDays() {
   }
 }
 
-// ── Paystack billing ─────────────────────────────────────────────────────────
-// Stripe does not onboard South African merchants; Paystack does. The secret
-// key comes from the functions environment (functions/.env or
-// `firebase functions:secrets:set` + params). When it is NOT configured, paid
+// ── PayFast billing ──────────────────────────────────────────────────────────
+// PayFast is the merchant-of-record. Credentials come from the functions
+// environment (functions/.env, gitignored). Without them configured, paid
 // plans fall back to demo activation so the platform stays demoable before
 // the merchant account exists.
 //
 // Go-live steps:
-//  1. Create a Paystack business, get the live secret key.
-//  2. Create two subscription Plans (monthly, ZAR) in the Paystack dashboard
-//     and store their codes on config/platform:
-//       paystack: { plans: { standard: 'PLN_...', featured: 'PLN_...' } }
-//  3. Set PAYSTACK_SECRET_KEY in functions/.env and redeploy functions.
-//  4. Point a Paystack webhook at the paymentWebhook function URL.
-const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY || ''
-// Where Paystack sends the customer after checkout (the deployed web app).
+//  1. Register a PayFast merchant account; note the Merchant ID + Merchant
+//     Key (Settings > Integration). Set a Salt Passphrase there too — it is
+//     required for recurring-billing signatures, and MUST be identical to
+//     PAYFAST_PASSPHRASE below (an empty/mismatched passphrase is a
+//     documented cause of every checkout failing).
+//  2. Set PAYFAST_MERCHANT_ID, PAYFAST_MERCHANT_KEY, PAYFAST_PASSPHRASE and
+//     PAYFAST_MODE=sandbox in functions/.env and redeploy functions.
+//  3. Test a full checkout with a PayFast sandbox card before touching the
+//     live key — this function's own URL is already the ITN notify_url, no
+//     separate webhook registration needed on PayFast's side.
+//  4. Once a sandbox subscription activates end-to-end, switch to the LIVE
+//     Merchant ID/Key/Passphrase and PAYFAST_MODE=live, then redeploy.
+//
+// Field order and encoding are cross-checked against PayFast's classic
+// "Custom Integration" checkout + ITN flow — NOT PayFast's separate,
+// alphabetically-sorted REST API (a different signature scheme; don't mix
+// the two). Two specifics could not be confirmed against primary docs
+// (blocked to automated fetches) and are flagged inline: the exact
+// `cycles`/`billing_date` semantics for indefinite recurring billing, and the
+// precise shape of the optional server-to-server ITN "validate" echo-back.
+// Both are implemented on the best cross-referenced understanding available;
+// reconfirm in a live PayFast sandbox run before relying on them. The
+// signature and source-IP checks are the two hard security gates and are
+// independently solid regardless of those two open items.
+const PAYFAST_MERCHANT_ID  = process.env.PAYFAST_MERCHANT_ID || ''
+const PAYFAST_MERCHANT_KEY = process.env.PAYFAST_MERCHANT_KEY || ''
+const PAYFAST_PASSPHRASE   = process.env.PAYFAST_PASSPHRASE || ''
+const PAYFAST_MODE = process.env.PAYFAST_MODE === 'live' ? 'live' : 'sandbox'
+const PAYFAST_HOST = PAYFAST_MODE === 'live' ? 'www.payfast.co.za' : 'sandbox.payfast.co.za'
+// Where PayFast sends the customer after checkout (the deployed web app).
 const PAYMENT_CALLBACK_URL = process.env.PAYMENT_CALLBACK_URL || 'https://calebmapatha.github.io/theBlink/'
+// This function's own deployed URL — PayFast POSTs ITNs here directly.
+const PAYFAST_NOTIFY_URL = process.env.PAYFAST_NOTIFY_URL ||
+  `https://${REGION}-focusblink-2c1e9.cloudfunctions.net/paymentWebhook`
 
 async function platformConfig() {
   try {
@@ -112,38 +136,76 @@ const FALLBACK_PRICES = {
   featured: { monthly: 895, annual: 8950 },
 }
 
-// Create a Paystack checkout for a plan/cycle and return its authorization
-// URL. With a plan code Paystack creates a recurring subscription on first
-// charge; without one it falls back to a once-off charge of the amount.
-// Plan codes on config/platform support both shapes:
-//   paystack.plans.standard = 'PLN_...'                        (monthly only)
-//   paystack.plans.standard = { monthly: 'PLN_..', annual: 'PLN_..' }
-async function paystackInitialize({ email, uid, plan, cycle }) {
-  const cfg = await platformConfig()
-  const amount = Number(cfg.pricing?.plans?.[plan]?.[cycle]) ||
-    FALLBACK_PRICES[plan][cycle]
-  const rawCode = cfg.paystack?.plans?.[plan]
-  const planCode = typeof rawCode === 'string'
-    ? (cycle === 'monthly' ? rawCode : '')
-    : (rawCode?.[cycle] || '')
+// PayFast's classic checkout signs a PHP http_build_query()-style string:
+// spaces become '+', and a handful of characters JS's encodeURIComponent
+// leaves unescaped that PHP's urlencode() does not (! ' ( ) * ~). Using this
+// encoder for every outgoing value — and never re-encoding incoming ITN bytes
+// (see verifyItnSignature below) — keeps both sides byte-identical to
+// PayFast's own PHP-based signing, sidestepping the classic JS/PHP mismatch.
+export function phpUrlEncode(value) {
+  return encodeURIComponent(String(value))
+    .replace(/%20/g, '+')
+    .replace(/!/g, '%21')
+    .replace(/'/g, '%27')
+    .replace(/\(/g, '%28')
+    .replace(/\)/g, '%29')
+    .replace(/\*/g, '%2A')
+    .replace(/~/g, '%7E')
+}
 
-  const res = await fetch('https://api.paystack.co/transaction/initialize', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${PAYSTACK_SECRET}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      email,
-      amount: Math.round(amount * 100), // ZAR cents
-      currency: 'ZAR',
-      ...(planCode ? { plan: planCode } : {}),
-      metadata: { providerUid: uid, plan, cycle },
-      callback_url: PAYMENT_CALLBACK_URL,
-    }),
-  })
-  const json = await res.json()
-  if (!json.status || !json.data?.authorization_url) {
-    throw new Error(json.message || 'Paystack transaction initialization failed')
-  }
-  return json.data.authorization_url
+// Signs a set of OUTGOING checkout fields: join in the given (documented,
+// non-alphabetical) order, skip blanks, then append the passphrase — but
+// ONLY if one is configured. A blank `passphrase=` parameter is a documented
+// cause of every payment failing, so it must be omitted, never sent empty.
+export function payfastSignature(orderedFields) {
+  const parts = orderedFields
+    .filter(([, v]) => v !== undefined && v !== null && v !== '')
+    .map(([k, v]) => `${k}=${phpUrlEncode(v)}`)
+  if (PAYFAST_PASSPHRASE) parts.push(`passphrase=${phpUrlEncode(PAYFAST_PASSPHRASE)}`)
+  return createHash('md5').update(parts.join('&')).digest('hex')
+}
+
+// Create a PayFast checkout URL for a plan/cycle. subscription_type=1 tells
+// PayFast to bill recurring_amount every `frequency` (3=monthly, 6=annual)
+// until cancelled (cycles=0 = indefinite). The doctor pays the first
+// instalment on this checkout page; the ITN below confirms it and every
+// renewal after.
+async function payfastCheckoutUrl({ email, uid, plan, cycle, name }) {
+  const cfg = await platformConfig()
+  const amount = Number(cfg.pricing?.plans?.[plan]?.[cycle]) || FALLBACK_PRICES[plan][cycle]
+  const amountStr = amount.toFixed(2)
+  const today = new Date().toISOString().split('T')[0]
+
+  // Order matters here: this is PayFast's documented checkout field order,
+  // not alphabetical (alphabetical sorting applies only to PayFast's
+  // separate REST API, a different signature scheme entirely).
+  const fields = [
+    ['merchant_id',  PAYFAST_MERCHANT_ID],
+    ['merchant_key', PAYFAST_MERCHANT_KEY],
+    ['return_url',   PAYMENT_CALLBACK_URL],
+    ['cancel_url',   PAYMENT_CALLBACK_URL],
+    ['notify_url',   PAYFAST_NOTIFY_URL],
+    ['name_first',   (name || 'MentisFlow Provider').slice(0, 100)],
+    ['email_address', email],
+    ['m_payment_id', `${uid}-${Date.now()}`],
+    ['amount',       amountStr],
+    ['item_name',    `MentisFlow - ${plan === 'featured' ? 'Featured' : 'Standard'} (${cycle})`],
+    ['custom_str1',  uid],
+    ['custom_str2',  plan],
+    ['custom_str3',  cycle],
+    ['subscription_type', '1'],
+    ['billing_date',      today],
+    ['recurring_amount',  amountStr],
+    ['frequency',         cycle === 'annual' ? '6' : '3'],
+    ['cycles',            '0'],
+  ]
+
+  const signature = payfastSignature(fields)
+  const query = fields
+    .filter(([, v]) => v !== undefined && v !== null && v !== '')
+    .map(([k, v]) => `${k}=${phpUrlEncode(v)}`)
+    .join('&')
+  return `https://${PAYFAST_HOST}/eng/process?${query}&signature=${signature}`
 }
 
 /**
@@ -155,9 +217,10 @@ async function paystackInitialize({ email, uid, plan, cycle }) {
  * from writing these fields in firestore.rules — a doctor must not be able to
  * grant themselves an endless trial or an active subscription.
  *
- * Trials activate immediately. Paid plans return a Paystack checkout URL and
- * are activated exclusively by `paymentWebhook` on charge.success. If no
- * Paystack key is configured yet, paid plans activate in demo mode.
+ * Trials activate immediately. Paid plans return a PayFast checkout URL and
+ * are activated exclusively by `paymentWebhook` on payment_status COMPLETE.
+ * If no PayFast credentials are configured yet, paid plans activate in demo
+ * mode.
  */
 export const activateProvider = onCall(async (request) => {
   if (!request.auth) throw new HttpsError('unauthenticated', 'You must be signed in.')
@@ -197,12 +260,12 @@ export const activateProvider = onCall(async (request) => {
   const plan = requested === 'featured' ? 'featured' : 'standard'
   const cycle = request.data?.cycle === 'annual' ? 'annual' : 'monthly'
 
-  // Real billing: hand the doctor to Paystack checkout. Activation happens in
-  // paymentWebhook once Paystack reports charge.success.
-  if (PAYSTACK_SECRET) {
+  // Real billing: hand the doctor to PayFast checkout. Activation happens in
+  // paymentWebhook once PayFast's ITN reports payment_status COMPLETE.
+  if (PAYFAST_MERCHANT_ID && PAYFAST_MERCHANT_KEY) {
     const email = existing.email || request.auth.token.email
     if (!email) throw new HttpsError('failed-precondition', 'Your profile has no email address for billing.')
-    const authorizationUrl = await paystackInitialize({ email, uid, plan, cycle })
+    const authorizationUrl = await payfastCheckoutUrl({ email, uid, plan, cycle, name: existing.name })
     await provRef.set({
       subscriptionStatus: 'pending_payment',
       subscriptionPlan:   plan,
@@ -213,7 +276,7 @@ export const activateProvider = onCall(async (request) => {
     return { activated: false, authorizationUrl }
   }
 
-  // Demo mode (no Paystack key configured): activate immediately.
+  // Demo mode (no PayFast credentials configured): activate immediately.
   await provRef.set({
     subscriptionActive:  true,
     subscriptionStatus:  'active',
@@ -223,7 +286,7 @@ export const activateProvider = onCall(async (request) => {
     approvalStatus,
   }, { merge: true })
 
-  logger.info('activateProvider: activated (demo mode, no Paystack key)', { uid, plan, cycle, approvalStatus })
+  logger.info('activateProvider: activated (demo mode, no PayFast credentials)', { uid, plan, cycle, approvalStatus })
   return { activated: true }
 })
 
@@ -255,68 +318,120 @@ export const expireTrials = onSchedule('every 24 hours', async () => {
   logger.info(`expireTrials: expired ${snap.size} trial(s)`)
 })
 
+// Small, purpose-built CIDR check for PayFast's two published ITN IP ranges
+// (per PayFast's "What IP addresses does PayFast use?" support article).
+// Just two fixed blocks, so a hand-rolled octet comparison avoids pulling in
+// a general-purpose CIDR-matching dependency for this alone.
+const PAYFAST_IP_RANGES = [
+  { base: '197.97.145.144', bits: 28 }, // 197.97.145.145 – .158
+  { base: '41.74.179.192',  bits: 27 }, // 41.74.179.193 – .222
+]
+function ipToInt(ip) {
+  const parts = String(ip).split('.').map(Number)
+  if (parts.length !== 4 || parts.some(n => Number.isNaN(n) || n < 0 || n > 255)) return null
+  return parts.reduce((acc, n) => (acc << 8) + n, 0) >>> 0
+}
+export function isPayfastIp(ip) {
+  const n = ipToInt(ip)
+  if (n === null) return false
+  return PAYFAST_IP_RANGES.some(({ base, bits }) => {
+    const mask = bits === 0 ? 0 : (0xffffffff << (32 - bits)) >>> 0
+    return (n & mask) === (ipToInt(base) & mask)
+  })
+}
+
+// Verifies an incoming ITN's signature WITHOUT re-encoding any of PayFast's
+// own bytes: string-split the raw body on '&', drop the `signature` pair,
+// rejoin, append the passphrase (only if configured). This sidesteps the
+// entire JS/PHP re-encoding mismatch class of bug, since PayFast's
+// already-encoded bytes are never decoded then re-encoded by us.
+export function verifyItnSignature(rawBodyText, providedSignature) {
+  const pairs = rawBodyText.split('&').filter(p => !p.startsWith('signature='))
+  let base = pairs.join('&')
+  if (PAYFAST_PASSPHRASE) base += `&passphrase=${phpUrlEncode(PAYFAST_PASSPHRASE)}`
+  const expected = createHash('md5').update(base).digest('hex')
+  return typeof providedSignature === 'string' &&
+    providedSignature.length === expected.length &&
+    timingSafeEqual(Buffer.from(providedSignature), Buffer.from(expected))
+}
+
 /**
- * Paystack webhook. The ONLY writer that activates paid subscriptions.
+ * PayFast ITN (Instant Transaction Notification). The ONLY writer that
+ * activates paid subscriptions.
  *
- * Every request must carry a valid x-paystack-signature (HMAC-SHA512 of the
- * raw body with the secret key); anything else is rejected before any data
- * is touched. Events without a resolvable provider are acknowledged with 200
- * so Paystack does not retry them forever.
+ * Two hard security gates, checked before any data is touched: a valid MD5
+ * signature computed from PayFast's own request bytes, and a source IP
+ * within PayFast's published ITN ranges. A best-effort server-to-server
+ * "validate" echo-back to PayFast is also attempted and logged as
+ * defense-in-depth, but is not itself a hard gate — see the go-live comment
+ * above the PayFast config constants for why.
  */
 export const paymentWebhook = onRequest({ cors: false }, async (req, res) => {
-  if (!PAYSTACK_SECRET) {
+  if (!PAYFAST_MERCHANT_ID || !PAYFAST_MERCHANT_KEY) {
     res.status(501).send('Payment webhook not yet configured.')
     return
   }
 
-  const signature = req.headers['x-paystack-signature']
-  const digest = createHmac('sha512', PAYSTACK_SECRET).update(req.rawBody).digest('hex')
-  const valid = typeof signature === 'string' &&
-    signature.length === digest.length &&
-    timingSafeEqual(Buffer.from(signature), Buffer.from(digest))
-  if (!valid) {
-    logger.warn('paymentWebhook: invalid signature')
-    res.status(401).send('Invalid signature')
+  const forwarded = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim()
+  const sourceIp = forwarded || req.ip || ''
+  if (!isPayfastIp(sourceIp)) {
+    logger.warn('paymentWebhook: rejected — source IP not in PayFast ranges', { sourceIp })
+    res.status(403).send('Forbidden')
     return
   }
 
-  const event = req.body || {}
-  const data = event.data || {}
-
-  // Resolve the provider: transaction events carry our metadata; subscription
-  // lifecycle events may only carry the customer, so fall back to email.
-  let uid = data.metadata?.providerUid || null
-  if (!uid && data.customer?.email) {
-    const snap = await db.collection('providers')
-      .where('email', '==', data.customer.email).limit(1).get()
-    if (!snap.empty) uid = snap.docs[0].id
+  const rawBodyText = req.rawBody.toString('utf8')
+  const params = new URLSearchParams(rawBodyText)
+  if (!verifyItnSignature(rawBodyText, params.get('signature'))) {
+    logger.warn('paymentWebhook: invalid signature')
+    res.status(400).send('Invalid signature')
+    return
   }
 
+  // Best-effort echo-back confirmation (see doc comment above) — logged only,
+  // never blocks activation on its own.
   try {
-    if (event.event === 'charge.success' && uid) {
-      const plan = data.metadata?.plan === 'featured' ? 'featured' : 'standard'
-      const cycle = data.metadata?.cycle === 'annual' ? 'annual' : 'monthly'
+    const validateRes = await fetch(`https://${PAYFAST_HOST}/eng/query/validate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: rawBodyText,
+    })
+    const validateText = (await validateRes.text()).trim()
+    if (validateText !== 'VALID') {
+      logger.warn('paymentWebhook: validate echo-back did not confirm', { validateText })
+    }
+  } catch (err) {
+    logger.warn('paymentWebhook: validate echo-back failed', { error: err.message })
+  }
+
+  const paymentStatus = params.get('payment_status') || ''
+  const uid            = params.get('custom_str1') || ''
+  const plan            = params.get('custom_str2') === 'featured' ? 'featured' : 'standard'
+  const cycle           = params.get('custom_str3') === 'annual' ? 'annual' : 'monthly'
+  const pfPaymentId     = params.get('pf_payment_id') || ''
+
+  try {
+    if (paymentStatus === 'COMPLETE' && uid) {
       await db.doc(`providers/${uid}`).set({
         subscriptionActive:  true,
         subscriptionStatus:  'active',
         subscriptionPlan:    plan,
         subscriptionCycle:   cycle,
         subscriptionStarted: new Date().toISOString(),
-        paystackCustomerCode: data.customer?.customer_code || '',
+        paymentReference:    pfPaymentId,
       }, { merge: true })
-      logger.info('paymentWebhook: subscription activated', { uid, plan, cycle })
-    } else if ((event.event === 'subscription.disable' || event.event === 'invoice.payment_failed') && uid) {
-      await db.doc(`providers/${uid}`).set({
-        subscriptionActive: false,
-        subscriptionStatus: event.event === 'subscription.disable' ? 'cancelled' : 'past_due',
-      }, { merge: true })
-      logger.info('paymentWebhook: subscription deactivated', { uid, event: event.event })
+      logger.info('paymentWebhook: subscription activated', { uid, plan, cycle, pfPaymentId })
     } else {
-      logger.info('paymentWebhook: event ignored', { event: event.event, resolved: !!uid })
+      // PayFast does not publish a confirmed ITN status for "recurring
+      // subscription cancelled/failed" the way some gateways do — rather
+      // than guess at one, non-COMPLETE statuses are logged only for now.
+      // Verify actual cancellation/failure behaviour against sandbox before
+      // relying on automatic deactivation here.
+      logger.info('paymentWebhook: event not activated', { paymentStatus, resolved: !!uid })
     }
     res.status(200).send('ok')
   } catch (err) {
-    logger.error('paymentWebhook failed', { event: event.event, error: err.message })
+    logger.error('paymentWebhook failed', { paymentStatus, error: err.message })
     res.status(500).send('error')
   }
 })
