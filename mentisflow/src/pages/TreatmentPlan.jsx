@@ -18,7 +18,7 @@ const SYMPTOM_FREQS    = ['Daily', 'Several times a week', 'Weekly', 'Occasional
 
 const SEVERITY_LABELS = { 1: 'Mild', 2: 'Moderate', 3: 'Noticeable', 4: 'Severe', 5: 'Very severe' }
 const SEVERITY_COLORS = {
-  1: 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400',
+  1: 'bg-success-100 text-success-700 dark:bg-success-500/20 dark:text-success-400',
   2: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400',
   3: 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400',
   4: 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400',
@@ -94,7 +94,7 @@ function GoalsTab({ plan, addGoal, updateGoal, deleteGoal }) {
 
       {active.length === 0 && (
         <div className="py-10 text-center">
-          <p className="text-3xl mb-2">🎯</p>
+          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center"><Target size={22} className="text-ink-400" /></div>
           <p className="text-sm text-ink-400">No goals yet.</p>
           <p className="text-xs text-ink-400 mt-1">Add a treatment goal to track your progress.</p>
         </div>
@@ -224,7 +224,7 @@ function MedicationsTab({ plan, addMedication, toggleMedication, deleteMedicatio
 
       {active.length === 0 && (
         <div className="py-10 text-center">
-          <p className="text-3xl mb-2">💊</p>
+          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center"><Pill size={22} className="text-ink-400" /></div>
           <p className="text-sm text-ink-400">No medications tracked yet.</p>
         </div>
       )}
@@ -346,7 +346,7 @@ function NotesTab({ plan, addNote, deleteNote }) {
 
       {plan.sessionNotes.length === 0 && (
         <div className="py-10 text-center">
-          <p className="text-3xl mb-2">📝</p>
+          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center"><FileText size={22} className="text-ink-400" /></div>
           <p className="text-sm text-ink-400">No session notes yet.</p>
           <p className="text-xs text-ink-400 mt-1">Log reflections after each session to track your journey.</p>
         </div>
@@ -446,7 +446,7 @@ function SymptomsTab({ plan, addSymptom, updateSymptom, deleteSymptom }) {
 
       {plan.symptoms.length === 0 && (
         <div className="py-10 text-center">
-          <p className="text-3xl mb-2">📊</p>
+          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center"><Activity size={22} className="text-ink-400" /></div>
           <p className="text-sm text-ink-400">No symptoms tracked yet.</p>
           <p className="text-xs text-ink-400 mt-1">Log symptoms to share with your practitioner.</p>
         </div>
@@ -499,7 +499,7 @@ function ScriptsTab({ scripts, loading, onAddToMeds }) {
         <div className="h-24 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />
       ) : scripts.length === 0 ? (
         <div className="py-10 text-center">
-          <p className="text-3xl mb-2">💊</p>
+          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center"><Pill size={22} className="text-ink-400" /></div>
           <p className="text-sm text-ink-400">No prescriptions yet.</p>
           <p className="text-xs text-ink-400 mt-1">Scripts your doctor sends appear here. You manage your own current medications under the Medications tab.</p>
         </div>

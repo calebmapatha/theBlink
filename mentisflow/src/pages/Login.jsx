@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Mail, Lock, Eye, EyeOff, AlertCircle, HeartHandshake, Shield, ArrowLeft, CheckCircle2 } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, AlertCircle, HeartHandshake, Shield, ArrowLeft, CheckCircle2, UserRound, Stethoscope } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 const GoogleIcon = () => (
@@ -82,7 +82,9 @@ export function Login({ onBack, initialRole = null }) {
           <div className="w-14 h-14 rounded-2xl bg-teal-500 flex items-center justify-center shadow-lg mb-4">
             <HeartHandshake size={26} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Welcome to MentisFlow</h1>
+          <h1 className="font-display text-[1.7rem] font-semibold text-slate-900 tracking-tight">
+            {role ? (mode === 'signup' ? 'Create your account' : 'Good to see you') : 'Let’s get you started'}
+          </h1>
           <p className="text-slate-500 mt-1.5 text-sm text-center leading-snug">
             Mental health care, connected.
           </p>
@@ -106,7 +108,7 @@ export function Login({ onBack, initialRole = null }) {
                   className="bg-white border-2 border-slate-200 hover:border-teal-400 active:border-teal-500 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all text-center group"
                 >
                   <div className="w-11 h-11 rounded-xl bg-teal-50 group-hover:bg-teal-100 flex items-center justify-center transition-colors">
-                    <span className="text-2xl">🧑</span>
+                    <UserRound size={20} className="text-teal-600" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-slate-900">Seeking care</p>
@@ -118,7 +120,7 @@ export function Login({ onBack, initialRole = null }) {
                   className="bg-white border-2 border-slate-200 hover:border-teal-400 active:border-teal-500 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all text-center group"
                 >
                   <div className="w-11 h-11 rounded-xl bg-teal-50 group-hover:bg-teal-100 flex items-center justify-center transition-colors">
-                    <span className="text-2xl">⚕️</span>
+                    <Stethoscope size={20} className="text-teal-600" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-slate-900">Practitioner</p>
@@ -143,12 +145,13 @@ export function Login({ onBack, initialRole = null }) {
                 >
                   ← Change role
                 </button>
-                <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+                <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ${
                   role === 'provider'
                     ? 'bg-teal-100 text-teal-700'
                     : 'bg-slate-100 text-slate-600'
                 }`}>
-                  {role === 'provider' ? '⚕️ Practitioner' : '🧑 Patient'}
+                  {role === 'provider' ? <Stethoscope size={12} /> : <UserRound size={12} />}
+                  {role === 'provider' ? 'Practitioner' : 'Patient'}
                 </span>
               </div>
 
@@ -178,16 +181,20 @@ export function Login({ onBack, initialRole = null }) {
                       </div>
                     ) : (
                       <form onSubmit={handleForgot} className="space-y-3">
-                        <div className="relative">
-                          <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                          <input
-                            type="email"
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                            placeholder="Email"
-                            required
-                            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
-                          />
+                        <div>
+                          <label htmlFor="forgot-email" className="block text-xs font-semibold text-slate-600 mb-1.5">Email</label>
+                          <div className="relative">
+                            <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                              id="forgot-email"
+                              type="email"
+                              value={email}
+                              onChange={e => setEmail(e.target.value)}
+                              placeholder="you@example.com"
+                              required
+                              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
+                            />
+                          </div>
                         </div>
 
                         <AnimatePresence>
@@ -249,34 +256,43 @@ export function Login({ onBack, initialRole = null }) {
                     </div>
 
                     <form onSubmit={handleEmail} className="space-y-3">
-                      <div className="relative">
-                        <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
-                          type="email"
-                          value={email}
-                          onChange={e => setEmail(e.target.value)}
-                          placeholder="Email"
-                          required
-                          className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
-                        />
+                      <div>
+                        <label htmlFor="auth-email" className="block text-xs font-semibold text-slate-600 mb-1.5">Email</label>
+                        <div className="relative">
+                          <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                          <input
+                            id="auth-email"
+                            type="email"
+                            value={email}
+                            onChange={e => setEmail(e.target.value)}
+                            placeholder="you@example.com"
+                            required
+                            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
+                          />
+                        </div>
                       </div>
-                      <div className="relative">
-                        <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
-                          type={showPw ? 'text' : 'password'}
-                          value={password}
-                          onChange={e => setPassword(e.target.value)}
-                          placeholder="Password"
-                          required
-                          className="w-full pl-9 pr-10 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPw(s => !s)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                        >
-                          {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
-                        </button>
+                      <div>
+                        <label htmlFor="auth-password" className="block text-xs font-semibold text-slate-600 mb-1.5">Password</label>
+                        <div className="relative">
+                          <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                          <input
+                            id="auth-password"
+                            type={showPw ? 'text' : 'password'}
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                            placeholder={mode === 'signup' ? 'At least 6 characters' : '••••••••'}
+                            required
+                            className="w-full pl-9 pr-10 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPw(s => !s)}
+                            aria-label={showPw ? 'Hide password' : 'Show password'}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                          >
+                            {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
+                          </button>
+                        </div>
                       </div>
 
                       {mode === 'signin' && (

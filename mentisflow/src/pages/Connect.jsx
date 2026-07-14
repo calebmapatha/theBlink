@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Search, Clock, Globe, BadgeCheck, Calendar, X, HeartHandshake, Link2, Unlink, Check, Star, MessageSquare, Loader, ClipboardList, Video, MapPin, FileText, FileSignature } from 'lucide-react'
+import { Search, Clock, Globe, BadgeCheck, Calendar, X, HeartHandshake, Sprout, Link2, Unlink, Check, Star, MessageSquare, Loader, ClipboardList, Video, MapPin, FileText, FileSignature } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { PageWrapper } from '../components/layout/PageWrapper'
@@ -112,7 +112,7 @@ function StarRating({ value, onChange }) {
         >
           <Star
             size={28}
-            className={n <= (hovered || value) ? 'text-yellow-400 fill-yellow-400' : 'text-surface-300 dark:text-surface-600'}
+            className={n <= (hovered || value) ? 'text-warm-400 fill-warm-400' : 'text-surface-300 dark:text-surface-600'}
           />
         </button>
       ))}
@@ -124,7 +124,7 @@ function StarDisplay({ value, count }) {
   if (!value) return null
   return (
     <div className="flex items-center gap-1">
-      <Star size={11} className="text-yellow-400 fill-yellow-400" />
+      <Star size={11} className="text-warm-400 fill-warm-400" />
       <span className="text-xs font-medium text-ink-700 dark:text-ink-300">{value.toFixed(1)}</span>
       {count != null && <span className="text-[10px] text-ink-400">({count})</span>}
     </div>
@@ -1138,7 +1138,7 @@ export function Connect() {
             </div>
           ) : filtered.length === 0 ? (
             <div className="py-16 text-center">
-              <p className="text-4xl mb-3">{providers.length === 0 ? '🌱' : '🔍'}</p>
+              <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center">{providers.length === 0 ? <Sprout size={22} className="text-ink-400" /> : <Search size={22} className="text-ink-400" />}</div>
               <p className="text-sm text-ink-400">
                 {providers.length === 0
                   ? 'No providers have joined yet. Check back soon.'
@@ -1282,7 +1282,7 @@ export function Connect() {
                             )}
                             {ratedSet.has(a.id) && (
                               <span className="text-[10px] text-ink-400 flex items-center gap-1">
-                                <Star size={10} className="text-yellow-400 fill-yellow-400" /> Rated
+                                <Star size={10} className="text-warm-400 fill-warm-400" /> Rated
                               </span>
                             )}
                           </div>
@@ -1320,7 +1320,7 @@ export function Connect() {
 
               {upcomingAppts.length === 0 && (
                 <div className="py-8 text-center">
-                  <p className="text-3xl mb-2">📅</p>
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center"><Calendar size={22} className="text-ink-400" /></div>
                   <p className="text-sm text-ink-400">No upcoming appointments.</p>
                   <p className="text-xs text-ink-400 mt-1">Book a session with {linkedDoctor.name} to get started.</p>
                 </div>
@@ -1377,7 +1377,7 @@ export function Connect() {
                 ))}
                 {!loading && providers.length === 0 && (
                   <div className="py-10 text-center">
-                    <p className="text-3xl mb-2">🌱</p>
+                    <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center"><Sprout size={22} className="text-ink-400" /></div>
                     <p className="text-sm text-ink-400">No providers yet. Check back soon.</p>
                   </div>
                 )}

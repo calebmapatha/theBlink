@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, Eye, TrendingUp, Camera, Loader, Star, FileText, Trash2, FileSignature, MapPin } from 'lucide-react'
+import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, Eye, TrendingUp, Camera, Loader, Star, FileText, Trash2, FileSignature, MapPin, Smile, Zap, Lightbulb } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { PageHeader } from '../components/layout/PageHeader'
 import { Card } from '../components/ui/Card'
@@ -43,7 +43,7 @@ function StarDisplay({ value, size = 14 }) {
     <div className="flex gap-0.5">
       {[1,2,3,4,5].map(n => (
         <Star key={n} size={size}
-          className={n <= Math.round(value || 0) ? 'text-yellow-400 fill-yellow-400' : 'text-surface-300 dark:text-surface-600'}
+          className={n <= Math.round(value || 0) ? 'text-warm-400 fill-warm-400' : 'text-surface-300 dark:text-surface-600'}
         />
       ))}
     </div>
@@ -59,7 +59,7 @@ function DataSnapshot({ snapshot }) {
       {snapshot.checkin && (
         <div className="flex gap-4 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <span className="text-sm">😊</span>
+            <Smile size={15} className="text-primary-500 flex-shrink-0" />
             <div>
               <p className="text-[10px] text-ink-400">Avg mood</p>
               <p className="text-xs font-semibold text-ink-800 dark:text-ink-200">
@@ -69,7 +69,7 @@ function DataSnapshot({ snapshot }) {
             </div>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="text-sm">⚡</span>
+            <Zap size={15} className="text-warm-500 flex-shrink-0" />
             <div>
               <p className="text-[10px] text-ink-400">Avg energy</p>
               <p className="text-xs font-semibold text-ink-800 dark:text-ink-200">
@@ -229,7 +229,7 @@ function StatDetailModal({ kind, onClose, stats }) {
             sub="Share of profile views that turned into a booking" />
           <MetricRow label="Unique patients reached" value={uniquePatients} />
           <p className="text-[11px] text-ink-400 leading-relaxed pt-1">
-            💡 A complete bio, profile photo, and up-to-date diary slots help convert views into bookings.
+            <Lightbulb size={12} className="inline -mt-0.5 mr-1 text-warm-500" />A complete bio, profile photo, and up-to-date diary slots help convert views into bookings.
           </p>
         </div>
       ),
@@ -283,7 +283,7 @@ function StatDetailModal({ kind, onClose, stats }) {
             </div>
           )}
           <p className="text-[11px] text-ink-400 leading-relaxed pt-1">
-            💡 Responding quickly to pending requests, even declining, keeps patients informed and your profile trustworthy.
+            <Lightbulb size={12} className="inline -mt-0.5 mr-1 text-warm-500" />Responding quickly to pending requests, even declining, keeps patients informed and your profile trustworthy.
           </p>
         </div>
       ),
@@ -325,7 +325,7 @@ function StatDetailModal({ kind, onClose, stats }) {
     pending: {
       title: `Pending requests (${pending.length})`,
       body: pending.length === 0 ? (
-        <p className="text-sm text-ink-400 text-center py-6">No pending requests. You're all caught up. 🎉</p>
+        <p className="text-sm text-ink-400 text-center py-6">No pending requests. You're all caught up.</p>
       ) : (
         <div className="space-y-2">{[...pending].sort(byDateDesc).map((a, i) => <ApptRow key={i} appt={a} />)}</div>
       ),

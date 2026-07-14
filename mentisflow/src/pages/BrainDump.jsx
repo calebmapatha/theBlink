@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react'
-import { Trash2, Zap } from 'lucide-react'
+import { Trash2, Zap, Brain } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { PageHeader } from '../components/layout/PageHeader'
 import { Button } from '../components/ui/Button'
+import { EmptyState } from '../components/ui/EmptyState'
 import { useApp } from '../context/AppContext'
 import { formatRelative, formatTimestamp } from '../utils/dateUtils'
 
@@ -59,10 +60,7 @@ export function BrainDump() {
 
       {/* Entries */}
       {dump.entries.length === 0 ? (
-        <div className="py-12 text-center">
-          <p className="text-4xl mb-3">🧠</p>
-          <p className="text-sm text-ink-400">Your brain dump will appear here. Nothing to judge, just dump!</p>
-        </div>
+        <EmptyState icon={Brain} title="Your brain dump will appear here. Nothing to judge, just dump!" className="py-12" />
       ) : (
         <div className="space-y-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">
@@ -89,7 +87,7 @@ export function BrainDump() {
                   </div>
                   <button
                     onClick={() => handleDelete(entry)}
-                    className="p-1.5 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
+                    className="focus-ring p-1.5 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-all flex-shrink-0"
                   >
                     <Trash2 size={14} />
                   </button>

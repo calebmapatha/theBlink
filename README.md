@@ -1,6 +1,6 @@
 # MentisFlow
 
-South Africa's mental health care platform — connecting patients with psychiatrists and psychologists. Built as a Progressive Web App (PWA) optimised for mobile.
+South Africa's mental health care platform. Find and book HPCSA-registered psychiatrists and psychologists, track your wellbeing every day, sharpen your focus with FocusBlink tools, and share your progress with your doctor, all in one secure app. Built as a Progressive Web App (PWA) optimised for mobile.
 
 **Live app:** [calebmapatha.github.io/theBlink](https://calebmapatha.github.io/theBlink)
 
@@ -11,13 +11,11 @@ South Africa's mental health care platform — connecting patients with psychiat
 MentisFlow is a dual-role web app for patients and mental health providers.
 
 **Patients can:**
+- Find and book appointments with HPCSA-registered psychiatrists/psychologists (filtered by province or location)
 - Track daily mood and mental health check-ins
-- Manage tasks, habits, and monthly goals
-- Use a Pomodoro-style focus timer
-- Capture thoughts with Brain Dump
+- Sharpen their focus with the FocusBlink toolkit: Pomodoro-style focus timer, task board, habit tracker, monthly goals, and Brain Dump
 - Earn rewards for completing activities
-- Browse and book appointments with registered psychiatrists/psychologists (filtered by province or location)
-- View their treatment plan and share a snapshot with their doctor
+- View their treatment plan and share a consented progress snapshot with their doctor
 
 **Providers can:**
 - Sign up and list their practice (HPCSA number required)

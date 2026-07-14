@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Plus, Star, Trash2, ArrowUp, ArrowDown, CalendarDays, GripVertical } from 'lucide-react'
+import { Plus, Star, Trash2, ArrowUp, ArrowDown, CalendarDays, GripVertical, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { format } from 'date-fns'
 import { PageWrapper } from '../components/layout/PageWrapper'
@@ -40,13 +40,13 @@ function TaskItem({ task, onComplete, onDelete, onToggleUrgent, onMove, isToday,
       <DueDateBadge dueDate={task.dueDate} />
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <button onClick={() => onToggleUrgent(task.id)}
-          className={`p-1.5 rounded-lg transition-colors ${task.urgent ? 'text-warm-500' : 'text-ink-400 hover:text-warm-500'}`}>
+          className={`focus-ring p-1.5 rounded-lg transition-colors ${task.urgent ? 'text-warm-500' : 'text-ink-400 hover:text-warm-500'}`}>
           <Star size={14} fill={task.urgent ? 'currentColor' : 'none'} />
         </button>
-        <button onClick={() => onMove(task.id)} className="p-1.5 rounded-lg text-ink-400 hover:text-primary-500 transition-colors">
+        <button onClick={() => onMove(task.id)} className="focus-ring p-1.5 rounded-lg text-ink-400 hover:text-primary-500 transition-colors">
           {isToday ? <ArrowDown size={14} /> : <ArrowUp size={14} />}
         </button>
-        <button onClick={() => onDelete(task.id)} className="p-1.5 rounded-lg text-ink-400 hover:text-red-500 transition-colors">
+        <button onClick={() => onDelete(task.id)} className="focus-ring p-1.5 rounded-lg text-ink-400 hover:text-red-500 transition-colors">
           <Trash2 size={14} />
         </button>
       </div>
@@ -149,7 +149,7 @@ export function TaskBoard() {
         <AnimatePresence mode="popLayout">
           {currentTasks.length === 0 ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-12 text-center">
-              <p className="text-4xl mb-3">✨</p>
+              <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center"><Sparkles size={22} className="text-ink-400" /></div>
               <p className="text-sm text-ink-400">{tab === 'today' ? 'Nothing here. Add a task above!' : 'Backlog is clear'}</p>
             </motion.div>
           ) : (
