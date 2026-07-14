@@ -21,10 +21,10 @@
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    @apply bg-surface-200 dark:bg-surface-700 rounded-full;
+    @apply bg-line rounded-full;
   }
   input[type="range"] {
-    @apply w-full accent-primary-500;
+    @apply w-full accent-accent;
   }
 }
 
@@ -35,6 +35,6 @@
   }
   /* Keyboard-only focus ring for icon buttons and other bare controls. */
   .focus-ring {
-    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-1 focus-visible:ring-offset-white dark:focus-visible:ring-offset-surface-900;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface;
   }
 }

@@ -2,20 +2,23 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- Apply a returning user's saved theme before first paint (light by
-         default) so dark-mode users never see a light flash. Value is JSON
-         (see useLocalStorage). -->
+    <!-- Apply the saved theme before first paint so dark-mode users never see
+         a light flash. mentisflow:theme is 'light' | 'dark' | 'system'
+         (system, the default, follows the OS); adhd_theme is the legacy
+         JSON-encoded key, honoured until ThemeProvider migrates it. -->
     <script>
       try {
-        if (JSON.parse(localStorage.getItem('adhd_theme')) === 'dark') {
-          document.documentElement.classList.add('dark')
-        }
+        var mode = localStorage.getItem('mentisflow:theme')
+        if (!mode) { try { mode = JSON.parse(localStorage.getItem('adhd_theme')) } catch (e) {} }
+        var dark = mode === 'dark' ||
+          ((!mode || mode === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        if (dark) document.documentElement.classList.add('dark')
       } catch (e) {}
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>MentisFlow: Mental health care, connected</title>
     <meta name="description" content="Connect with HPCSA-registered psychiatrists and psychologists. Book appointments, share your mental health data, and manage your wellbeing with FocusBlink." />
-    <meta name="theme-color" content="#14b8a6" />
+    <meta name="theme-color" content="#FBF7EE" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <link rel="manifest" href="/theBlink/manifest.webmanifest" />
     <link rel="icon" type="image/svg+xml" href="/theBlink/favicon.svg" />

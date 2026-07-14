@@ -4,6 +4,7 @@ import { AnimatePresence } from 'framer-motion'
 import { getDoc, doc } from 'firebase/firestore'
 import { db } from './lib/firebase'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ThemeProvider } from './theme/ThemeProvider'
 import { AppProvider } from './context/AppContext'
 import { Sidebar } from './components/layout/Sidebar'
 import { Toast } from './components/ui/Toast'
@@ -41,10 +42,11 @@ function AppShell({ isProvider }) {
   const [syncError, setSyncError] = useState(false)
   const [announcement, setAnnouncement] = useState(null)
 
-  // Patients can disable FocusBlink tools; a disabled tool's route (and Home,
-  // when every tool is off) falls back to Connect so the URL is never a
-  // dead end. Guards a route element behind its tool preference.
-  const homeFallback = tools.anyEnabled ? '/' : '/connect'
+  // Users can disable FocusBlink tools; a disabled tool's route (and Home,
+  // when every tool is off) falls back so the URL is never a dead end.
+  // Guards a route element behind its tool preference. The same toggles now
+  // drive BOTH roles: practitioners get the tools too (Settings > FocusBlink).
+  const homeFallback = isProvider || tools.anyEnabled ? '/' : '/connect'
   const gate = (key, element) =>
     tools.isEnabled(key) ? element : <Navigate to={homeFallback} replace />
 
@@ -77,7 +79,7 @@ function AppShell({ isProvider }) {
   }, [])
 
   return (
-    <div className="flex h-screen bg-surface-50 dark:bg-surface-950 text-ink-900 dark:text-ink-100">
+    <div className="flex h-screen bg-bg text-ink">
       {syncError && (
         <div className="fixed top-0 inset-x-0 z-50 bg-amber-500 text-white text-xs font-medium px-4 py-2 flex items-center justify-center gap-3">
           <span>Some changes couldn’t be saved to the cloud. Check your connection. Your data is safe on this device.</span>
@@ -85,7 +87,7 @@ function AppShell({ isProvider }) {
         </div>
       )}
       {announcement && !syncError && (
-        <div className="fixed top-0 inset-x-0 z-50 bg-primary-600 text-white text-xs px-4 py-2 flex items-center justify-center gap-3">
+        <div className="fixed top-0 inset-x-0 z-50 bg-accent text-on-accent text-xs px-4 py-2 flex items-center justify-center gap-3">
           <span><strong>{announcement.title}</strong>: {announcement.body}</span>
           <button onClick={dismissAnnouncement} className="underline flex-shrink-0">Dismiss</button>
         </div>
@@ -103,6 +105,14 @@ function AppShell({ isProvider }) {
                 <Route path="/provider/dashboard" element={<ProviderDashboard />} />
                 <Route path="/provider/analytics" element={<ProviderAnalytics />} />
                 <Route path="/provider/files"     element={<ProviderVault />} />
+                {/* FocusBlink tools, driven by the same Settings toggles as the patient side. */}
+                <Route path="/timer"              element={gate('timer', <FocusTimer />)} />
+                <Route path="/tasks"              element={gate('tasks', <TaskBoard />)} />
+                <Route path="/dump"               element={gate('dump', <BrainDump />)} />
+                <Route path="/habits"             element={gate('habits', <HabitTracker />)} />
+                <Route path="/monthly"            element={gate('monthly', <MonthlyTracker />)} />
+                <Route path="/checkin"            element={gate('checkin', <DailyCheckin />)} />
+                <Route path="/rewards"            element={gate('rewards', <Rewards />)} />
                 <Route path="/settings"           element={<Settings />} />
                 <Route path="/admin"              element={<AdminPortal />} />
                 <Route path="*"                   element={<Navigate to="/" replace />} />
@@ -207,8 +217,10 @@ function AuthGate() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AuthGate />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AuthGate />
+      </AuthProvider>
+    </ThemeProvider>
   )
 }

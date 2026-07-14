@@ -15,7 +15,7 @@ const ENERGY_LABELS = ['Drained', 'Low', 'Okay', 'Good', 'Energized']
 function MoodPicker({ value, onChange }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-ink-700 dark:text-ink-300 mb-3">How are you feeling?</label>
+      <label className="block text-sm font-medium text-ink mb-3">How are you feeling?</label>
       <div className="flex gap-2">
         {MOODS.map((emoji, i) => (
           <button
@@ -23,12 +23,12 @@ function MoodPicker({ value, onChange }) {
             onClick={() => onChange(i + 1)}
             className={`flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 transition-all
               ${value === i + 1
-                ? 'border-primary-400 bg-primary-50 dark:bg-primary-700/20'
-                : 'border-surface-200 dark:border-surface-700 hover:border-surface-300 dark:hover:border-surface-600'
+                ? 'border-accent bg-accent-soft'
+                : 'border-line hover:border-faint'
               }`}
           >
             <span className="text-2xl">{emoji}</span>
-            <span className="text-xs text-ink-400">{MOOD_LABELS[i]}</span>
+            <span className="text-xs text-faint">{MOOD_LABELS[i]}</span>
           </button>
         ))}
       </div>
@@ -39,7 +39,7 @@ function MoodPicker({ value, onChange }) {
 function EnergyPicker({ value, onChange }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-ink-700 dark:text-ink-300 mb-3">Energy level?</label>
+      <label className="block text-sm font-medium text-ink mb-3">Energy level?</label>
       <div className="flex gap-1.5">
         {[1, 2, 3, 4, 5].map(level => (
           <button
@@ -53,21 +53,21 @@ function EnergyPicker({ value, onChange }) {
                   key={bar}
                   className={`w-6 rounded-sm transition-colors ${
                     bar <= level && value >= level
-                      ? 'bg-primary-500'
+                      ? 'bg-accent'
                       : bar <= level
-                      ? 'bg-primary-200 dark:bg-primary-700/40'
-                      : 'bg-surface-200 dark:bg-surface-700'
+                      ? 'bg-accent-soft'
+                      : 'bg-line'
                   }`}
                   style={{ height: `${bar * 3}px` }}
                 />
               ))}
             </div>
-            <span className="text-xs text-ink-400">{level}</span>
+            <span className="text-xs text-faint">{level}</span>
           </button>
         ))}
       </div>
       {value > 0 && (
-        <p className="text-xs text-ink-400 mt-2 text-center">{ENERGY_LABELS[value - 1]}</p>
+        <p className="text-xs text-faint mt-2 text-center">{ENERGY_LABELS[value - 1]}</p>
       )}
     </div>
   )
@@ -78,25 +78,25 @@ function CheckinSummary({ checkin, onEdit }) {
     <Card className="p-5">
       <div className="flex items-center gap-2 mb-4">
         <CheckCircle size={18} className="text-success-500" />
-        <span className="font-medium text-ink-900 dark:text-ink-100">Check-in complete</span>
-        <button onClick={onEdit} className="ml-auto p-1.5 rounded-lg hover:bg-surface-100 dark:hover:bg-surface-700 text-ink-400">
+        <span className="font-medium text-ink">Check-in complete</span>
+        <button onClick={onEdit} className="ml-auto p-1.5 rounded-lg hover:bg-raised text-faint">
           <Edit3 size={14} />
         </button>
       </div>
       <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="text-center p-3 rounded-xl bg-surface-50 dark:bg-surface-900">
+        <div className="text-center p-3 rounded-xl bg-raised">
           <p className="text-3xl mb-1">{MOODS[checkin.mood - 1]}</p>
-          <p className="text-xs text-ink-400">{MOOD_LABELS[checkin.mood - 1]}</p>
+          <p className="text-xs text-faint">{MOOD_LABELS[checkin.mood - 1]}</p>
         </div>
-        <div className="text-center p-3 rounded-xl bg-surface-50 dark:bg-surface-900">
-          <p className="text-2xl font-semibold text-primary-500 mb-1">{checkin.energy}/5</p>
-          <p className="text-xs text-ink-400">{ENERGY_LABELS[checkin.energy - 1]}</p>
+        <div className="text-center p-3 rounded-xl bg-raised">
+          <p className="text-2xl font-semibold text-accent mb-1">{checkin.energy}/5</p>
+          <p className="text-xs text-faint">{ENERGY_LABELS[checkin.energy - 1]}</p>
         </div>
       </div>
       {checkin.intention && (
-        <div className="p-3 rounded-xl bg-primary-50 dark:bg-primary-700/15 border border-primary-100 dark:border-primary-700/30">
-          <p className="text-xs text-primary-600 dark:text-primary-400 font-medium mb-1">Today's intention</p>
-          <p className="text-sm text-ink-900 dark:text-ink-100">{checkin.intention}</p>
+        <div className="p-3 rounded-xl bg-accent-soft border border-accent/20">
+          <p className="text-xs text-accent-soft-text font-medium mb-1">Today's intention</p>
+          <p className="text-sm text-ink">{checkin.intention}</p>
         </div>
       )}
     </Card>
@@ -149,7 +149,7 @@ export function DailyCheckin() {
           </Card>
 
           <Card className="p-5">
-            <label className="block text-sm font-medium text-ink-700 dark:text-ink-300 mb-2">
+            <label className="block text-sm font-medium text-ink mb-2">
               One intention for today
             </label>
             <input
@@ -157,9 +157,9 @@ export function DailyCheckin() {
               onChange={e => setIntention(e.target.value.slice(0, 120))}
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
               placeholder="What's one thing you want to accomplish?"
-              className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm placeholder-ink-400 focus:outline-none focus:ring-2 focus:ring-primary-400"
+              className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm placeholder-faint focus:outline-none focus:ring-2 focus:ring-accent"
             />
-            <p className="text-xs text-ink-400 mt-1 text-right">{intention.length}/120</p>
+            <p className="text-xs text-faint mt-1 text-right">{intention.length}/120</p>
           </Card>
 
           <div className="flex gap-2">

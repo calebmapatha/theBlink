@@ -49,12 +49,12 @@ export function DatePicker({ value, onChange, min, clearable, placeholder = 'Pic
         onClick={openTo}
         className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-sm text-left transition-colors ${
           open
-            ? 'border-primary-400 ring-2 ring-primary-400/30 bg-surface-50 dark:bg-surface-900'
-            : 'border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 hover:border-surface-300 dark:hover:border-surface-600'
+            ? 'border-accent ring-2 ring-accent/30 bg-raised'
+            : 'border-line bg-raised hover:border-faint'
         }`}
       >
-        <CalendarDays size={15} className="text-ink-400 flex-shrink-0" />
-        <span className={`flex-1 ${value ? 'text-ink-900 dark:text-ink-100 font-medium' : 'text-ink-400'}`}>
+        <CalendarDays size={15} className="text-faint flex-shrink-0" />
+        <span className={`flex-1 ${value ? 'text-ink font-medium' : 'text-faint'}`}>
           {value ? format(new Date(value + 'T12:00:00'), 'EEE, d MMMM yyyy') : placeholder}
         </span>
         {clearable && value && (
@@ -64,7 +64,7 @@ export function DatePicker({ value, onChange, min, clearable, placeholder = 'Pic
             aria-label="Clear date"
             onClick={e => { e.stopPropagation(); onChange(''); setOpen(false) }}
             onKeyDown={e => { if (e.key === 'Enter') { e.stopPropagation(); onChange(''); setOpen(false) } }}
-            className="p-0.5 rounded text-ink-400 hover:text-red-500 transition-colors"
+            className="p-0.5 rounded text-faint hover:text-danger transition-colors"
           >
             <X size={13} />
           </span>
@@ -80,22 +80,22 @@ export function DatePicker({ value, onChange, min, clearable, placeholder = 'Pic
             transition={{ duration: 0.18, ease: 'easeOut' }}
             className="overflow-hidden"
           >
-            <div className="mt-2 p-3 rounded-2xl border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-800">
+            <div className="mt-2 p-3 rounded-2xl border border-line bg-surface">
               <div className="flex items-center justify-between mb-2">
                 <button type="button" onClick={() => shift(-1)}
-                  className="p-1.5 rounded-lg text-ink-400 hover:text-ink-700 dark:hover:text-ink-100 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors">
+                  className="p-1.5 rounded-lg text-faint hover:text-ink hover:bg-raised transition-colors">
                   <ChevronLeft size={16} />
                 </button>
-                <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">{MONTHS[view.m]} {view.y}</p>
+                <p className="text-sm font-semibold text-ink">{MONTHS[view.m]} {view.y}</p>
                 <button type="button" onClick={() => shift(1)}
-                  className="p-1.5 rounded-lg text-ink-400 hover:text-ink-700 dark:hover:text-ink-100 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors">
+                  className="p-1.5 rounded-lg text-faint hover:text-ink hover:bg-raised transition-colors">
                   <ChevronRight size={16} />
                 </button>
               </div>
 
               <div className="grid grid-cols-7 gap-0.5 mb-1">
                 {WEEKDAYS.map(d => (
-                  <div key={d} className="text-center text-[10px] font-semibold text-ink-400 py-1">{d}</div>
+                  <div key={d} className="text-center text-[10px] font-semibold text-faint py-1">{d}</div>
                 ))}
               </div>
               <div className="grid grid-cols-7 gap-0.5">
@@ -114,11 +114,11 @@ export function DatePicker({ value, onChange, min, clearable, placeholder = 'Pic
                       onClick={() => pick(day)}
                       className={`aspect-square rounded-lg text-xs font-medium transition-colors ${
                         isSelected
-                          ? 'bg-primary-500 text-white shadow-sm'
+                          ? 'bg-accent text-on-accent shadow-sm'
                           : disabled
-                          ? 'text-ink-400/35 cursor-not-allowed'
-                          : `text-ink-700 dark:text-ink-200 hover:bg-primary-50 dark:hover:bg-primary-700/20 ${
-                              isToday ? 'ring-1 ring-primary-400 text-primary-600 dark:text-primary-400' : ''
+                          ? 'text-faint/35 cursor-not-allowed'
+                          : `text-ink hover:bg-accent-soft ${
+                              isToday ? 'ring-1 ring-accent text-accent-soft-text' : ''
                             }`
                       }`}
                     >

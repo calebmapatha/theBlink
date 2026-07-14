@@ -16,12 +16,12 @@ function KpiCard({ label, value, delta, prefix = '' }) {
   const flat = delta === 0
   return (
     <Card className="p-3">
-      <p className="text-[10px] text-ink-400 mb-1">{label}</p>
-      <p className="text-xl font-bold text-ink-900 dark:text-ink-100">{prefix}{value.toLocaleString()}</p>
+      <p className="text-[10px] text-faint mb-1">{label}</p>
+      <p className="text-xl font-bold text-ink">{prefix}{value.toLocaleString()}</p>
       <p className={`text-[10px] font-medium flex items-center gap-0.5 mt-0.5 ${
-        flat ? 'text-ink-400' : up ? 'text-success-600 dark:text-success-400' : 'text-red-500'}`}>
+        flat ? 'text-faint' : up ? 'text-success-600 dark:text-success-400' : 'text-danger'}`}>
         {!flat && (up ? <TrendingUp size={10} /> : <TrendingDown size={10} />)}
-        {flat ? 'no change' : `${up ? '+' : ''}${delta}%`} <span className="text-ink-400 font-normal">vs prev period</span>
+        {flat ? 'no change' : `${up ? '+' : ''}${delta}%`} <span className="text-faint font-normal">vs prev period</span>
       </p>
     </Card>
   )
@@ -31,7 +31,7 @@ function Section({ title, icon: Icon, children, right }) {
   return (
     <Card className="p-4 mb-4">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 flex items-center gap-1.5">
+        <p className="text-xs font-semibold uppercase tracking-wider text-faint flex items-center gap-1.5">
           {Icon && <Icon size={12} />} {title}
         </p>
         {right}
@@ -91,7 +91,7 @@ export function ProviderAnalytics() {
   if (loading || !stats) return (
     <PageWrapper>
       <div className="space-y-3 mt-6">
-        {[1, 2, 3].map(i => <div key={i} className="h-28 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />)}
+        {[1, 2, 3].map(i => <div key={i} className="h-28 rounded-2xl bg-raised animate-pulse" />)}
       </div>
     </PageWrapper>
   )
@@ -108,8 +108,8 @@ export function ProviderAnalytics() {
           <button key={w.key} onClick={() => setWin(w.key)}
             className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors ${
               win === w.key
-                ? 'bg-primary-500 text-white'
-                : 'bg-surface-100 dark:bg-surface-800 text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
+                ? 'bg-accent text-on-accent'
+                : 'bg-raised text-faint hover:text-ink'
             }`}>
             {w.label}
           </button>
@@ -126,19 +126,19 @@ export function ProviderAnalytics() {
       {/* Occupancy + rating quick row */}
       <div className="grid grid-cols-2 gap-3 mb-4">
         <Card className="p-3">
-          <p className="text-[10px] text-ink-400 mb-1 flex items-center gap-1"><CalendarCheck size={10} /> Next 7 days occupancy</p>
-          <p className="text-xl font-bold text-ink-900 dark:text-ink-100">{occ.pct !== null ? `${occ.pct}%` : 'N/A'}</p>
-          <p className="text-[10px] text-ink-400">{occ.booked} booked of {occ.open} open slots</p>
-          <div className="h-1.5 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden mt-1.5">
-            <div className="h-full rounded-full bg-primary-500" style={{ width: `${occ.pct || 0}%` }} />
+          <p className="text-[10px] text-faint mb-1 flex items-center gap-1"><CalendarCheck size={10} /> Next 7 days occupancy</p>
+          <p className="text-xl font-bold text-ink">{occ.pct !== null ? `${occ.pct}%` : 'N/A'}</p>
+          <p className="text-[10px] text-faint">{occ.booked} booked of {occ.open} open slots</p>
+          <div className="h-1.5 rounded-full bg-raised overflow-hidden mt-1.5">
+            <div className="h-full rounded-full bg-accent" style={{ width: `${occ.pct || 0}%` }} />
           </div>
         </Card>
         <Card className="p-3">
-          <p className="text-[10px] text-ink-400 mb-1 flex items-center gap-1"><Star size={10} /> Patient satisfaction</p>
-          <p className="text-xl font-bold text-ink-900 dark:text-ink-100">
+          <p className="text-[10px] text-faint mb-1 flex items-center gap-1"><Star size={10} /> Patient satisfaction</p>
+          <p className="text-xl font-bold text-ink">
             {stats.ratingAvg?.overall ? `${stats.ratingAvg.overall.toFixed(1)}/5` : 'N/A'}
           </p>
-          <p className="text-[10px] text-ink-400">{ratings.length || profile?.ratingCount || 0} review{(ratings.length || profile?.ratingCount || 0) !== 1 ? 's' : ''}</p>
+          <p className="text-[10px] text-faint">{ratings.length || profile?.ratingCount || 0} review{(ratings.length || profile?.ratingCount || 0) !== 1 ? 's' : ''}</p>
         </Card>
       </div>
 
@@ -154,39 +154,39 @@ export function ProviderAnalytics() {
         <div className="grid grid-cols-3 gap-3 text-center mb-3">
           <div>
             <p className="text-lg font-bold text-success-600 dark:text-success-400">{att.completed}</p>
-            <p className="text-[10px] text-ink-400">Completed</p>
+            <p className="text-[10px] text-faint">Completed</p>
           </div>
           <div>
-            <p className="text-lg font-bold text-red-500">{att.noShow}</p>
-            <p className="text-[10px] text-ink-400">No-shows</p>
+            <p className="text-lg font-bold text-danger">{att.noShow}</p>
+            <p className="text-[10px] text-faint">No-shows</p>
           </div>
           <div>
-            <p className="text-lg font-bold text-ink-500 dark:text-ink-300">{att.cancelled}</p>
-            <p className="text-[10px] text-ink-400">Declined</p>
+            <p className="text-lg font-bold text-muted">{att.cancelled}</p>
+            <p className="text-[10px] text-faint">Declined</p>
           </div>
         </div>
         {att.attendanceRate !== null ? (
-          <p className="text-[11px] text-ink-400 text-center">
-            Attendance rate <strong className="text-ink-700 dark:text-ink-200">{att.attendanceRate}%</strong>
-            {att.noShowRate !== null && <> · No-show rate <strong className="text-ink-700 dark:text-ink-200">{att.noShowRate}%</strong></>}
+          <p className="text-[11px] text-faint text-center">
+            Attendance rate <strong className="text-ink">{att.attendanceRate}%</strong>
+            {att.noShowRate !== null && <> · No-show rate <strong className="text-ink">{att.noShowRate}%</strong></>}
           </p>
         ) : (
-          <p className="text-[11px] text-ink-400 text-center">Mark past sessions as Completed or No-show on the Dashboard to track attendance.</p>
+          <p className="text-[11px] text-faint text-center">Mark past sessions as Completed or No-show on the Dashboard to track attendance.</p>
         )}
       </Section>
 
       <Section title="Patients" icon={Users}>
         <SplitBar a={nvr.newPatients} b={nvr.returningPatients} labelA="New" labelB="Returning" />
-        <p className="text-[10px] text-ink-400 mt-3 mb-1.5">Total patients over time</p>
+        <p className="text-[10px] text-faint mt-3 mb-1.5">Total patients over time</p>
         <LineChart data={stats.growth} />
       </Section>
 
       <Section title="Peak booking times" icon={Clock}>
-        <p className="text-[10px] text-ink-400 mb-2">By weekday</p>
+        <p className="text-[10px] text-faint mb-2">By weekday</p>
         <HBarList items={stats.weekdays} />
         {stats.hours.length > 0 && (
           <>
-            <p className="text-[10px] text-ink-400 mt-4 mb-2">Busiest start times</p>
+            <p className="text-[10px] text-faint mt-4 mb-2">Busiest start times</p>
             <HBarList items={stats.hours} color="bg-warm-400" />
           </>
         )}
@@ -200,10 +200,10 @@ export function ProviderAnalytics() {
         <Section title="Upcoming sessions" icon={Calendar}>
           <div className="space-y-2">
             {stats.next.map((a, i) => (
-              <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl bg-surface-50 dark:bg-surface-900">
+              <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl bg-raised">
                 <div className="min-w-0">
-                  <p className="text-xs font-medium text-ink-900 dark:text-ink-100 truncate">{a.patientName}</p>
-                  <p className="text-[10px] text-ink-400">{a.date} · {a.timeSlot}</p>
+                  <p className="text-xs font-medium text-ink truncate">{a.patientName}</p>
+                  <p className="text-[10px] text-faint">{a.date} · {a.timeSlot}</p>
                 </div>
                 <span className="text-[10px] font-semibold text-success-600 dark:text-success-400 flex-shrink-0">R{Math.round(fee)}</span>
               </div>
@@ -215,7 +215,7 @@ export function ProviderAnalytics() {
       <Section title="Recommendations" icon={Lightbulb}>
         <div className="space-y-2">
           {stats.tips.map((t, i) => (
-            <p key={i} className="text-xs text-ink-700 dark:text-ink-300 leading-relaxed bg-surface-50 dark:bg-surface-900 px-3 py-2.5 rounded-xl">{t}</p>
+            <p key={i} className="text-xs text-ink leading-relaxed bg-raised px-3 py-2.5 rounded-xl">{t}</p>
           ))}
         </div>
       </Section>

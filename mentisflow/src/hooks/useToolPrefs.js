@@ -27,11 +27,14 @@ export function useToolPrefs(userId) {
   const setAll = useCallback((on) => setPrefs(Object.fromEntries(ALL_KEYS.map(k => [k, on]))), [setPrefs])
 
   const enabledKeys   = ALL_KEYS.filter(k => prefs?.[k] !== false)
-  const enabledRoutes = FOCUSBLINK_TOOLS.filter(t => prefs?.[t.key] !== false).map(t => t.route)
+  // The single visibility rule (sidebar sections, dashboard cards, routes all
+  // follow it): a tool shows iff its toggle is on, for BOTH roles.
+  const visibleTools  = FOCUSBLINK_TOOLS.filter(t => prefs?.[t.key] !== false)
+  const enabledRoutes = visibleTools.map(t => t.route)
 
   return {
     isEnabled, setEnabled, setAll,
-    enabledKeys, enabledRoutes,
+    enabledKeys, enabledRoutes, visibleTools,
     anyEnabled: enabledKeys.length > 0,
     allEnabled: enabledKeys.length === ALL_KEYS.length,
   }

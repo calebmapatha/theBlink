@@ -1,3 +1,15 @@
+// Semantic colour tokens map to the CSS variables in src/styles/theme.css,
+// so every component switches themes by the single "dark" class on <html> —
+// no dark: prefixes needed for colour.
+//
+//   bg-surface, bg-raised, bg-bg
+//   text-ink, text-muted, text-faint
+//   border-line
+//   bg-accent, hover:bg-accent-strong, text-on-accent
+//   bg-accent-soft, text-accent-soft-text
+//   text-danger, text-warn, bg-warn-soft
+const v = (name) => `rgb(var(${name}) / <alpha-value>)`
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
@@ -5,6 +17,49 @@ export default {
   theme: {
     extend: {
       colors: {
+        bg: v('--bg'),
+        raised: v('--raised'),
+        line: v('--line'),
+        muted: v('--muted'),
+        faint: v('--faint'),
+        'on-accent': v('--on-accent'),
+        danger: v('--danger'),
+        warn: v('--warn'),
+        'warn-soft': v('--warn-soft'),
+        accent: {
+          DEFAULT: v('--accent'),
+          strong: v('--accent-strong'),
+          soft: v('--accent-soft'),
+          'soft-text': v('--accent-soft-text'),
+        },
+        // Legacy scales kept for screens not yet migrated to the tokens.
+        // The bare names (bg-surface, text-ink) resolve to the DEFAULT token.
+        surface: {
+          DEFAULT: v('--surface'),
+          50:  '#f8f9ff',
+          100: '#f1f3fb',
+          200: '#e4e7f5',
+          300: '#cdd2e4',
+          400: '#a3aac2',
+          500: '#646c88',
+          600: '#4b5266',
+          700: '#374151',
+          800: '#1e2235',
+          900: '#141726',
+          950: '#0d0f1a',
+        },
+        ink: {
+          DEFAULT: v('--ink'),
+          900: '#0f1117',
+          800: '#1f2430',
+          700: '#374151',
+          600: '#4b5563',
+          500: '#6b7280',
+          400: '#9ca3af',
+          300: '#d1d5db',
+          200: '#e5e7eb',
+          100: '#f3f4f6',
+        },
         primary: {
           50:  '#f0fdfa',
           100: '#ccfbf1',
@@ -16,12 +71,6 @@ export default {
           700: '#0f766e',
           800: '#115e59',
           900: '#134e4a',
-        },
-        accent: {
-          100: '#f3e8ff',
-          300: '#d8b4fe',
-          500: '#a855f7',
-          700: '#7e22ce',
         },
         success: {
           50:  '#f0fdf4',
@@ -38,30 +87,6 @@ export default {
           400: '#facc15',
           500: '#eab308',
           600: '#ca8a04',
-        },
-        surface: {
-          50:  '#f8f9ff',
-          100: '#f1f3fb',
-          200: '#e4e7f5',
-          300: '#cdd2e4',
-          400: '#a3aac2',
-          500: '#646c88',
-          600: '#4b5266',
-          700: '#374151',
-          800: '#1e2235',
-          900: '#141726',
-          950: '#0d0f1a',
-        },
-        ink: {
-          900: '#0f1117',
-          800: '#1f2430',
-          700: '#374151',
-          600: '#4b5563',
-          500: '#6b7280',
-          400: '#9ca3af',
-          300: '#d1d5db',
-          200: '#e5e7eb',
-          100: '#f3f4f6',
         },
       },
       fontFamily: {

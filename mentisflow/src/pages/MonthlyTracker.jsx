@@ -23,26 +23,26 @@ function DayCell({ day, completed, total, isCurrentMonth }) {
   const ratio = getRatio(completed, total)
 
   const bg = future
-    ? 'bg-surface-100 dark:bg-surface-800/40'
+    ? 'bg-raised/40'
     : ratio === 0
-    ? 'bg-surface-100 dark:bg-surface-800'
+    ? 'bg-raised'
     : ratio < 0.5
     ? 'bg-warm-100 dark:bg-warm-500/20'
     : ratio < 1
-    ? 'bg-primary-100 dark:bg-primary-700/30'
+    ? 'bg-accent-soft'
     : 'bg-success-100 dark:bg-success-500/20'
 
-  const textColor = future ? 'text-ink-400/40' : 'text-ink-900 dark:text-ink-100'
+  const textColor = future ? 'text-faint/40' : 'text-ink'
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`relative aspect-square rounded-xl flex flex-col items-center justify-center ${bg} ${isToday(date) ? 'ring-2 ring-primary-400' : ''}`}
+      className={`relative aspect-square rounded-xl flex flex-col items-center justify-center ${bg} ${isToday(date) ? 'ring-2 ring-accent' : ''}`}
     >
       <span className={`text-xs font-semibold ${textColor}`}>{format(date, 'd')}</span>
       {!future && total > 0 && (
-        <span className="text-[9px] text-ink-400 mt-0.5">{completed.length}/{total}</span>
+        <span className="text-[9px] text-faint mt-0.5">{completed.length}/{total}</span>
       )}
     </motion.div>
   )
@@ -80,13 +80,13 @@ export function MonthlyTracker() {
       <PageHeader title="Monthly Tracker" subtitle="Habit performance over time" />
 
       <div className="flex items-center justify-between mb-4">
-        <button onClick={goBack} className="p-2 rounded-xl hover:bg-surface-100 dark:hover:bg-surface-800 text-ink-700 dark:text-ink-300 transition-colors">
+        <button onClick={goBack} className="p-2 rounded-xl hover:bg-raised text-ink transition-colors">
           <ChevronLeft size={20} />
         </button>
-        <h2 className="text-base font-semibold text-ink-900 dark:text-ink-100">
+        <h2 className="text-base font-semibold text-ink">
           {MONTH_NAMES[viewMonth]} {viewYear}
         </h2>
-        <button onClick={goForward} className="p-2 rounded-xl hover:bg-surface-100 dark:hover:bg-surface-800 text-ink-700 dark:text-ink-300 transition-colors">
+        <button onClick={goForward} className="p-2 rounded-xl hover:bg-raised text-ink transition-colors">
           <ChevronRight size={20} />
         </button>
       </div>
@@ -94,13 +94,13 @@ export function MonthlyTracker() {
       <div className="flex items-center gap-3 mb-4 flex-wrap">
         {[
           { color: 'bg-success-100 dark:bg-success-500/20', label: 'All done' },
-          { color: 'bg-primary-100 dark:bg-primary-700/30', label: '50%+' },
+          { color: 'bg-accent-soft', label: '50%+' },
           { color: 'bg-warm-100 dark:bg-warm-500/20', label: 'Some' },
-          { color: 'bg-surface-100 dark:bg-surface-800', label: 'None' },
+          { color: 'bg-raised', label: 'None' },
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1.5">
             <div className={`w-3 h-3 rounded-sm ${color}`} />
-            <span className="text-xs text-ink-400">{label}</span>
+            <span className="text-xs text-faint">{label}</span>
           </div>
         ))}
       </div>
@@ -108,7 +108,7 @@ export function MonthlyTracker() {
       <Card className="p-4 mb-6">
         <div className="grid grid-cols-7 gap-1 mb-2">
           {WEEKDAYS.map(d => (
-            <div key={d} className="text-center text-xs font-medium text-ink-400 py-1">{d}</div>
+            <div key={d} className="text-center text-xs font-medium text-faint py-1">{d}</div>
           ))}
         </div>
         <div className="grid grid-cols-7 gap-1">
@@ -120,9 +120,9 @@ export function MonthlyTracker() {
       </Card>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">Habit breakdown</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-faint mb-3">Habit breakdown</p>
         {habits.habits.length === 0 ? (
-          <p className="text-sm text-ink-400 text-center py-6">No habits to track yet.</p>
+          <p className="text-sm text-faint text-center py-6">No habits to track yet.</p>
         ) : (
           <div className="space-y-3">
             {habitStats.map(h => (
@@ -130,14 +130,14 @@ export function MonthlyTracker() {
                 <div className="flex items-center gap-3 mb-2">
                   <span className="text-xl">{h.emoji}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-ink-900 dark:text-ink-100">{h.name}</p>
-                    <p className="text-xs text-ink-400">
+                    <p className="text-sm font-medium text-ink">{h.name}</p>
+                    <p className="text-xs text-faint">
                       {h.frequency === 'weekly' ? `${h.weeklyTarget}× per week` : 'Daily'} · {h.completed}/{h.applicable} days
                     </p>
                   </div>
                   <span className="text-sm font-bold tabular-nums" style={{ color: h.color }}>{h.rate}%</span>
                 </div>
-                <div className="h-1.5 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden">
+                <div className="h-1.5 rounded-full bg-raised overflow-hidden">
                   <motion.div
                     className="h-full rounded-full"
                     style={{ backgroundColor: h.color }}

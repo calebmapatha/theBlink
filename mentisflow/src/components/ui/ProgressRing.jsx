@@ -23,7 +23,7 @@ export function ProgressRing({ progress, mode, size = 220 }) {
         fill="none"
         stroke="currentColor"
         strokeWidth={STROKE}
-        className="text-surface-200 dark:text-surface-700"
+        className="text-line"
       />
       <circle
         cx={viewBoxSize / 2}

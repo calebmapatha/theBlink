@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, Clock, Globe, BadgeCheck, Calendar, X, HeartHandshake, Sprout, Link2, Unlink, Check, Star, MessageSquare, Loader, ClipboardList, Video, MapPin, FileText, FileSignature, QrCode } from 'lucide-react'
 import QRCode from 'qrcode'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -7,15 +7,15 @@ import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
+import Avatar from '../components/ui/Avatar'
 import { useProviders } from '../hooks/useProviders'
 import { useAuth } from '../context/AuthContext'
 import { useApp } from '../context/AppContext'
 import { AddToCalendar } from '../components/ui/AddToCalendar'
-import { availableSlotsForDate } from '../utils/availability'
+import AdvanceBookingCalendar from '../components/booking/AdvanceBookingCalendar'
 import { submitReport } from '../hooks/useAdmin'
 import { getScreeningDocs, signScreeningDocs, openScreeningPDF } from '../utils/screeningDocs'
 import { SignatureField } from '../components/ui/SignatureField'
-import { DatePicker } from '../components/ui/DatePicker'
 import { detectLocation } from '../utils/geolocate'
 import { shortCodeFor, formatCode, checkInPayload } from '../utils/checkin'
 
@@ -66,20 +66,20 @@ function CheckInTicket({ appt, doctor, onClose }) {
     <Modal open={!!appt} onClose={onClose} title="Check-in pass">
       {appt && (
         <div className="text-center">
-          <div className="mx-auto w-fit p-3 rounded-3xl bg-white border border-surface-200 dark:border-surface-600">
+          <div className="mx-auto w-fit p-3 rounded-3xl bg-white border border-line">
             {qrUrl
               ? <img src={qrUrl} alt="Check-in QR code" className="w-52 h-52" />
-              : <div className="w-52 h-52 flex items-center justify-center"><Loader size={20} className="animate-spin text-primary-500" /></div>}
+              : <div className="w-52 h-52 flex items-center justify-center"><Loader size={20} className="animate-spin text-accent" /></div>}
           </div>
 
-          <p className="mt-4 text-sm font-semibold text-ink-900 dark:text-ink-100">{doctor?.name}</p>
-          <p className="text-xs text-ink-400 mt-0.5">
+          <p className="mt-4 text-sm font-semibold text-ink">{doctor?.name}</p>
+          <p className="text-xs text-faint mt-0.5">
             {appt.patientName ? `${appt.patientName} · ` : ''}{appt.date} at {appt.timeSlot}
           </p>
 
-          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface-100 dark:bg-surface-800">
-            <span className="text-xs text-ink-400">Code</span>
-            <span className="text-base font-bold tracking-[0.15em] text-ink-900 dark:text-ink-100 timer-nums">
+          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-raised">
+            <span className="text-xs text-faint">Code</span>
+            <span className="text-base font-bold tracking-[0.15em] text-ink timer-nums">
               {formatCode(shortCodeFor(appt.id))}
             </span>
           </div>
@@ -89,7 +89,7 @@ function CheckInTicket({ appt, doctor, onClose }) {
               <Check size={12} /> Checked in{appt.checkedInAt.length >= 16 ? ` at ${new Date(appt.checkedInAt).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}` : ''}
             </p>
           ) : (
-            <p className="mt-4 text-xs text-ink-400 leading-relaxed max-w-[260px] mx-auto">
+            <p className="mt-4 text-xs text-faint leading-relaxed max-w-[260px] mx-auto">
               Show this at reception when you arrive. The practice scans the code or types it in to check you in.
             </p>
           )}
@@ -166,7 +166,7 @@ function StarRating({ value, onChange }) {
         >
           <Star
             size={28}
-            className={n <= (hovered || value) ? 'text-warm-400 fill-warm-400' : 'text-surface-300 dark:text-surface-600'}
+            className={n <= (hovered || value) ? 'text-warm-400 fill-warm-400' : 'text-line'}
           />
         </button>
       ))}
@@ -179,8 +179,8 @@ function StarDisplay({ value, count }) {
   return (
     <div className="flex items-center gap-1">
       <Star size={11} className="text-warm-400 fill-warm-400" />
-      <span className="text-xs font-medium text-ink-700 dark:text-ink-300">{value.toFixed(1)}</span>
-      {count != null && <span className="text-[10px] text-ink-400">({count})</span>}
+      <span className="text-xs font-medium text-ink">{value.toFixed(1)}</span>
+      {count != null && <span className="text-[10px] text-faint">({count})</span>}
     </div>
   )
 }
@@ -212,19 +212,19 @@ function ReportModal({ provider, open, onClose, user }) {
       {done ? (
         <div className="text-center py-5 space-y-3">
           <p className="text-4xl">🛡️</p>
-          <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">Report received</p>
-          <p className="text-xs text-ink-400">Our team will review it. Thank you for keeping the platform safe.</p>
+          <p className="text-sm font-semibold text-ink">Report received</p>
+          <p className="text-xs text-faint">Our team will review it. Thank you for keeping the platform safe.</p>
           <Button className="w-full" onClick={close}>Done</Button>
         </div>
       ) : (
         <div className="space-y-4">
-          <p className="text-xs text-ink-400">
-            Reporting <strong className="text-ink-700 dark:text-ink-200">{provider.name}</strong>. Your report is
+          <p className="text-xs text-faint">
+            Reporting <strong className="text-ink">{provider.name}</strong>. Your report is
             confidential and reviewed by the platform team.
           </p>
           <textarea value={reason} onChange={e => setReason(e.target.value)} rows={4}
             placeholder="What happened?"
-            className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-sm text-ink-900 dark:text-ink-100 focus:outline-none focus:ring-2 focus:ring-red-400 resize-none" />
+            className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-sm text-ink focus:outline-none focus:ring-2 focus:ring-red-400 resize-none" />
           <div className="flex gap-2">
             <Button variant="ghost" className="flex-1" onClick={close}>Cancel</Button>
             <Button className="flex-1 bg-red-500 hover:bg-red-600" disabled={!reason.trim() || busy} onClick={send}>
@@ -248,38 +248,30 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
       <div className="space-y-5 -mt-1">
         {/* Header */}
         <div className="flex items-start gap-4">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0">
-            {provider.photoURL ? (
-              <img src={provider.photoURL} alt={provider.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-3xl">
-                {provider.avatar || '🧠'}
-              </div>
-            )}
-          </div>
+          <Avatar photoUrl={provider.photoURL} name={provider.name} size="lg" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <p className="font-bold text-ink-900 dark:text-ink-100">{provider.name}</p>
-              <BadgeCheck size={15} className="text-primary-500 flex-shrink-0" />
+              <p className="font-bold text-ink">{provider.name}</p>
+              <BadgeCheck size={15} className="text-accent flex-shrink-0" />
             </div>
-            <p className="text-sm text-ink-500 dark:text-ink-400">{provider.type}</p>
-            {provider.experience && <p className="text-xs text-ink-400">{provider.experience} years experience</p>}
-            {provider.hpcsa && <p className="text-xs text-ink-400">HPCSA: {provider.hpcsa}</p>}
+            <p className="text-sm text-muted">{provider.type}</p>
+            {provider.experience && <p className="text-xs text-faint">{provider.experience} years experience</p>}
+            {provider.hpcsa && <p className="text-xs text-faint">HPCSA: {provider.hpcsa}</p>}
             {ratingCnt > 0 && rating && <StarDisplay value={rating.overall} count={ratingCnt} />}
           </div>
         </div>
 
         {/* Rating breakdown */}
         {ratingCnt > 0 && rating && (
-          <div className="p-3 rounded-xl bg-surface-50 dark:bg-surface-900 space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">Patient ratings</p>
+          <div className="p-3 rounded-xl bg-raised space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-faint">Patient ratings</p>
             {RATING_METRICS.map(({ key, label }) => (
               <div key={key} className="flex items-center gap-2">
-                <span className="text-[10px] text-ink-500 dark:text-ink-400 w-28 flex-shrink-0">{label}</span>
-                <div className="flex-1 h-1.5 rounded-full bg-surface-200 dark:bg-surface-700 overflow-hidden">
-                  <div className="h-full rounded-full bg-primary-500 transition-all" style={{ width: `${((rating[key] || 0) / 5) * 100}%` }} />
+                <span className="text-[10px] text-muted w-28 flex-shrink-0">{label}</span>
+                <div className="flex-1 h-1.5 rounded-full bg-line overflow-hidden">
+                  <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${((rating[key] || 0) / 5) * 100}%` }} />
                 </div>
-                <span className="text-[10px] font-semibold text-ink-600 dark:text-ink-300 w-6 text-right">{(rating[key] || 0).toFixed(1)}</span>
+                <span className="text-[10px] font-semibold text-muted w-6 text-right">{(rating[key] || 0).toFixed(1)}</span>
               </div>
             ))}
           </div>
@@ -288,18 +280,18 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
         {/* Bio */}
         {provider.bio && (
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-1.5">About</p>
-            <p className="text-sm text-ink-700 dark:text-ink-300 leading-relaxed">{provider.bio}</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-faint mb-1.5">About</p>
+            <p className="text-sm text-ink leading-relaxed">{provider.bio}</p>
           </div>
         )}
 
         {/* Specialties */}
         {(provider.specialties || []).length > 0 && (
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-1.5">Specialties</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-faint mb-1.5">Specialties</p>
             <div className="flex flex-wrap gap-1.5">
               {provider.specialties.map(s => (
-                <span key={s} className="text-xs px-2.5 py-1 rounded-full bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400">{s}</span>
+                <span key={s} className="text-xs px-2.5 py-1 rounded-full bg-accent-soft text-accent-soft-text">{s}</span>
               ))}
             </div>
           </div>
@@ -309,28 +301,28 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
         <div className="space-y-2">
           {(provider.city || provider.province) && (
             <div className="flex items-center gap-2.5">
-              <MapPin size={14} className="text-ink-400 flex-shrink-0" />
-              <span className="text-sm text-ink-700 dark:text-ink-300">
+              <MapPin size={14} className="text-faint flex-shrink-0" />
+              <span className="text-sm text-ink">
                 {[provider.city, provider.province].filter(Boolean).join(', ')}
               </span>
             </div>
           )}
           {provider.availability && (
             <div className="flex items-center gap-2.5">
-              <Clock size={14} className="text-ink-400 flex-shrink-0" />
-              <span className="text-sm text-ink-700 dark:text-ink-300">{provider.availability}</span>
+              <Clock size={14} className="text-faint flex-shrink-0" />
+              <span className="text-sm text-ink">{provider.availability}</span>
             </div>
           )}
           {(provider.languages || []).length > 0 && (
             <div className="flex items-center gap-2.5">
-              <Globe size={14} className="text-ink-400 flex-shrink-0" />
-              <span className="text-sm text-ink-700 dark:text-ink-300">{provider.languages.join(', ')}</span>
+              <Globe size={14} className="text-faint flex-shrink-0" />
+              <span className="text-sm text-ink">{provider.languages.join(', ')}</span>
             </div>
           )}
           {platform && (
             <div className="flex items-center gap-2.5">
-              <Video size={14} className="text-ink-400 flex-shrink-0" />
-              <span className="text-sm text-ink-700 dark:text-ink-300">Sessions via {platform}</span>
+              <Video size={14} className="text-faint flex-shrink-0" />
+              <span className="text-sm text-ink">Sessions via {platform}</span>
             </div>
           )}
         </div>
@@ -344,16 +336,16 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
           return (
             <div className="space-y-2">
               <div className="flex items-center gap-2.5">
-                {inPerson ? <MapPin size={14} className="text-ink-400 flex-shrink-0" /> : <Video size={14} className="text-ink-400 flex-shrink-0" />}
-                <span className="text-sm text-ink-700 dark:text-ink-300">
+                {inPerson ? <MapPin size={14} className="text-faint flex-shrink-0" /> : <Video size={14} className="text-faint flex-shrink-0" />}
+                <span className="text-sm text-ink">
                   {mode === 'both' ? 'Online & in-person sessions' : inPerson ? 'In-person sessions' : 'Online sessions only'}
                 </span>
               </div>
               {inPerson && provider.address && (
-                <p className="text-xs text-ink-400 pl-6">{provider.address}</p>
+                <p className="text-xs text-faint pl-6">{provider.address}</p>
               )}
               {inPerson && mapQuery && (
-                <div className="rounded-2xl overflow-hidden border border-surface-100 dark:border-surface-700">
+                <div className="rounded-2xl overflow-hidden border border-line">
                   <iframe
                     title={`Map of ${mapQuery}`}
                     src={`https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`}
@@ -369,8 +361,8 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
         })()}
 
         {/* Fee */}
-        <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-surface-50 dark:bg-surface-900">
-          <span className="text-sm text-ink-500 dark:text-ink-400">Session fee</span>
+        <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-raised">
+          <span className="text-sm text-muted">Session fee</span>
           {provider.hideFee ? (
             feeRequested ? (
               <span className="text-xs font-medium text-success-600 dark:text-success-400 flex items-center gap-1">
@@ -383,8 +375,8 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
             )
           ) : (
             <div>
-              <span className="text-xl font-bold text-ink-900 dark:text-ink-100">R{provider.sessionFee}</span>
-              <span className="text-xs text-ink-400 ml-1">/ session</span>
+              <span className="text-xl font-bold text-ink">R{provider.sessionFee}</span>
+              <span className="text-xs text-faint ml-1">/ session</span>
             </div>
           )}
         </div>
@@ -406,7 +398,7 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
 
         {onReport && (
           <button onClick={() => { onClose(); onReport(provider) }}
-            className="w-full text-center text-[11px] text-ink-400 hover:text-red-500 transition-colors">
+            className="w-full text-center text-[11px] text-faint hover:text-danger transition-colors">
             Report this provider
           </button>
         )}
@@ -424,35 +416,27 @@ function ProviderCard({ provider, onBook, onLink, linked, onViewProfile }) {
       {/* Tappable profile area */}
       <button className="w-full text-left" onClick={() => onViewProfile?.(provider)}>
         <div className="flex items-start gap-3">
-          <div className="w-12 h-12 rounded-2xl overflow-hidden flex-shrink-0">
-            {provider.photoURL ? (
-              <img src={provider.photoURL} alt={provider.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-2xl">
-                {provider.avatar || '🧠'}
-              </div>
-            )}
-          </div>
+          <Avatar photoUrl={provider.photoURL} name={provider.name} size="md" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <p className="font-semibold text-ink-900 dark:text-ink-100 text-sm">{provider.name}</p>
-              <BadgeCheck size={14} className="text-primary-500 flex-shrink-0" />
+              <p className="font-semibold text-ink text-sm">{provider.name}</p>
+              <BadgeCheck size={14} className="text-accent flex-shrink-0" />
             </div>
-            <p className="text-xs text-ink-400 mt-0.5">{provider.type} · {provider.experience} yrs exp</p>
-            {provider.hpcsa && <p className="text-xs text-ink-400">HPCSA: {provider.hpcsa}</p>}
+            <p className="text-xs text-faint mt-0.5">{provider.type} · {provider.experience} yrs exp</p>
+            {provider.hpcsa && <p className="text-xs text-faint">HPCSA: {provider.hpcsa}</p>}
             {ratingCnt > 0 && <StarDisplay value={rating} count={ratingCnt} />}
             <div className="flex flex-wrap gap-1 mt-1.5">
               {(provider.specialties || []).slice(0, 3).map(s => (
-                <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400">{s}</span>
+                <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-md bg-accent-soft text-accent-soft-text">{s}</span>
               ))}
               {(provider.specialties || []).length > 3 && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-surface-100 dark:bg-surface-700 text-ink-400">+{(provider.specialties || []).length - 3} more</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-raised text-faint">+{(provider.specialties || []).length - 3} more</span>
               )}
             </div>
           </div>
         </div>
 
-        <div className="mt-2.5 flex items-center gap-4 text-xs text-ink-400 flex-wrap">
+        <div className="mt-2.5 flex items-center gap-4 text-xs text-faint flex-wrap">
           {(provider.city || provider.province) && (
             <span className="flex items-center gap-1"><MapPin size={10} /> {[provider.city, provider.province].filter(Boolean).join(', ')}</span>
           )}
@@ -465,19 +449,19 @@ function ProviderCard({ provider, onBook, onLink, linked, onViewProfile }) {
         </div>
 
         {provider.bio && (
-          <p className="mt-2 text-xs text-ink-400 line-clamp-2">{provider.bio}</p>
+          <p className="mt-2 text-xs text-faint line-clamp-2">{provider.bio}</p>
         )}
-        <p className="mt-1.5 text-xs text-primary-500 font-medium">View full profile →</p>
+        <p className="mt-1.5 text-xs text-accent font-medium">View full profile →</p>
       </button>
 
-      <div className="mt-3 pt-3 border-t border-surface-100 dark:border-surface-800 flex items-center justify-between gap-2">
+      <div className="mt-3 pt-3 border-t border-line flex items-center justify-between gap-2">
         <div>
           {provider.hideFee ? (
-            <span className="text-xs font-semibold text-ink-500 dark:text-ink-400">Fee on request</span>
+            <span className="text-xs font-semibold text-muted">Fee on request</span>
           ) : (
             <>
-              <span className="text-sm font-bold text-ink-900 dark:text-ink-100">R{provider.sessionFee}</span>
-              <span className="text-xs text-ink-400"> / session</span>
+              <span className="text-sm font-bold text-ink">R{provider.sessionFee}</span>
+              <span className="text-xs text-faint"> / session</span>
             </>
           )}
         </div>
@@ -538,25 +522,25 @@ function RatingModal({ open, onClose, appointment, providerName, onSubmit }) {
       {done ? (
         <div className="text-center py-6 space-y-3">
           <p className="text-5xl">⭐</p>
-          <p className="font-semibold text-ink-900 dark:text-ink-100">Thank you for your feedback!</p>
-          <p className="text-sm text-ink-400">Your rating helps other patients find the right care.</p>
+          <p className="font-semibold text-ink">Thank you for your feedback!</p>
+          <p className="text-sm text-faint">Your rating helps other patients find the right care.</p>
           <Button className="w-full" onClick={handleClose}>Done</Button>
         </div>
       ) : (
         <div className="space-y-5">
-          <p className="text-sm text-ink-500 dark:text-ink-400">
-            Rate your session with <strong className="text-ink-800 dark:text-ink-100">{providerName}</strong> on {appointment.date}.
+          <p className="text-sm text-muted">
+            Rate your session with <strong className="text-ink">{providerName}</strong> on {appointment.date}.
           </p>
 
           {RATING_METRICS.map(({ key, label, desc }) => (
             <div key={key}>
               <div className="flex items-start justify-between mb-1.5">
                 <div>
-                  <p className="text-sm font-medium text-ink-900 dark:text-ink-100">{label}</p>
-                  <p className="text-xs text-ink-400">{desc}</p>
+                  <p className="text-sm font-medium text-ink">{label}</p>
+                  <p className="text-xs text-faint">{desc}</p>
                 </div>
                 {scores[key] > 0 && (
-                  <span className="text-xs font-semibold text-primary-500">{scores[key]}/5</span>
+                  <span className="text-xs font-semibold text-accent">{scores[key]}/5</span>
                 )}
               </div>
               <StarRating value={scores[key]} onChange={v => setScore(key, v)} />
@@ -564,7 +548,7 @@ function RatingModal({ open, onClose, appointment, providerName, onSubmit }) {
           ))}
 
           <div>
-            <label className="block text-xs font-medium text-ink-400 mb-1.5">
+            <label className="block text-xs font-medium text-faint mb-1.5">
               <MessageSquare size={11} className="inline mr-1" />
               Additional comments <span className="font-normal">(optional)</span>
             </label>
@@ -573,15 +557,15 @@ function RatingModal({ open, onClose, appointment, providerName, onSubmit }) {
               onChange={e => setComment(e.target.value)}
               rows={3}
               placeholder="Anything else you'd like to share…"
-              className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 resize-none"
+              className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none"
             />
           </div>
 
           {!allFilled && (
-            <p className="text-xs text-ink-400 text-center">Please rate all 5 areas to submit.</p>
+            <p className="text-xs text-faint text-center">Please rate all 5 areas to submit.</p>
           )}
           {error && (
-            <p className="text-xs text-red-500 text-center">{error}</p>
+            <p className="text-xs text-danger text-center">{error}</p>
           )}
 
           <div className="flex gap-2">
@@ -619,13 +603,6 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
       setDiaryLoading(false)
     })
   }, [provider?.id, open])
-
-  // Open-by-default: weekday default hours unless the provider customised or
-  // closed the day, minus slots already confirmed for that date.
-  const availableSlots = useMemo(
-    () => availableSlotsForDate(bookingInfo.diary, bookingInfo.bookedSlots, date),
-    [date, bookingInfo],
-  )
 
   const toggleType = (id) =>
     setSharedTypes(prev => prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id])
@@ -669,89 +646,69 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
       {done ? (
         <div className="text-center py-6 space-y-3">
           <p className="text-5xl">✅</p>
-          <p className="font-semibold text-ink-900 dark:text-ink-100">Request sent!</p>
-          <p className="text-sm text-ink-400">{provider.name} will confirm your appointment soon.</p>
+          <p className="font-semibold text-ink">Request sent!</p>
+          <p className="text-sm text-faint">{provider.name} will confirm your appointment soon.</p>
           <Button className="w-full" onClick={handleClose}>Done</Button>
         </div>
       ) : (
         <div className="space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-ink-400 mb-1">Preferred date</label>
-            <DatePicker
-              value={date}
-              onChange={d => { setDate(d); setTimeSlot(null) }}
-              min={new Date().toISOString().split('T')[0]}
-              placeholder="Pick a date"
+          {/* Month calendar, bookable up to six months ahead. The weekly diary
+              stays the source of truth; booked and past slots are hidden. */}
+          {diaryLoading ? (
+            <p className="text-xs text-faint">Loading availability…</p>
+          ) : (
+            <AdvanceBookingCalendar
+              diary={bookingInfo.diary}
+              bookedSlots={bookingInfo.bookedSlots}
+              horizonMonths={6}
+              selectedDate={date}
+              selectedSlot={timeSlot}
+              onSelectDate={d => { setDate(d); setTimeSlot(null) }}
+              onSelectSlot={setTimeSlot}
             />
-          </div>
-
-          {date && (
-            <div>
-              <label className="block text-xs font-medium text-ink-400 mb-2">Available slots</label>
-              {diaryLoading ? (
-                <p className="text-xs text-ink-400">Loading slots…</p>
-              ) : availableSlots.length === 0 ? (
-                <p className="text-xs text-ink-400 bg-surface-50 dark:bg-surface-900 px-3 py-2 rounded-xl">
-                  No open slots for this day. It may be fully booked or the provider is unavailable. Try another date.
-                </p>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {availableSlots.map(slot => (
-                    <button key={slot} onClick={() => setTimeSlot(slot)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
-                        timeSlot === slot
-                          ? 'border-primary-400 bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400'
-                          : 'border-surface-200 dark:border-surface-700 text-ink-400 hover:border-surface-300'
-                      }`}>
-                      {slot}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
           )}
 
           <div>
-            <label className="block text-xs font-medium text-ink-400 mb-1">Notes (optional)</label>
+            <label className="block text-xs font-medium text-faint mb-1">Notes (optional)</label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3}
               placeholder="What would you like to discuss?"
-              className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 resize-none" />
+              className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none" />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-ink-400 mb-2">Share app data with doctor (optional)</label>
+            <label className="block text-xs font-medium text-faint mb-2">Share app data with doctor (optional)</label>
             <div className="grid grid-cols-2 gap-2">
               {DATA_TYPES.map(t => (
                 <button key={t.id} onClick={() => toggleType(t.id)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs border transition-colors ${
                     sharedTypes.includes(t.id)
-                      ? 'border-primary-400 bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400'
-                      : 'border-surface-200 dark:border-surface-700 text-ink-400 hover:border-surface-300'
+                      ? 'border-accent bg-accent-soft text-accent-soft-text'
+                      : 'border-line text-faint hover:border-faint'
                   }`}>
                   <span>{t.emoji}</span>
                   <span>{t.label}</span>
-                  {sharedTypes.includes(t.id) && <Check size={10} className="ml-auto text-primary-500 flex-shrink-0" />}
+                  {sharedTypes.includes(t.id) && <Check size={10} className="ml-auto text-accent flex-shrink-0" />}
                 </button>
               ))}
             </div>
             {sharedTypes.length > 0 && (
               <label className="flex items-start gap-2.5 mt-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 cursor-pointer">
                 <input type="checkbox" checked={consentGiven} onChange={() => setConsentGiven(v => !v)}
-                  className="mt-0.5 w-4 h-4 rounded accent-primary-500 flex-shrink-0" />
-                <span className="text-[11px] text-ink-700 dark:text-ink-300 leading-relaxed">
+                  className="mt-0.5 w-4 h-4 rounded accent-accent flex-shrink-0" />
+                <span className="text-[11px] text-ink leading-relaxed">
                   I consent to sharing the selected health data with {provider.name} for the purpose of my
                   mental health consultation. I understand I can withdraw this consent at any time. See our{' '}
                   <a href={`${import.meta.env.BASE_URL}privacy`} target="_blank" rel="noopener noreferrer"
-                    className="text-primary-500 underline" onClick={e => e.stopPropagation()}>Privacy Policy</a>.
+                    className="text-accent underline" onClick={e => e.stopPropagation()}>Privacy Policy</a>.
                 </span>
               </label>
             )}
           </div>
 
           {screeningDocs.length > 0 && (
-            <div className="px-3 py-2.5 rounded-xl border border-primary-200 dark:border-primary-700/40 bg-primary-50/50 dark:bg-primary-700/10 flex items-start gap-2">
-              <FileSignature size={13} className="text-primary-500 flex-shrink-0 mt-0.5" />
-              <p className="text-[11px] text-ink-700 dark:text-ink-300 leading-relaxed">
+            <div className="px-3 py-2.5 rounded-xl border border-accent/30 bg-accent-soft/60 flex items-start gap-2">
+              <FileSignature size={13} className="text-accent flex-shrink-0 mt-0.5" />
+              <p className="text-[11px] text-ink leading-relaxed">
                 If {provider.name} accepts your request, you'll be asked to digitally sign{' '}
                 {screeningDocs.length === 1 ? '1 document' : `${screeningDocs.length} documents`}{' '}
                 ({screeningDocs.map(d => d.title).join(', ')}) before your session.
@@ -759,11 +716,11 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
             </div>
           )}
 
-          <div className="px-3 py-2 rounded-xl bg-surface-50 dark:bg-surface-900 text-xs text-ink-400">
+          <div className="px-3 py-2 rounded-xl bg-raised text-xs text-faint">
             {provider.hideFee ? (
-              <>Session fee: <strong className="text-ink-700 dark:text-ink-300">on request</strong> · Payment arranged directly with the provider after confirmation.</>
+              <>Session fee: <strong className="text-ink">on request</strong> · Payment arranged directly with the provider after confirmation.</>
             ) : (
-              <>Session fee: <strong className="text-ink-700 dark:text-ink-300">R{provider.sessionFee}</strong> · Payment arranged directly with the provider after confirmation.</>
+              <>Session fee: <strong className="text-ink">R{provider.sessionFee}</strong> · Payment arranged directly with the provider after confirmation.</>
             )}
           </div>
 
@@ -831,59 +788,59 @@ function SignDocumentsModal({ appt, open, onClose, user, userProfile, onSigned, 
     <>
     <Modal open={open && !viewingDoc} onClose={onClose} title="Sign documents">
       {docs === null ? (
-        <div className="py-8 text-center"><Loader size={18} className="animate-spin text-primary-500 mx-auto" /></div>
+        <div className="py-8 text-center"><Loader size={18} className="animate-spin text-accent mx-auto" /></div>
       ) : docs.length === 0 ? (
         <div className="space-y-3 text-center py-4">
-          <p className="text-sm text-ink-700 dark:text-ink-300">
+          <p className="text-sm text-ink">
             {appt.providerName} no longer requires any documents for this appointment.
           </p>
           <Button className="w-full" onClick={() => { onNothingToSign(appt.id); onClose() }}>OK</Button>
         </div>
       ) : (
         <div className="space-y-4">
-          <p className="text-xs text-ink-400 leading-relaxed">
+          <p className="text-xs text-faint leading-relaxed">
             {appt.providerName} accepted your appointment for{' '}
-            <strong className="text-ink-700 dark:text-ink-300">{appt.date} at {appt.timeSlot}</strong>.
+            <strong className="text-ink">{appt.date} at {appt.timeSlot}</strong>.
             Please read and sign the following before your session.
           </p>
 
           <div className="space-y-2">
             {docs.map(d => (
-              <div key={d.id} className="p-3 rounded-xl border border-surface-200 dark:border-surface-700 flex items-start gap-2.5">
+              <div key={d.id} className="p-3 rounded-xl border border-line flex items-start gap-2.5">
                 <input type="checkbox" checked={agreed.includes(d.id)} onChange={() => toggleAgreed(d.id)}
-                  className="mt-0.5 w-4 h-4 rounded accent-primary-500 flex-shrink-0" />
+                  className="mt-0.5 w-4 h-4 rounded accent-accent flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-ink-900 dark:text-ink-100">{d.title}</p>
+                  <p className="text-xs font-medium text-ink">{d.title}</p>
                   <button
                     onClick={() => d.kind === 'pdf' ? openScreeningPDF(d) : setViewingDoc(d)}
-                    className="text-[11px] text-primary-500 font-medium underline inline-flex items-center gap-1 mt-0.5">
+                    className="text-[11px] text-accent font-medium underline inline-flex items-center gap-1 mt-0.5">
                     <FileText size={10} className="flex-shrink-0" />
                     {d.kind === 'pdf' ? 'Open PDF' : 'Read document'}
                   </button>
-                  <p className="text-[10px] text-ink-400 mt-0.5">Tick the box to confirm you've read and agree.</p>
+                  <p className="text-[10px] text-faint mt-0.5">Tick the box to confirm you've read and agree.</p>
                 </div>
               </div>
             ))}
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-ink-400 mb-1.5">Your signature</label>
+            <label className="block text-xs font-medium text-faint mb-1.5">Your signature</label>
             <SignatureField onChange={setSigImage} />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-ink-400 mb-1">Full legal name</label>
+            <label className="block text-xs font-medium text-faint mb-1">Full legal name</label>
             <input value={sigName} onChange={e => setSigName(e.target.value)}
               placeholder="Type your full name"
-              className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
+              className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
           </div>
 
-          <p className="text-[10px] text-ink-400 leading-relaxed">
+          <p className="text-[10px] text-faint leading-relaxed">
             By signing you agree to the documents above. Your signature and name are stored
             securely and shared only with {appt.providerName}.
           </p>
 
-          {error && <p className="text-xs text-red-500 text-center">{error}</p>}
+          {error && <p className="text-xs text-danger text-center">{error}</p>}
 
           <div className="flex gap-2">
             <Button variant="ghost" className="flex-1" onClick={onClose}>Later</Button>
@@ -892,7 +849,7 @@ function SignDocumentsModal({ appt, open, onClose, user, userProfile, onSigned, 
             </Button>
           </div>
           {!canSign && (
-            <p className="text-[10px] text-ink-400 text-center -mt-1">
+            <p className="text-[10px] text-faint text-center -mt-1">
               Tick every document, draw your signature and type your full name to submit.
             </p>
           )}
@@ -904,7 +861,7 @@ function SignDocumentsModal({ appt, open, onClose, user, userProfile, onSigned, 
         the outer modal's transform; the signing modal hides while reading. */}
     <Modal open={!!viewingDoc} onClose={() => setViewingDoc(null)} title={viewingDoc?.title || ''}>
       <div className="space-y-3">
-        <p className="text-xs text-ink-700 dark:text-ink-300 leading-relaxed whitespace-pre-wrap max-h-[55vh] overflow-y-auto">
+        <p className="text-xs text-ink leading-relaxed whitespace-pre-wrap max-h-[55vh] overflow-y-auto">
           {viewingDoc?.text}
         </p>
         <Button className="w-full" onClick={() => {
@@ -954,7 +911,11 @@ export function Connect() {
     }
   }
 
-  const [tab, setTab]                   = useState('find')
+  // Default tab derives from the link status instead of being hardcoded:
+  // patients with a doctor land on My Doctor, everyone else on Find. The
+  // null default matters because the doctor link loads asynchronously from
+  // Firebase — the user's own choice (chosenTab) always wins once made.
+  const [chosenTab, setChosenTab]       = useState(null)
   const [search, setSearch]             = useState('')
   const [typeFilter, setTypeFilter]     = useState('All')
   const [specFilter, setSpecFilter]     = useState('')
@@ -965,6 +926,7 @@ export function Connect() {
 
   const [linkedDoctor, setLinkedDoctor]     = useState(undefined)
   const [linkLoading, setLinkLoading]       = useState(true)
+  const tab = chosenTab ?? (linkedDoctor ? 'my-doctor' : 'find')
   const [hpcsaQuery, setHpcsaQuery]         = useState('')
   const [searchResult, setSearchResult]     = useState(null)
   const [searchError, setSearchError]       = useState('')
@@ -1036,6 +998,7 @@ export function Connect() {
   const handleUnlink = async () => {
     await unlinkDoctor(user.uid)
     setLinkedDoctor(null)
+    setChosenTab('find')
   }
 
   const handleRatingSubmit = async (scores) => {
@@ -1084,7 +1047,7 @@ export function Connect() {
 
   return (
     <PageWrapper>
-      <div className="relative mb-5 p-4 rounded-3xl bg-gradient-to-br from-primary-500 to-primary-700 text-white overflow-hidden shadow-md shadow-primary-500/20">
+      <div className="relative mb-5 p-4 rounded-3xl bg-gradient-to-br from-accent to-accent-strong text-white overflow-hidden shadow-md shadow-accent/20">
         <div className="absolute -top-8 -right-6 w-28 h-28 bg-white/10 rounded-full blur-2xl" aria-hidden="true" />
         <div className="relative">
           <div className="flex items-center gap-2 mb-1">
@@ -1101,11 +1064,11 @@ export function Connect() {
           { key: 'find',      label: 'Find a Doctor' },
           { key: 'my-doctor', label: 'My Doctor' },
         ].map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)}
+          <button key={t.key} onClick={() => setChosenTab(t.key)}
             className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors ${
               tab === t.key
-                ? 'bg-primary-500 text-white'
-                : 'bg-surface-100 dark:bg-surface-800 text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
+                ? 'bg-accent text-on-accent'
+                : 'bg-raised text-faint hover:text-ink'
             }`}>
             {t.label}
           </button>
@@ -1115,12 +1078,12 @@ export function Connect() {
       {tab === 'find' && (
         <>
           <div className="relative mb-4">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 pointer-events-none" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-faint pointer-events-none" />
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search by name, HPCSA number or specialty…"
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-800 text-sm text-ink-900 dark:text-ink-100 placeholder-ink-400 focus:outline-none focus:ring-2 focus:ring-primary-400" />
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-line bg-surface text-sm text-ink placeholder-faint focus:outline-none focus:ring-2 focus:ring-accent" />
             {search && (
-              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700">
+              <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-faint hover:text-ink">
                 <X size={14} />
               </button>
             )}
@@ -1131,8 +1094,8 @@ export function Connect() {
               <button key={t} onClick={() => setTypeFilter(t)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                   typeFilter === t
-                    ? 'bg-primary-500 text-white'
-                    : 'bg-surface-100 dark:bg-surface-800 text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
+                    ? 'bg-accent text-on-accent'
+                    : 'bg-raised text-faint hover:text-ink'
                 }`}>
                 {t}
               </button>
@@ -1144,7 +1107,7 @@ export function Connect() {
             <div className="flex gap-1.5 overflow-x-auto flex-1 pb-0.5" style={{ scrollbarWidth: 'none' }}>
               <button onClick={() => setProvinceFilter('')}
                 className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  !provinceFilter ? 'bg-primary-500 text-white' : 'bg-surface-100 dark:bg-surface-800 text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
+                  !provinceFilter ? 'bg-accent text-on-accent' : 'bg-raised text-faint hover:text-ink'
                 }`}>
                 All provinces
               </button>
@@ -1152,8 +1115,8 @@ export function Connect() {
                 <button key={prov} onClick={() => setProvinceFilter(prov === provinceFilter ? '' : prov)}
                   className={`flex-shrink-0 flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                     provinceFilter === prov
-                      ? 'bg-primary-500 text-white'
-                      : 'bg-surface-100 dark:bg-surface-800 text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
+                      ? 'bg-accent text-on-accent'
+                      : 'bg-raised text-faint hover:text-ink'
                   }`}>
                   {userProvince === prov && <MapPin size={9} className="flex-shrink-0" />}
                   {prov}
@@ -1164,7 +1127,7 @@ export function Connect() {
               onClick={handleNearMe}
               disabled={locationLoading}
               title="Use my location"
-              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-surface-200 dark:border-surface-700 text-ink-400 hover:text-primary-500 hover:border-primary-300 transition-colors disabled:opacity-50">
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-line text-faint hover:text-accent hover:border-accent/40 transition-colors disabled:opacity-50">
               {locationLoading
                 ? <Loader size={12} className="animate-spin" />
                 : <MapPin size={12} />}
@@ -1178,7 +1141,7 @@ export function Connect() {
                 className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                   specFilter === s && s !== ''
                     ? 'bg-warm-400 text-white'
-                    : 'bg-surface-100 dark:bg-surface-800 text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
+                    : 'bg-raised text-faint hover:text-ink'
                 }`}>
                 {s || 'All specialties'}
               </button>
@@ -1188,25 +1151,25 @@ export function Connect() {
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3].map(i => (
-                <div key={i} className="h-44 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />
+                <div key={i} className="h-44 rounded-2xl bg-raised animate-pulse" />
               ))}
             </div>
           ) : filtered.length === 0 ? (
             <div className="py-16 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center">{providers.length === 0 ? <Sprout size={22} className="text-ink-400" /> : <Search size={22} className="text-ink-400" />}</div>
-              <p className="text-sm text-ink-400">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-raised flex items-center justify-center">{providers.length === 0 ? <Sprout size={22} className="text-faint" /> : <Search size={22} className="text-faint" />}</div>
+              <p className="text-sm text-faint">
                 {providers.length === 0
                   ? 'No providers have joined yet. Check back soon.'
                   : 'No providers match your filters.'}
               </p>
               {providers.length > 0 && (
                 <button onClick={() => { setSearch(''); setTypeFilter('All'); setSpecFilter(''); setProvinceFilter('') }}
-                  className="mt-3 text-xs text-primary-500 hover:underline">Clear filters</button>
+                  className="mt-3 text-xs text-accent hover:underline">Clear filters</button>
               )}
             </div>
           ) : (
             <div className="space-y-3">
-              <p className="text-xs text-ink-400">
+              <p className="text-xs text-faint">
                 {filtered.length} provider{filtered.length !== 1 ? 's' : ''}
                 {filtered.length !== providers.length && ` of ${providers.length} loaded`}
               </p>
@@ -1234,9 +1197,9 @@ export function Connect() {
             </div>
           )}
 
-          <div className="mt-10 p-4 rounded-2xl border border-dashed border-primary-200 dark:border-primary-700/40 bg-primary-50/50 dark:bg-primary-700/10">
-            <p className="text-sm font-semibold text-ink-900 dark:text-ink-100 mb-1">Are you a psychiatrist or psychologist?</p>
-            <p className="text-xs text-ink-400 mb-3">List your practice and connect with mental health clients who need your expertise.</p>
+          <div className="mt-10 p-4 rounded-2xl border border-dashed border-accent/30 bg-accent-soft/60">
+            <p className="text-sm font-semibold text-ink mb-1">Are you a psychiatrist or psychologist?</p>
+            <p className="text-xs text-faint mb-3">List your practice and connect with mental health clients who need your expertise.</p>
             <Button variant="soft" size="sm" onClick={() => navigate('/provider/signup')}>
               Join as a provider →
             </Button>
@@ -1247,32 +1210,24 @@ export function Connect() {
       {tab === 'my-doctor' && (
         <div className="space-y-5">
           {linkLoading ? (
-            <div className="h-28 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />
+            <div className="h-28 rounded-2xl bg-raised animate-pulse" />
           ) : linkedDoctor ? (
             <>
               <Card className="p-4">
                 <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-2xl overflow-hidden flex-shrink-0">
-                    {linkedDoctor.photoURL ? (
-                      <img src={linkedDoctor.photoURL} alt={linkedDoctor.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-2xl">
-                        {linkedDoctor.avatar || '🧠'}
-                      </div>
-                    )}
-                  </div>
+                  <Avatar photoUrl={linkedDoctor.photoURL} name={linkedDoctor.name} size="md" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <p className="font-semibold text-ink-900 dark:text-ink-100 text-sm">{linkedDoctor.name}</p>
-                      <BadgeCheck size={14} className="text-primary-500" />
+                      <p className="font-semibold text-ink text-sm">{linkedDoctor.name}</p>
+                      <BadgeCheck size={14} className="text-accent" />
                     </div>
-                    <p className="text-xs text-ink-400">{linkedDoctor.type} · {linkedDoctor.experience} yrs exp</p>
-                    {linkedDoctor.hpcsa && <p className="text-xs text-ink-400">HPCSA: {linkedDoctor.hpcsa}</p>}
+                    <p className="text-xs text-faint">{linkedDoctor.type} · {linkedDoctor.experience} yrs exp</p>
+                    {linkedDoctor.hpcsa && <p className="text-xs text-faint">HPCSA: {linkedDoctor.hpcsa}</p>}
                     {linkedDoctor.ratingCount > 0 && (
                       <StarDisplay value={linkedDoctor.ratingAvg?.overall} count={linkedDoctor.ratingCount} />
                     )}
                     {linkedDoctor.availability && (
-                      <p className="text-xs text-ink-400 mt-0.5 flex items-center gap-1">
+                      <p className="text-xs text-faint mt-0.5 flex items-center gap-1">
                         <Clock size={10} /> {linkedDoctor.availability}
                       </p>
                     )}
@@ -1283,7 +1238,7 @@ export function Connect() {
                     <Calendar size={13} /> Book session
                   </Button>
                   <button onClick={handleUnlink}
-                    className="px-3 py-1.5 rounded-xl text-xs text-ink-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 border border-surface-200 dark:border-surface-700 transition-colors flex items-center gap-1.5">
+                    className="px-3 py-1.5 rounded-xl text-xs text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 border border-line transition-colors flex items-center gap-1.5">
                     <Unlink size={12} /> Unlink
                   </button>
                 </div>
@@ -1291,18 +1246,18 @@ export function Connect() {
 
               {upcomingAppts.length > 0 && (
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">Appointments</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-faint mb-3">Appointments</p>
                   <div className="space-y-2">
                     {upcomingAppts.map(a => (
                       <Card key={a.id} className="p-3">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">{linkedDoctor.name}</p>
-                            <p className="text-xs text-ink-400">{[linkedDoctor.type, linkedDoctor.city, linkedDoctor.province].filter(Boolean).join(' · ')}</p>
-                            <p className="text-sm text-ink-700 dark:text-ink-200 mt-1 flex items-center gap-1.5">
-                              <Calendar size={11} className="text-ink-400 flex-shrink-0" /> {a.date} at {a.timeSlot}
+                            <p className="text-sm font-semibold text-ink">{linkedDoctor.name}</p>
+                            <p className="text-xs text-faint">{[linkedDoctor.type, linkedDoctor.city, linkedDoctor.province].filter(Boolean).join(' · ')}</p>
+                            <p className="text-sm text-ink mt-1 flex items-center gap-1.5">
+                              <Calendar size={11} className="text-faint flex-shrink-0" /> {a.date} at {a.timeSlot}
                             </p>
-                            <p className="text-[11px] text-ink-400 mt-0.5 flex items-center gap-1">
+                            <p className="text-[11px] text-faint mt-0.5 flex items-center gap-1">
                               {linkedDoctor.consultationType === 'in-person'
                                 ? <><MapPin size={10} className="flex-shrink-0" /> In-person session</>
                                 : linkedDoctor.consultationType === 'both'
@@ -1314,7 +1269,7 @@ export function Connect() {
                                 {a.sharedDataTypes.map(t => {
                                   const dt = DATA_TYPES.find(d => d.id === t)
                                   return dt ? (
-                                    <span key={t} className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400">
+                                    <span key={t} className="text-[10px] px-1.5 py-0.5 rounded-md bg-accent-soft text-accent-soft-text">
                                       {dt.emoji} {dt.label}
                                     </span>
                                   ) : null
@@ -1325,22 +1280,22 @@ export function Connect() {
                           <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                             <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                               a.status === 'confirmed' ? 'bg-success-100 dark:bg-success-500/20 text-success-700 dark:text-success-400'
-                              : a.status === 'completed' ? 'bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400'
+                              : a.status === 'completed' ? 'bg-accent-soft text-accent-soft-text'
                               : a.status === 'pending' ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400'
-                              : a.status === 'no-show' ? 'bg-red-50 dark:bg-red-500/10 text-red-500'
-                              : 'bg-surface-100 dark:bg-surface-700 text-ink-400'
+                              : a.status === 'no-show' ? 'bg-red-50 dark:bg-red-500/10 text-danger'
+                              : 'bg-raised text-faint'
                             }`}>{a.status === 'no-show' ? 'missed' : a.status}</span>
 
                             {['confirmed', 'completed'].includes(a.status) && sessionHasPassed(a) && !ratedSet.has(a.id) && (
                               <button
                                 onClick={() => setRatingAppt(a)}
-                                className="flex items-center gap-1 text-[10px] text-primary-500 hover:text-primary-600 font-medium"
+                                className="flex items-center gap-1 text-[10px] text-accent hover:text-accent-strong font-medium"
                               >
-                                <Star size={10} /> Rate session <span className="text-ink-400">(optional)</span>
+                                <Star size={10} /> Rate session <span className="text-faint">(optional)</span>
                               </button>
                             )}
                             {ratedSet.has(a.id) && (
-                              <span className="text-[10px] text-ink-400 flex items-center gap-1">
+                              <span className="text-[10px] text-faint flex items-center gap-1">
                                 <Star size={10} className="text-warm-400 fill-warm-400" /> Rated
                               </span>
                             )}
@@ -1362,7 +1317,7 @@ export function Connect() {
                           <AddToCalendar
                             appt={{ ...a, meetingLink: a.meetingLink || linkedDoctor?.meetingLink || '' }}
                             role="patient"
-                            className="mt-2.5 pt-2.5 border-t border-surface-100 dark:border-surface-800"
+                            className="mt-2.5 pt-2.5 border-t border-line"
                           />
                         )}
                         {/* In-person arrivals: the ticket-style pass the practice
@@ -1375,7 +1330,7 @@ export function Connect() {
                             </p>
                           ) : (
                             <button onClick={() => setTicketAppt(a)}
-                              className="mt-2.5 w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-primary-50 dark:bg-primary-700/15 border border-primary-200 dark:border-primary-600/40 text-primary-700 dark:text-primary-300 text-xs font-semibold hover:bg-primary-100 dark:hover:bg-primary-700/25 transition-colors">
+                              className="mt-2.5 w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-accent-soft border border-accent/30 text-accent-soft-text text-xs font-semibold hover:bg-accent-soft transition-colors">
                               <QrCode size={14} className="flex-shrink-0" />
                               Going in person? Show your check-in pass
                             </button>
@@ -1383,7 +1338,7 @@ export function Connect() {
                         )}
                         {['pending', 'confirmed'].includes(a.status) && !sessionHasPassed(a) && (
                           <button onClick={() => handleCancelAppt(a)} disabled={cancelling === a.id}
-                            className="mt-2.5 w-full text-xs font-medium text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 py-2 rounded-xl transition-colors disabled:opacity-50">
+                            className="mt-2.5 w-full text-xs font-medium text-danger hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 py-2 rounded-xl transition-colors disabled:opacity-50">
                             {cancelling === a.id ? 'Cancelling…' : a.status === 'pending' ? 'Cancel request' : 'Cancel appointment'}
                           </button>
                         )}
@@ -1395,45 +1350,37 @@ export function Connect() {
 
               {upcomingAppts.length === 0 && (
                 <div className="py-8 text-center">
-                  <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center"><Calendar size={22} className="text-ink-400" /></div>
-                  <p className="text-sm text-ink-400">No upcoming appointments.</p>
-                  <p className="text-xs text-ink-400 mt-1">Book a session with {linkedDoctor.name} to get started.</p>
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-raised flex items-center justify-center"><Calendar size={22} className="text-faint" /></div>
+                  <p className="text-sm text-faint">No upcoming appointments.</p>
+                  <p className="text-xs text-faint mt-1">Book a session with {linkedDoctor.name} to get started.</p>
                 </div>
               )}
             </>
           ) : (
             <div>
               <Card className="p-5 mb-5">
-                <p className="text-sm font-semibold text-ink-900 dark:text-ink-100 mb-1">Link your existing doctor</p>
-                <p className="text-xs text-ink-400 mb-4">
+                <p className="text-sm font-semibold text-ink mb-1">Link your existing doctor</p>
+                <p className="text-xs text-faint mb-4">
                   Enter your doctor's HPCSA practice number (e.g. MP0123456) or their name to find and link them.
                 </p>
                 <div className="flex gap-2">
                   <input value={hpcsaQuery} onChange={e => setHpcsaQuery(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleHpcsaSearch()}
                     placeholder="HPCSA number or doctor's name"
-                    className="flex-1 px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
+                    className="flex-1 px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
                   <Button size="sm" onClick={handleHpcsaSearch}>Search</Button>
                 </div>
-                {searchError && <p className="text-xs text-red-500 mt-2">{searchError}</p>}
+                {searchError && <p className="text-xs text-danger mt-2">{searchError}</p>}
                 {searchResult && (
-                  <div className="mt-3 p-3 rounded-xl bg-surface-50 dark:bg-surface-900 border border-surface-200 dark:border-surface-700">
+                  <div className="mt-3 p-3 rounded-xl bg-raised border border-line">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0">
-                        {searchResult.photoURL ? (
-                          <img src={searchResult.photoURL} alt={searchResult.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-xl">
-                            {searchResult.avatar || '🧠'}
-                          </div>
-                        )}
-                      </div>
+                      <Avatar photoUrl={searchResult.photoURL} name={searchResult.name} size="sm" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1">
-                          <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">{searchResult.name}</p>
-                          <BadgeCheck size={12} className="text-primary-500" />
+                          <p className="text-sm font-semibold text-ink">{searchResult.name}</p>
+                          <BadgeCheck size={12} className="text-accent" />
                         </div>
-                        <p className="text-xs text-ink-400">{searchResult.type} · HPCSA: {searchResult.hpcsa}</p>
+                        <p className="text-xs text-faint">{searchResult.type} · HPCSA: {searchResult.hpcsa}</p>
                       </div>
                       <Button size="sm" onClick={() => handleLink(searchResult)}>
                         <Link2 size={12} /> Link
@@ -1443,17 +1390,17 @@ export function Connect() {
                 )}
               </Card>
 
-              <p className="text-xs text-ink-400 mb-3">Or link a doctor from the directory:</p>
+              <p className="text-xs text-faint mb-3">Or link a doctor from the directory:</p>
               <div className="space-y-3">
                 {loading ? (
-                  [1, 2].map(i => <div key={i} className="h-36 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />)
+                  [1, 2].map(i => <div key={i} className="h-36 rounded-2xl bg-raised animate-pulse" />)
                 ) : providers.slice(0, 5).map(p => (
                   <ProviderCard key={p.id} provider={p} onBook={handleBookClick} onLink={handleLink} linked={false} onViewProfile={setViewingProvider} />
                 ))}
                 {!loading && providers.length === 0 && (
                   <div className="py-10 text-center">
-                    <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center"><Sprout size={22} className="text-ink-400" /></div>
-                    <p className="text-sm text-ink-400">No providers yet. Check back soon.</p>
+                    <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-raised flex items-center justify-center"><Sprout size={22} className="text-faint" /></div>
+                    <p className="text-sm text-faint">No providers yet. Check back soon.</p>
                   </div>
                 )}
               </div>

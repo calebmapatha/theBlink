@@ -203,27 +203,8 @@ export function useProviders() {
     } catch {}
   }
 
-  // Upload a profile photo for a provider or patient.
-  // Returns the download URL on success, null on failure.
-  const uploadPhoto = async (uid, file, type = 'provider') => {
-    try {
-      // Derive a safe extension from the MIME type — never trust the filename
-      // (which could contain path separators or a misleading extension).
-      const EXT_BY_TYPE = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif' }
-      const ext = EXT_BY_TYPE[file.type]
-      if (!ext) return null
-      if (file.size > 5 * 1024 * 1024) return null
-      const safeType = type === 'provider' ? 'provider' : 'patient'
-      const storageRef = ref(storage, `profile-photos/${safeType}/${uid}.${ext}`)
-      await uploadBytes(storageRef, file)
-      const url = await getDownloadURL(storageRef)
-      const col = type === 'provider' ? 'providers' : 'patients'
-      await setDoc(doc(db, col, uid), { photoURL: url }, { merge: true })
-      return url
-    } catch {
-      return null
-    }
-  }
+  // Profile photos moved to src/services/profilePhoto.js — the single write
+  // path shared by Settings, the profile modals and the provider dashboard.
 
   // Upload a practitioner verification document (certified ID, academic
   // certificate, HPCSA certificate). Stored under verification-docs/{uid}/,
@@ -363,7 +344,7 @@ export function useProviders() {
     bookAppointment, getAppointments, getPatientAppointments, updateAppointment,
     linkDoctor, getLinkedDoctor, unlinkDoctor, searchProviderByHPCSA,
     incrementProfileViews,
-    uploadPhoto, getPatientProfile,
+    getPatientProfile,
     uploadVerificationDoc, getVerification, getVerificationURL,
     submitRating, getRating, getProviderRatings,
     createPrescription, getMyPrescriptions, getAuthoredPrescriptions, deletePrescription,
