@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, Eye, TrendingUp, Camera, Loader, Star, FileText, Trash2, FileSignature, MapPin, Smile, Zap, Lightbulb, CalendarCheck, LineChart, Wallet, ArrowRight } from 'lucide-react'
+import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, Eye, TrendingUp, Camera, Loader, Star, FileText, Trash2, FileSignature, MapPin, Smile, Zap, Lightbulb, CalendarCheck, LineChart, Wallet, ArrowRight, QrCode } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -13,6 +13,7 @@ import { AddToCalendar } from '../components/ui/AddToCalendar'
 import { slotsForDay, dayMode, DEFAULT_HOURS } from '../utils/availability'
 import { trialDaysLeft } from '../utils/pricing'
 import { getScreeningDocs, addScreeningDocPDF, addScreeningDocText, deleteScreeningDoc, openScreeningPDF, getConsentsForAppointment, MAX_PDF_BYTES, MAX_DOCS } from '../utils/screeningDocs'
+import { shortCodeFor, normalizeCode, parseCheckInPayload, formatCode } from '../utils/checkin'
 
 const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400'
 
@@ -749,7 +750,10 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
         )}
         {appt.status === 'confirmed' && !isPast && (
           <span className="flex items-center gap-1 text-xs text-success-600 dark:text-success-400 font-medium flex-shrink-0">
-            <CheckCircle size={13} /> Confirmed
+            <CheckCircle size={13} />
+            {appt.checkedInAt
+              ? `Checked in · ${new Date(appt.checkedInAt).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}`
+              : 'Confirmed'}
           </span>
         )}
         {appt.status === 'confirmed' && isPast && onOutcome && (
@@ -1123,6 +1127,161 @@ function Banner({ tone = 'amber', icon: Icon, title, children, action }) {
   )
 }
 
+// Live camera preview that reads the patient's check-in QR. Only rendered
+// when the browser supports BarcodeDetector (Chrome on Android/desktop Mac);
+// everywhere else the typed short code is the path.
+function CameraScanner({ onPayload, onUnavailable }) {
+  const videoRef = useRef(null)
+
+  useEffect(() => {
+    let stream, raf, cancelled = false
+    const start = async () => {
+      try {
+        const detector = new window.BarcodeDetector({ formats: ['qr_code'] })
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        if (cancelled) { stream.getTracks().forEach(t => t.stop()); return }
+        videoRef.current.srcObject = stream
+        await videoRef.current.play()
+        const tick = async () => {
+          if (cancelled) return
+          try {
+            const codes = await detector.detect(videoRef.current)
+            if (codes.length > 0) { onPayload(codes[0].rawValue); return }
+          } catch { /* frame not ready yet — keep polling */ }
+          raf = requestAnimationFrame(tick)
+        }
+        tick()
+      } catch {
+        // Camera denied or detector failed — fall back to the typed code.
+        if (!cancelled) onUnavailable?.()
+      }
+    }
+    start()
+    return () => {
+      cancelled = true
+      cancelAnimationFrame(raf)
+      stream?.getTracks().forEach(t => t.stop())
+    }
+  }, [])
+
+  return <video ref={videoRef} muted playsInline className="w-full aspect-video object-cover rounded-2xl bg-black" />
+}
+
+// Reception check-in: scan the patient's QR pass (where supported) or type
+// their 6-character code. Matches against the provider's own confirmed
+// appointments — no extra reads.
+function CheckInModal({ open, onClose, appointments, onCheckIn }) {
+  const [input, setInput]       = useState('')
+  const [scanning, setScanning] = useState(false)
+  const [scanError, setScanError] = useState('')
+  const [busy, setBusy]         = useState(false)
+
+  const canScan = typeof window !== 'undefined' && 'BarcodeDetector' in window
+
+  useEffect(() => {
+    if (open) { setInput(''); setScanning(false); setScanError(''); setBusy(false) }
+  }, [open])
+
+  const candidates = appointments.filter(a => a.status === 'confirmed' && !a.checkedInAt)
+  const code = normalizeCode(input)
+  const match = code.length === 6 ? candidates.find(a => shortCodeFor(a.id) === code) : null
+  const alreadyIn = code.length === 6
+    ? appointments.find(a => a.status === 'confirmed' && a.checkedInAt && shortCodeFor(a.id) === code)
+    : null
+
+  const todayStr = new Date().toISOString().split('T')[0]
+
+  const handlePayload = (raw) => {
+    const apptId = parseCheckInPayload(raw)
+    setScanning(false)
+    if (!apptId) { setScanError('That QR code is not a MentisFlow check-in pass.'); return }
+    const appt = candidates.find(a => a.id === apptId)
+    const done = appointments.find(a => a.id === apptId && a.checkedInAt)
+    if (appt) setInput(shortCodeFor(appt.id))
+    else if (done) setInput(shortCodeFor(done.id))
+    else setScanError('No matching confirmed appointment for that pass.')
+  }
+
+  const confirm = async () => {
+    if (!match) return
+    setBusy(true)
+    await onCheckIn(match)
+    setBusy(false)
+    onClose()
+  }
+
+  return (
+    <Modal open={open} onClose={onClose} title="Check in a patient">
+      <div className="space-y-4">
+        <p className="text-xs text-ink-400 leading-relaxed">
+          Ask the patient for their check-in pass. Type the 6-character code from it
+          {canScan ? ', or scan the QR with your camera.' : '.'}
+        </p>
+
+        {scanning ? (
+          <div className="space-y-2">
+            <CameraScanner
+              onPayload={handlePayload}
+              onUnavailable={() => { setScanning(false); setScanError('Camera unavailable — type the code instead.') }}
+            />
+            <Button variant="ghost" size="sm" className="w-full" onClick={() => setScanning(false)}>Stop scanning</Button>
+          </div>
+        ) : (
+          <>
+            <input
+              value={input}
+              onChange={e => { setInput(e.target.value); setScanError('') }}
+              placeholder="e.g. K7M-PQ4"
+              autoFocus
+              maxLength={8}
+              className="w-full px-4 py-3 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-center text-lg font-bold tracking-[0.2em] uppercase placeholder:tracking-normal placeholder:font-normal placeholder:text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
+            />
+            {canScan && (
+              <Button variant="soft" size="sm" className="w-full" onClick={() => { setScanError(''); setScanning(true) }}>
+                <Camera size={13} /> Scan QR instead
+              </Button>
+            )}
+          </>
+        )}
+
+        {scanError && <p className="text-xs text-red-500">{scanError}</p>}
+
+        {match && (
+          <div className="p-3.5 rounded-2xl bg-success-50 dark:bg-success-500/10 border border-success-200 dark:border-success-500/30">
+            <div className="flex items-center gap-3">
+              <Avatar name={match.patientName} size={40} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-ink-900 dark:text-ink-100 truncate">{match.patientName}</p>
+                <p className="text-xs text-ink-500 dark:text-ink-400">{match.date} at {match.timeSlot}</p>
+              </div>
+            </div>
+            {match.date !== todayStr && (
+              <p className="mt-2 text-[11px] text-warm-600 dark:text-warm-500">
+                Note: this booking is for {match.date}, not today.
+              </p>
+            )}
+            <Button className="w-full mt-3" disabled={busy} onClick={confirm}>
+              {busy ? 'Checking in…' : `Check in ${match.patientName?.split(' ')[0] || 'patient'}`}
+            </Button>
+          </div>
+        )}
+
+        {alreadyIn && !match && (
+          <p className="text-xs text-success-600 dark:text-success-400 flex items-center gap-1">
+            <CheckCircle size={12} /> {alreadyIn.patientName} is already checked in.
+          </p>
+        )}
+
+        {code.length === 6 && !match && !alreadyIn && (
+          <p className="text-xs text-ink-400">
+            No confirmed appointment matches {formatCode(code)}. Double-check the code with the patient.
+          </p>
+        )}
+      </div>
+    </Modal>
+  )
+}
+
 export function ProviderDashboard() {
   const { user }                                                                                                    = useAuth()
   const { showToast }                                                                                               = useApp()
@@ -1136,6 +1295,7 @@ export function ProviderDashboard() {
   const [statModal, setStatModal]       = useState(null)
   const [consentAppt, setConsentAppt]   = useState(null)
   const [prescribeAppt, setPrescribeAppt] = useState(null)
+  const [checkInOpen, setCheckInOpen]   = useState(false)
   const [photoUploading, setPhotoUploading] = useState(false)
   const [feeRequests, setFeeRequests]   = useState([])
   const fileRef                         = useRef()
@@ -1187,6 +1347,19 @@ export function ProviderDashboard() {
       await updateAppointment(id, status === 'cancelled' ? { status, cancelledBy: 'provider' } : { status })
     }
     setAppointments(prev => prev.map(a => a.id === id ? { ...a, status, ...extra } : a))
+  }
+
+  // Reception check-in: stamp the arrival time on the appointment. The rules
+  // allow either party to add fields (only uids/createdAt are locked).
+  const handleCheckInAppt = async (appt) => {
+    const checkedInAt = new Date().toISOString()
+    try {
+      await updateAppointment(appt.id, { checkedInAt })
+      setAppointments(prev => prev.map(a => a.id === appt.id ? { ...a, checkedInAt } : a))
+      showToast(`${appt.patientName || 'Patient'} checked in`)
+    } catch {
+      showToast('Could not check the patient in. Please try again.', { variant: 'error' })
+    }
   }
 
   const handleCreatePrescription = async ({ items, notes }) => {
@@ -1391,12 +1564,18 @@ export function ProviderDashboard() {
       {/* Booking requests (wide) + practice detail rail. */}
       <div className="grid lg:grid-cols-3 gap-6 mb-12">
         <div className="lg:col-span-2 space-y-5" id="requests">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
             <h2 className="font-serif text-[1.6rem] leading-none tracking-tight text-ink-900 dark:text-ink-100">Booking requests</h2>
             <div className="flex items-center gap-3 text-[13px] text-ink-400">
               <button onClick={() => setStatModal('pending')} className="hover:text-primary-600 transition-colors">{pending.length} pending</button>
               <button onClick={() => setStatModal('confirmedList')} className="hover:text-primary-600 transition-colors">{confirmed.length} confirmed</button>
               <button onClick={() => setStatModal('total')} className="hover:text-primary-600 transition-colors">All</button>
+              {/* Reception check-in only makes sense for practices that see patients in person. */}
+              {['in-person', 'both'].includes(profile?.consultationType) && (
+                <Button variant="outline" size="pill" className="!px-3.5 !py-1.5 text-xs" onClick={() => setCheckInOpen(true)}>
+                  <QrCode size={13} /> Check in
+                </Button>
+              )}
             </div>
           </div>
 
@@ -1571,6 +1750,8 @@ export function ProviderDashboard() {
       </div>
 
       <ConsentsModal appt={consentAppt} onClose={() => setConsentAppt(null)} />
+      <CheckInModal open={checkInOpen} onClose={() => setCheckInOpen(false)}
+        appointments={appointments} onCheckIn={handleCheckInAppt} />
       <EditModal open={editOpen} onClose={() => setEditOpen(false)} profile={profile} onSave={handleSave} />
       <PrescriptionModal open={!!prescribeAppt} onClose={() => setPrescribeAppt(null)} appt={prescribeAppt} onSubmit={handleCreatePrescription} />
       <StatDetailModal kind={statModal} onClose={() => setStatModal(null)}
