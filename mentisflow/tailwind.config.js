@@ -66,7 +66,6 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Fraunces', 'Georgia', 'serif'],
       },
       boxShadow: {
         'glow-primary': '0 0 20px -5px rgba(20,184,166,0.4)',

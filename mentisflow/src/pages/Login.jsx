@@ -82,7 +82,7 @@ export function Login({ onBack, initialRole = null }) {
           <div className="w-14 h-14 rounded-2xl bg-teal-500 flex items-center justify-center shadow-lg mb-4">
             <HeartHandshake size={26} className="text-white" />
           </div>
-          <h1 className="font-display text-[1.7rem] font-semibold text-slate-900 tracking-tight">
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
             {role ? (mode === 'signup' ? 'Create your account' : 'Good to see you') : 'Let’s get you started'}
           </h1>
           <p className="text-slate-500 mt-1.5 text-sm text-center leading-snug">
