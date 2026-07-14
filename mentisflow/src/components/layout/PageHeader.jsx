@@ -8,8 +8,8 @@ export function PageHeader({ icon: Icon, eyebrow, title, subtitle, action, class
             {eyebrow}
           </div>
         )}
-        <h1 className="text-[1.7rem] font-bold tracking-tight text-ink-900 dark:text-ink-100 leading-tight">{title}</h1>
-        {subtitle && <p className="text-sm text-ink-400 mt-1">{subtitle}</p>}
+        <h1 className="font-serif font-normal text-[2rem] sm:text-[2.4rem] tracking-[-0.02em] text-ink-900 dark:text-ink-100 leading-[1.1] text-balance">{title}</h1>
+        {subtitle && <p className="text-sm text-ink-500 dark:text-ink-400 mt-1.5">{subtitle}</p>}
       </div>
       {action && <div className="flex-shrink-0 pt-1">{action}</div>}
     </div>
