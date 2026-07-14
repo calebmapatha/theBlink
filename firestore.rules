@@ -72,6 +72,14 @@ service cloud.firestore {
       match /private/{docId} {
         allow read, write: if isSignedIn() && (request.auth.uid == uid || isAdmin());
       }
+
+      // Encrypted client-file vault. Every document here is ciphertext
+      // (AES-GCM, key derived from the provider's vault password on their
+      // device) — deliberately owner-ONLY, not even admin: the platform is
+      // zero-knowledge about vault contents.
+      match /vault/{docId} {
+        allow read, write, delete: if isSignedIn() && request.auth.uid == uid;
+      }
     }
 
     // Signed pre-screening consents: created by the signing patient, readable

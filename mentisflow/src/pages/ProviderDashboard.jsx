@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, Eye, TrendingUp, Camera, Loader, Star, FileText, Trash2, FileSignature, MapPin, Smile, Zap, Lightbulb, CalendarCheck, LineChart, Wallet, ArrowRight, QrCode } from 'lucide-react'
+import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, Eye, TrendingUp, Camera, Loader, Star, FileText, Trash2, FileSignature, MapPin, Smile, Zap, Lightbulb, CalendarCheck, LineChart, Wallet, ArrowRight, QrCode, Lock } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -1720,6 +1720,7 @@ export function ProviderDashboard() {
         <h2 className="font-serif text-[1.6rem] leading-none tracking-tight text-ink-900 dark:text-ink-100 mb-5">Manage your practice</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <ToolCard icon={CalendarCheck} title="Availability" desc="Open and close time slots in your weekly diary." onClick={() => goTo('availability')} />
+          <ToolCard icon={Lock} title="Client files" desc="Encrypted notes and documents, locked with your vault password." onClick={() => navigate('/provider/files')} />
           <ToolCard icon={FileSignature} title="Documents" desc="Pre-screening forms patients sign before a session." onClick={() => goTo('documents')} />
           <ToolCard icon={LineChart} title="Analytics" desc="Bookings, ratings and growth for your practice." onClick={() => navigate('/provider/analytics')} />
           {profile && profile.approvalStatus !== 'approved' ? (
