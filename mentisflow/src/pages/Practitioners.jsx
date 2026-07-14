@@ -69,7 +69,7 @@ export function Practitioners() {
   const startUrl = `${import.meta.env.BASE_URL}?role=provider`
 
   return (
-    <div className="min-h-[100dvh] bg-white text-slate-900">
+    <div className="h-[100dvh] overflow-y-auto bg-white text-slate-900">
 
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-slate-100">
@@ -100,7 +100,7 @@ export function Practitioners() {
               Grow your practice. Focus on your patients.
             </h1>
             <p className="text-base sm:text-lg text-slate-500 mt-5 max-w-2xl leading-relaxed">
-              Patients discover you, book straight into your diary, and arrive with context — the mood,
+              Patients discover you, book straight into your diary, and arrive with context: the mood,
               habit and check-in trends they choose to share. Less phone tag and paperwork, more time for care.
             </p>
             <a href={startUrl}
