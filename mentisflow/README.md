@@ -1,16 +1,41 @@
-# React + Vite
+# MentisFlow web app
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The React PWA for MentisFlow. Full product, architecture, and deployment documentation lives in the [repository README](../README.md).
 
-Currently, two official plugins are available:
+## Quick start
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+cp .env.example .env   # fill in your Firebase config
+npm run dev            # http://localhost:5173
+```
 
-## React Compiler
+## Scripts
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm run dev       # Vite dev server with HMR
+npm run build     # Production build (output in dist/)
+npm run preview   # Serve the production build locally
+npm run lint      # ESLint
+npx vitest run    # Unit tests
+```
 
-## Expanding the ESLint configuration
+## Layout
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```
+src/
+├── pages/       # Route-level screens (Dashboard, Connect, ProviderDashboard, ProviderVault…)
+├── components/  # Shared UI (ui/) and layout (layout/) pieces
+├── hooks/       # Data hooks (useProviders, useVault, useInbox…)
+├── context/     # Auth and app-wide state
+├── lib/         # Firebase initialisation
+└── utils/       # Pure helpers (availability, pricing, checkin, vault crypto…) with tests in utils/__tests__
+```
+
+## Conventions worth knowing
+
+- **Design language:** editorial serif headlines (Fraunces) with Inter for UI, teal as the single accent, white cards on a light canvas. Dark mode is class-based (`dark:` variants everywhere).
+- **PWA:** the service worker caches aggressively — after deploying, hard-refresh to see changes.
+- **Base path:** the app deploys under `/theBlink/`; use `import.meta.env.BASE_URL` when building public URLs.
+- **Public pages** (`/privacy`, `/terms`, `/practitioners`) are matched by path suffix in `App.jsx`, not router routes, so they survive the GitHub Pages base path.
+- **Encrypted vault:** `utils/vault.js` composes Web Crypto primitives only — do not replace it with a custom cipher or move key material off-device.
