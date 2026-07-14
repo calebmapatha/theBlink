@@ -47,7 +47,9 @@ export default function AdvanceBookingCalendar({
 
   const [monthOffset, setMonthOffset] = useState(0) // 0 = this month
 
-  const viewMonth = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1)
+  const viewYear = today.getFullYear()
+  const viewMonthIndex = today.getMonth() + monthOffset
+  const viewMonth = new Date(viewYear, viewMonthIndex, 1)
   // End of the final month in the horizon.
   const lastBookable = new Date(today.getFullYear(), today.getMonth() + horizonMonths + 1, 0)
 
@@ -67,7 +69,7 @@ export default function AdvanceBookingCalendar({
       days.push(d)
     }
     return days
-  }, [viewMonth.getFullYear(), viewMonth.getMonth()]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [viewYear, viewMonthIndex]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const selectedSlots = selectedDate
     ? availableSlotsForDate(diary, bookedSlots, selectedDate)
@@ -88,11 +90,11 @@ export default function AdvanceBookingCalendar({
           onClick={() => canGoBack && setMonthOffset(o => o - 1)}
           disabled={!canGoBack}
           aria-label="Previous month"
-          className="rounded-full px-2.5 py-1 text-ink-500 dark:text-ink-400 hover:bg-surface-100 dark:hover:bg-surface-800 disabled:opacity-30"
+          className="rounded-full px-2.5 py-1 text-muted hover:bg-raised disabled:opacity-30"
         >
           ‹
         </button>
-        <p className="text-sm font-medium text-ink-900 dark:text-ink-100">
+        <p className="text-sm font-medium text-ink">
           {MONTHS[viewMonth.getMonth()]} {viewMonth.getFullYear()}
         </p>
         <button
@@ -100,14 +102,14 @@ export default function AdvanceBookingCalendar({
           onClick={() => canGoForward && setMonthOffset(o => o + 1)}
           disabled={!canGoForward}
           aria-label="Next month"
-          className="rounded-full px-2.5 py-1 text-ink-500 dark:text-ink-400 hover:bg-surface-100 dark:hover:bg-surface-800 disabled:opacity-30"
+          className="rounded-full px-2.5 py-1 text-muted hover:bg-raised disabled:opacity-30"
         >
           ›
         </button>
       </div>
 
       {/* Weekday labels */}
-      <div className="grid grid-cols-7 text-center text-xs text-ink-400">
+      <div className="grid grid-cols-7 text-center text-xs text-faint">
         {DAY_LABELS.map(d => (
           <span key={d} className="pb-1.5">{d}</span>
         ))}
@@ -135,15 +137,15 @@ export default function AdvanceBookingCalendar({
               aria-pressed={isSelected}
               className={`relative aspect-square rounded-xl text-sm transition-colors motion-reduce:transition-none ${
                 isSelected
-                  ? 'bg-primary-500 font-medium text-white'
+                  ? 'bg-accent font-medium text-white'
                   : disabled
-                  ? 'text-ink-300 dark:text-ink-600'
-                  : 'text-ink-700 dark:text-ink-200 hover:bg-primary-50 dark:hover:bg-primary-700/20'
+                  ? 'text-faint'
+                  : 'text-ink hover:bg-accent-soft'
               } ${inMonth ? '' : 'opacity-40'}`}
             >
               {d.getDate()}
               {hasSlots && !isSelected && (
-                <span className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-primary-500" />
+                <span className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-accent" />
               )}
             </button>
           )
@@ -152,12 +154,12 @@ export default function AdvanceBookingCalendar({
 
       {/* Slot picker for the selected day */}
       {selectedDate && (
-        <div className="mt-4 border-t border-surface-200 dark:border-surface-700 pt-3.5">
-          <p className="mb-2.5 text-sm font-medium text-ink-700 dark:text-ink-300">
+        <div className="mt-4 border-t border-line pt-3.5">
+          <p className="mb-2.5 text-sm font-medium text-ink">
             Open times on {selectedLabel}
           </p>
           {selectedSlots.length === 0 ? (
-            <p className="text-sm text-ink-400">
+            <p className="text-sm text-faint">
               No open times on this day. Choose another date.
             </p>
           ) : (
@@ -170,8 +172,8 @@ export default function AdvanceBookingCalendar({
                   aria-pressed={selectedSlot === slot}
                   className={`rounded-full border px-4 py-2 text-sm transition-colors ${
                     selectedSlot === slot
-                      ? 'border-primary-400 bg-primary-50 dark:bg-primary-700/20 font-medium text-primary-700 dark:text-primary-300'
-                      : 'border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-700 dark:text-ink-300 hover:border-primary-300'
+                      ? 'border-accent bg-accent-soft font-medium text-accent-soft-text'
+                      : 'border-line bg-raised text-ink hover:border-accent/40'
                   }`}
                 >
                   {slot}
@@ -182,7 +184,7 @@ export default function AdvanceBookingCalendar({
         </div>
       )}
 
-      <p className="mt-3.5 text-xs text-ink-400">
+      <p className="mt-3.5 text-xs text-faint">
         Bookings can be made up to {horizonMonths} months ahead.
       </p>
     </div>

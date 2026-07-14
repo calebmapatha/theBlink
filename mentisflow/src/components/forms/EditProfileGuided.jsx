@@ -19,7 +19,7 @@ import { detectLocation } from '../../utils/geolocate'
  * them to GuidedFlow.
  */
 
-const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400'
+const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent'
 
 const PLATFORMS = [
   { value: 'zoom',    label: 'Zoom' },
@@ -46,8 +46,8 @@ function Chip({ label, selected, onClick }) {
       aria-pressed={selected}
       className={`rounded-full border px-4 py-2 text-sm transition-colors motion-reduce:transition-none ${
         selected
-          ? 'border-primary-400 bg-primary-50 dark:bg-primary-700/20 font-medium text-primary-700 dark:text-primary-300'
-          : 'border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-500 dark:text-ink-400 hover:border-surface-300'
+          ? 'border-accent bg-accent-soft font-medium text-accent-soft-text'
+          : 'border-line bg-raised text-muted hover:border-faint'
       }`}
     >
       {label}
@@ -77,7 +77,7 @@ function LocationFields({ values, setValues }) {
     <div className="space-y-3">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <p className="mb-1.5 text-sm font-medium text-ink-700 dark:text-ink-300">City</p>
+          <p className="mb-1.5 text-sm font-medium text-ink">City</p>
           <input
             type="text"
             value={values.city}
@@ -87,7 +87,7 @@ function LocationFields({ values, setValues }) {
           />
         </div>
         <div>
-          <p className="mb-1.5 text-sm font-medium text-ink-700 dark:text-ink-300">Province</p>
+          <p className="mb-1.5 text-sm font-medium text-ink">Province</p>
           <select
             value={values.province}
             onChange={e => setValues({ province: e.target.value })}
@@ -101,11 +101,11 @@ function LocationFields({ values, setValues }) {
         </div>
       </div>
       <button type="button" onClick={handleUseLocation} disabled={locating}
-        className="flex items-center gap-1.5 text-xs font-semibold text-primary-500 hover:text-primary-600 disabled:opacity-50 transition-colors">
+        className="flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-accent-strong disabled:opacity-50 transition-colors">
         {locating ? <Loader size={12} className="animate-spin" /> : <MapPin size={12} />}
         {locating ? 'Finding your location…' : 'Use my current location'}
       </button>
-      {locError && <p className="text-xs text-red-500">{locError}</p>}
+      {locError && <p className="text-xs text-danger">{locError}</p>}
     </div>
   )
 }
@@ -136,7 +136,7 @@ const steps = [
     render: ({ values, setValues }) => (
       <div className="space-y-3">
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 text-sm">R</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-faint text-sm">R</span>
           <input
             type="number"
             inputMode="numeric"
@@ -146,12 +146,12 @@ const steps = [
             className={`${inputCls} pl-7`}
           />
         </div>
-        <label className="flex cursor-pointer items-start gap-2.5 text-sm text-ink-500 dark:text-ink-400">
+        <label className="flex cursor-pointer items-start gap-2.5 text-sm text-muted">
           <input
             type="checkbox"
             checked={!!values.hideFee}
             onChange={e => setValues({ hideFee: e.target.checked })}
-            className="mt-0.5 h-4 w-4 rounded accent-primary-500 flex-shrink-0"
+            className="mt-0.5 h-4 w-4 rounded accent-accent flex-shrink-0"
           />
           <span className="text-xs leading-relaxed">
             Hide my session fee from patients. Your profile will show
@@ -204,8 +204,8 @@ const steps = [
           ))}
         </div>
         <div>
-          <p className="mb-1.5 text-sm font-medium text-ink-700 dark:text-ink-300">
-            Meeting link <span className="font-normal text-ink-400">(optional)</span>
+          <p className="mb-1.5 text-sm font-medium text-ink">
+            Meeting link <span className="font-normal text-faint">(optional)</span>
           </p>
           <input
             type="url"
@@ -256,7 +256,7 @@ const steps = [
         </div>
         {(values.consultationType === 'in-person' || values.consultationType === 'both') && (
           <div>
-            <p className="mb-1.5 text-sm font-medium text-ink-700 dark:text-ink-300">Practice address</p>
+            <p className="mb-1.5 text-sm font-medium text-ink">Practice address</p>
             <input
               type="text"
               value={values.address}
@@ -264,7 +264,7 @@ const steps = [
               placeholder="e.g. 12 Oak Ave, Rosebank, Johannesburg"
               className={inputCls}
             />
-            <p className="mt-1 text-[10px] text-ink-400">
+            <p className="mt-1 text-[10px] text-faint">
               Shown to patients on a map — use a full address Google Maps can find.
             </p>
           </div>

@@ -110,11 +110,11 @@ export function Dashboard() {
   return (
     <PageWrapper>
       <div className="mb-6">
-        <div className="flex items-center gap-2 text-ink-400 text-xs mb-1.5">
+        <div className="flex items-center gap-2 text-faint text-xs mb-1.5">
           <Sun size={13} />
           <span className="font-medium">{formatDayHeader()}</span>
         </div>
-        <h1 className="text-[1.7rem] font-bold tracking-tight text-ink-900 dark:text-ink-100 leading-tight">
+        <h1 className="text-[1.7rem] font-bold tracking-tight text-ink leading-tight">
           {greeting()}{firstName ? `, ${firstName}` : ''} 👋
         </h1>
       </div>
@@ -127,11 +127,11 @@ export function Dashboard() {
           <Card className="p-4">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="text-xs text-ink-400">{greeting()}</p>
-                <p className="text-sm font-bold text-ink-900 dark:text-ink-100">How are you feeling?</p>
+                <p className="text-xs text-faint">{greeting()}</p>
+                <p className="text-sm font-bold text-ink">How are you feeling?</p>
               </div>
               <button onClick={() => navigate('/checkin')} title="Full check-in"
-                className="w-8 h-8 rounded-lg bg-primary-500 hover:bg-primary-600 flex items-center justify-center transition-colors">
+                className="w-8 h-8 rounded-lg bg-accent hover:bg-accent-strong flex items-center justify-center transition-colors">
                 <HeartHandshake size={15} className="text-white" />
               </button>
             </div>
@@ -140,15 +140,15 @@ export function Dashboard() {
                 <button key={m} onClick={() => saveMood(m)}
                   className={`flex-1 h-11 rounded-xl text-xl flex items-center justify-center transition-all active:scale-90 ${
                     checkin.todayCheckin?.mood === m
-                      ? 'bg-primary-100 dark:bg-primary-700/30 ring-2 ring-primary-400'
-                      : 'bg-surface-50 dark:bg-surface-900 hover:bg-surface-100 dark:hover:bg-surface-800'
+                      ? 'bg-accent-soft ring-2 ring-accent'
+                      : 'bg-raised hover:bg-raised'
                   }`}>
                   {MOOD_EMOJI[m]}
                 </button>
               ))}
             </div>
             {checkin.todayCheckin?.intention && (
-              <p className="text-xs text-ink-500 dark:text-ink-400 mt-2.5 italic truncate">"{checkin.todayCheckin.intention}"</p>
+              <p className="text-xs text-muted mt-2.5 italic truncate">"{checkin.todayCheckin.intention}"</p>
             )}
           </Card>
         </motion.div>
@@ -158,19 +158,19 @@ export function Dashboard() {
         {nextAppt ? (
           <motion.div variants={itemVariants}>
             <Card interactive onClick={() => navigate('/connect')}
-              className="p-4 border-primary-100 dark:border-primary-700/40 bg-primary-50/40 dark:bg-primary-700/10">
+              className="p-4 border-accent/20 bg-accent-soft/50">
               <div className="flex items-center justify-between mb-1.5">
-                <p className="text-xs font-semibold text-primary-700 dark:text-primary-300 uppercase tracking-wide">Next appointment</p>
+                <p className="text-xs font-semibold text-accent-soft-text uppercase tracking-wide">Next appointment</p>
                 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                   nextAppt.status === 'confirmed'
-                    ? 'bg-primary-500 text-white'
+                    ? 'bg-accent text-on-accent'
                     : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
                 }`}>
                   {nextAppt.status === 'confirmed' ? 'Confirmed' : 'Pending'}
                 </span>
               </div>
-              <p className="text-sm font-bold text-ink-900 dark:text-ink-100">{apptDoctor?.name || nextAppt.providerName || 'Your practitioner'}</p>
-              <p className="text-xs text-ink-400 mt-0.5 flex items-center gap-1 flex-wrap">
+              <p className="text-sm font-bold text-ink">{apptDoctor?.name || nextAppt.providerName || 'Your practitioner'}</p>
+              <p className="text-xs text-faint mt-0.5 flex items-center gap-1 flex-wrap">
                 {apptDoctor?.type && <span>{apptDoctor.type}</span>}
                 <span className="flex items-center gap-1">
                   {apptDoctor?.consultationType === 'in-person'
@@ -185,7 +185,7 @@ export function Dashboard() {
           <motion.div variants={itemVariants}>
             <button
               onClick={() => navigate('/connect')}
-              className="relative w-full text-left p-5 rounded-3xl bg-gradient-to-br from-primary-500 to-primary-700 text-white shadow-md shadow-primary-500/20 hover:shadow-lg hover:shadow-primary-500/30 transition-shadow overflow-hidden"
+              className="relative w-full text-left p-5 rounded-3xl bg-gradient-to-br from-accent to-accent-strong text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 transition-shadow overflow-hidden"
             >
               <div className="absolute -top-10 -right-8 w-36 h-36 bg-white/10 rounded-full blur-2xl" aria-hidden="true" />
               <div className="relative flex items-start justify-between gap-3">
@@ -209,12 +209,12 @@ export function Dashboard() {
 
         {/* FocusBlink section divider */}
         <motion.div variants={itemVariants} className="flex items-center gap-3 pt-1">
-          <div className="flex-1 h-px bg-surface-200 dark:bg-surface-700" />
+          <div className="flex-1 h-px bg-line" />
           <div className="flex items-center gap-1.5">
-            <Zap size={12} className="text-primary-500" />
-            <span className="text-xs font-semibold text-ink-400 uppercase tracking-wider">FocusBlink</span>
+            <Zap size={12} className="text-accent" />
+            <span className="text-xs font-semibold text-faint uppercase tracking-wider">FocusBlink</span>
           </div>
-          <div className="flex-1 h-px bg-surface-200 dark:bg-surface-700" />
+          <div className="flex-1 h-px bg-line" />
         </motion.div>
 
         {/* Habits + Tasks */}
@@ -224,13 +224,13 @@ export function Dashboard() {
           <button onClick={() => navigate('/habits')} className="text-left">
             <Card interactive className="p-4 h-full">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">Habits</p>
-                <ChevronRight size={13} className="text-ink-400" />
+                <p className="text-xs font-semibold uppercase tracking-wider text-faint">Habits</p>
+                <ChevronRight size={13} className="text-faint" />
               </div>
-              <p className="text-2xl font-bold text-ink-900 dark:text-ink-100 leading-none">
-                {checkedTodayCount}<span className="text-sm font-normal text-ink-400">/{habits.totalHabits}</span>
+              <p className="text-2xl font-bold text-ink leading-none">
+                {checkedTodayCount}<span className="text-sm font-normal text-faint">/{habits.totalHabits}</span>
               </p>
-              <p className="text-xs text-ink-400 mb-3 mt-0.5">done today</p>
+              <p className="text-xs text-faint mb-3 mt-0.5">done today</p>
               {habits.totalHabits > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {habits.habits.slice(0, 6).map(h => (
@@ -247,21 +247,21 @@ export function Dashboard() {
           <button onClick={() => navigate('/tasks')} className="text-left">
             <Card interactive className="p-4 h-full">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">Tasks</p>
-                <ChevronRight size={13} className="text-ink-400" />
+                <p className="text-xs font-semibold uppercase tracking-wider text-faint">Tasks</p>
+                <ChevronRight size={13} className="text-faint" />
               </div>
-              <p className="text-2xl font-bold text-ink-900 dark:text-ink-100 leading-none">
-                {completedTaskCount}<span className="text-sm font-normal text-ink-400">/{totalTaskCount}</span>
+              <p className="text-2xl font-bold text-ink leading-none">
+                {completedTaskCount}<span className="text-sm font-normal text-faint">/{totalTaskCount}</span>
               </p>
-              <p className="text-xs text-ink-400 mb-3 mt-0.5">completed</p>
-              <div className="h-1.5 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden">
-                <div className="h-full rounded-full bg-primary-500 transition-all duration-500"
+              <p className="text-xs text-faint mb-3 mt-0.5">completed</p>
+              <div className="h-1.5 rounded-full bg-raised overflow-hidden">
+                <div className="h-full rounded-full bg-accent transition-all duration-500"
                   style={{ width: `${totalTaskCount > 0 ? (completedTaskCount / totalTaskCount) * 100 : 0}%` }} />
               </div>
               {tasks.todayTasks.slice(0, 2).map(t => (
-                <p key={t.id} className="text-xs text-ink-500 dark:text-ink-400 mt-1.5 truncate">· {t.text}</p>
+                <p key={t.id} className="text-xs text-muted mt-1.5 truncate">· {t.text}</p>
               ))}
-              {totalTaskCount === 0 && <p className="text-xs text-ink-400 mt-1">No tasks today</p>}
+              {totalTaskCount === 0 && <p className="text-xs text-faint mt-1">No tasks today</p>}
             </Card>
           </button>
           )}
@@ -274,13 +274,13 @@ export function Dashboard() {
           <Card className="p-4">
             <button className="w-full flex items-center justify-between mb-3" onClick={() => navigate('/dump')}>
               <div className="flex items-center gap-2">
-                <Brain size={15} className="text-ink-400" />
-                <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">Brain Dump</p>
+                <Brain size={15} className="text-faint" />
+                <p className="text-xs font-semibold uppercase tracking-wider text-faint">Brain Dump</p>
                 {dump.entries.length > 0 && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-surface-100 dark:bg-surface-700 text-ink-400">{dump.entries.length}</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-raised text-faint">{dump.entries.length}</span>
                 )}
               </div>
-              <ChevronRight size={13} className="text-ink-400" />
+              <ChevronRight size={13} className="text-faint" />
             </button>
             <div className="flex gap-2">
               <input
@@ -288,14 +288,14 @@ export function Dashboard() {
                 onChange={e => setDumpText(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleQuickDump()}
                 placeholder="What's on your mind? (Enter to save)"
-                className="flex-1 px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-sm text-ink-900 dark:text-ink-100 placeholder-ink-400 focus:outline-none focus:ring-2 focus:ring-primary-400"
+                className="flex-1 px-3 py-2 rounded-xl border border-line bg-raised text-sm text-ink placeholder-faint focus:outline-none focus:ring-2 focus:ring-accent"
               />
               <Button size="sm" onClick={handleQuickDump} disabled={!dumpText.trim()}>
                 <Zap size={13} /> Dump
               </Button>
             </div>
             {dump.entries.length > 0 && (
-              <p className="text-xs text-ink-400 mt-2 truncate">
+              <p className="text-xs text-faint mt-2 truncate">
                 Last: {dump.entries[0].text.slice(0, 70)}{dump.entries[0].text.length > 70 ? '…' : ''}
               </p>
             )}
@@ -309,27 +309,27 @@ export function Dashboard() {
           <Card interactive className="p-4" onClick={() => navigate('/timer')}>
             <div className="flex items-center gap-4">
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-1">Focus Timer</p>
-                <p className="text-3xl font-mono font-bold text-ink-900 dark:text-ink-100 tracking-tight leading-none">
+                <p className="text-xs font-semibold uppercase tracking-wider text-faint mb-1">Focus Timer</p>
+                <p className="text-3xl font-mono font-bold text-ink tracking-tight leading-none">
                   {formatSeconds(timer.secondsLeft)}
                 </p>
                 <div className="flex items-center gap-2 mt-2">
                   <span className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full font-medium ${
                     isRunning ? 'bg-success-100 dark:bg-success-500/20 text-success-700 dark:text-success-400'
                     : isPaused ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400'
-                    : 'bg-surface-100 dark:bg-surface-700 text-ink-500'
+                    : 'bg-raised text-muted'
                   }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${isRunning ? 'bg-success-500 animate-pulse' : isPaused ? 'bg-amber-500' : 'bg-ink-400'}`} />
+                    <span className={`w-1.5 h-1.5 rounded-full ${isRunning ? 'bg-success-500 animate-pulse' : isPaused ? 'bg-amber-500' : 'bg-faint'}`} />
                     {isRunning ? 'Running' : isPaused ? 'Paused' : 'Idle'}
                   </span>
                   {timer.sessionCount > 0 && (
-                    <span className="text-xs text-ink-400">{timer.sessionCount} session{timer.sessionCount !== 1 ? 's' : ''} today</span>
+                    <span className="text-xs text-faint">{timer.sessionCount} session{timer.sessionCount !== 1 ? 's' : ''} today</span>
                   )}
                 </div>
               </div>
               {!isRunning && (
                 <button onClick={e => { e.stopPropagation(); timer.start() }}
-                  className="w-12 h-12 rounded-full bg-primary-500 hover:bg-primary-600 active:bg-primary-700 shadow-sm flex items-center justify-center transition-all flex-shrink-0">
+                  className="w-12 h-12 rounded-full bg-accent hover:bg-accent-strong active:bg-accent-strong shadow-sm flex items-center justify-center transition-all flex-shrink-0">
                   <Play size={18} className="text-white ml-0.5" />
                 </button>
               )}
@@ -338,8 +338,8 @@ export function Dashboard() {
               )}
             </div>
             {(isRunning || isPaused) && (
-              <div className="mt-3 h-1 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden">
-                <div className="h-full rounded-full bg-primary-500 transition-all duration-1000"
+              <div className="mt-3 h-1 rounded-full bg-raised overflow-hidden">
+                <div className="h-full rounded-full bg-accent transition-all duration-1000"
                   style={{ width: `${(1 - timer.secondsLeft / (timer.settings.workDuration * 60)) * 100}%` }} />
               </div>
             )}
@@ -353,23 +353,23 @@ export function Dashboard() {
           <Card interactive className="p-4" onClick={() => navigate('/monthly')}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <BarChart2 size={15} className="text-ink-400" />
-                <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">This Month</p>
+                <BarChart2 size={15} className="text-faint" />
+                <p className="text-xs font-semibold uppercase tracking-wider text-faint">This Month</p>
               </div>
-              <ChevronRight size={13} className="text-ink-400" />
+              <ChevronRight size={13} className="text-faint" />
             </div>
             <div className="grid grid-cols-3 gap-3 text-center">
               <div>
-                <p className="text-2xl font-bold text-ink-900 dark:text-ink-100">{monthHabitRate}%</p>
-                <p className="text-[10px] text-ink-400 mt-0.5">Habit avg</p>
+                <p className="text-2xl font-bold text-ink">{monthHabitRate}%</p>
+                <p className="text-[10px] text-faint mt-0.5">Habit avg</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-ink-900 dark:text-ink-100">{monthTasksDone}</p>
-                <p className="text-[10px] text-ink-400 mt-0.5">Tasks done</p>
+                <p className="text-2xl font-bold text-ink">{monthTasksDone}</p>
+                <p className="text-[10px] text-faint mt-0.5">Tasks done</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-ink-900 dark:text-ink-100">{monthCheckins}</p>
-                <p className="text-[10px] text-ink-400 mt-0.5">Check-ins</p>
+                <p className="text-2xl font-bold text-ink">{monthCheckins}</p>
+                <p className="text-[10px] text-faint mt-0.5">Check-ins</p>
               </div>
             </div>
           </Card>
@@ -381,37 +381,37 @@ export function Dashboard() {
           <Card interactive className="p-4" onClick={() => navigate('/treatment')}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <ClipboardList size={15} className="text-ink-400" />
-                <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">Treatment Plan</p>
+                <ClipboardList size={15} className="text-faint" />
+                <p className="text-xs font-semibold uppercase tracking-wider text-faint">Treatment Plan</p>
               </div>
-              <ChevronRight size={13} className="text-ink-400" />
+              <ChevronRight size={13} className="text-faint" />
             </div>
             {activeGoals.length === 0 && activeMeds.length === 0 ? (
-              <p className="text-sm text-ink-400">Track goals, medications and symptoms for your doctor</p>
+              <p className="text-sm text-faint">Track goals, medications and symptoms for your doctor</p>
             ) : (
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div>
-                  <p className="text-2xl font-bold text-ink-900 dark:text-ink-100">{activeGoals.length}</p>
-                  <p className="text-[10px] text-ink-400 mt-0.5">Goals</p>
+                  <p className="text-2xl font-bold text-ink">{activeGoals.length}</p>
+                  <p className="text-[10px] text-faint mt-0.5">Goals</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-ink-900 dark:text-ink-100">{activeMeds.length}</p>
-                  <p className="text-[10px] text-ink-400 mt-0.5">Medications</p>
+                  <p className="text-2xl font-bold text-ink">{activeMeds.length}</p>
+                  <p className="text-[10px] text-faint mt-0.5">Medications</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-ink-900 dark:text-ink-100">{treatmentPlan.plan.symptoms.length}</p>
-                  <p className="text-[10px] text-ink-400 mt-0.5">Symptoms</p>
+                  <p className="text-2xl font-bold text-ink">{treatmentPlan.plan.symptoms.length}</p>
+                  <p className="text-[10px] text-faint mt-0.5">Symptoms</p>
                 </div>
               </div>
             )}
             {topGoal && (
               <div className="mt-3">
                 <div className="flex items-center justify-between mb-1">
-                  <p className="text-xs text-ink-600 dark:text-ink-300 truncate flex-1">{topGoal.text}</p>
-                  <span className="text-xs text-primary-500 font-semibold ml-2 flex-shrink-0">{topGoal.progress}%</span>
+                  <p className="text-xs text-muted truncate flex-1">{topGoal.text}</p>
+                  <span className="text-xs text-accent font-semibold ml-2 flex-shrink-0">{topGoal.progress}%</span>
                 </div>
-                <div className="h-1.5 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden">
-                  <div className="h-full rounded-full bg-primary-500 transition-all duration-500" style={{ width: `${topGoal.progress}%` }} />
+                <div className="h-1.5 rounded-full bg-raised overflow-hidden">
+                  <div className="h-full rounded-full bg-accent transition-all duration-500" style={{ width: `${topGoal.progress}%` }} />
                 </div>
               </div>
             )}
@@ -424,24 +424,24 @@ export function Dashboard() {
           <Card interactive className="p-4" onClick={() => navigate('/rewards')}>
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-0.5">Level {rewards.currentLevel.level}</p>
-                <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">{rewards.currentLevel.name}</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-faint mb-0.5">Level {rewards.currentLevel.level}</p>
+                <p className="text-sm font-semibold text-ink">{rewards.currentLevel.name}</p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-primary-500">{rewards.totalPoints} XP</span>
-                <ChevronRight size={14} className="text-ink-400" />
+                <span className="text-sm font-bold text-accent">{rewards.totalPoints} XP</span>
+                <ChevronRight size={14} className="text-faint" />
               </div>
             </div>
-            <div className="h-2 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden">
-              <div className="h-full rounded-full bg-gradient-to-r from-primary-400 to-primary-600 transition-all duration-500" style={{ width: `${xpProgress * 100}%` }} />
+            <div className="h-2 rounded-full bg-raised overflow-hidden">
+              <div className="h-full rounded-full bg-gradient-to-r from-accent to-accent-strong transition-all duration-500" style={{ width: `${xpProgress * 100}%` }} />
             </div>
             {rewards.nextLevel && (
               <div className="flex justify-between mt-1.5">
-                <span className="text-xs text-ink-400">{rewards.xpInCurrentLevel} / {xpToNext} XP</span>
-                <span className="text-xs text-ink-400">Next: {rewards.nextLevel.name}</span>
+                <span className="text-xs text-faint">{rewards.xpInCurrentLevel} / {xpToNext} XP</span>
+                <span className="text-xs text-faint">Next: {rewards.nextLevel.name}</span>
               </div>
             )}
-            {!rewards.nextLevel && <p className="text-xs text-primary-500 mt-1.5 font-medium">Max level reached!</p>}
+            {!rewards.nextLevel && <p className="text-xs text-accent mt-1.5 font-medium">Max level reached!</p>}
           </Card>
         </motion.div>
         )}

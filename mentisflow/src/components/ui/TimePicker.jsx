@@ -26,12 +26,12 @@ export function TimePicker({ value, onChange, placeholder = 'Pick a time' }) {
         onClick={() => setOpen(o => !o)}
         className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-sm text-left transition-colors ${
           open
-            ? 'border-primary-400 ring-2 ring-primary-400/30 bg-surface-50 dark:bg-surface-900'
-            : 'border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 hover:border-surface-300 dark:hover:border-surface-600'
+            ? 'border-accent ring-2 ring-accent/30 bg-raised'
+            : 'border-line bg-raised hover:border-faint'
         }`}
       >
-        <Clock size={15} className="text-ink-400 flex-shrink-0" />
-        <span className={`flex-1 ${value ? 'text-ink-900 dark:text-ink-100 font-medium timer-nums' : 'text-ink-400'}`}>
+        <Clock size={15} className="text-faint flex-shrink-0" />
+        <span className={`flex-1 ${value ? 'text-ink font-medium timer-nums' : 'text-faint'}`}>
           {value || placeholder}
         </span>
       </button>
@@ -45,9 +45,9 @@ export function TimePicker({ value, onChange, placeholder = 'Pick a time' }) {
             transition={{ duration: 0.18, ease: 'easeOut' }}
             className="overflow-hidden"
           >
-            <div className="mt-2 p-3 rounded-2xl border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-800 space-y-3">
+            <div className="mt-2 p-3 rounded-2xl border border-line bg-surface space-y-3">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-ink-400 mb-1.5">Hour</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-faint mb-1.5">Hour</p>
                 <div className="grid grid-cols-6 gap-1">
                   {Array.from({ length: 24 }).map((_, hh) => (
                     <button
@@ -56,8 +56,8 @@ export function TimePicker({ value, onChange, placeholder = 'Pick a time' }) {
                       onClick={() => pickHour(hh)}
                       className={`py-1.5 rounded-lg text-xs font-medium timer-nums transition-colors ${
                         hour === pad(hh)
-                          ? 'bg-primary-500 text-white shadow-sm'
-                          : 'text-ink-700 dark:text-ink-200 hover:bg-primary-50 dark:hover:bg-primary-700/20'
+                          ? 'bg-accent text-on-accent shadow-sm'
+                          : 'text-ink hover:bg-accent-soft'
                       }`}
                     >
                       {pad(hh)}
@@ -66,7 +66,7 @@ export function TimePicker({ value, onChange, placeholder = 'Pick a time' }) {
                 </div>
               </div>
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-ink-400 mb-1.5">Minutes</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-faint mb-1.5">Minutes</p>
                 <div className="grid grid-cols-4 gap-1.5">
                   {MINUTES.map(mm => (
                     <button
@@ -75,8 +75,8 @@ export function TimePicker({ value, onChange, placeholder = 'Pick a time' }) {
                       onClick={() => pickMinute(mm)}
                       className={`py-1.5 rounded-lg text-xs font-medium timer-nums transition-colors ${
                         minute === mm
-                          ? 'bg-primary-500 text-white shadow-sm'
-                          : 'bg-surface-50 dark:bg-surface-900 text-ink-700 dark:text-ink-200 hover:bg-primary-50 dark:hover:bg-primary-700/20'
+                          ? 'bg-accent text-on-accent shadow-sm'
+                          : 'bg-raised text-ink hover:bg-accent-soft'
                       }`}
                     >
                       :{mm}

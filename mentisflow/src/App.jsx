@@ -79,7 +79,7 @@ function AppShell({ isProvider }) {
   }, [])
 
   return (
-    <div className="flex h-screen bg-surface-50 dark:bg-surface-950 text-ink-900 dark:text-ink-100">
+    <div className="flex h-screen bg-bg text-ink">
       {syncError && (
         <div className="fixed top-0 inset-x-0 z-50 bg-amber-500 text-white text-xs font-medium px-4 py-2 flex items-center justify-center gap-3">
           <span>Some changes couldn’t be saved to the cloud. Check your connection. Your data is safe on this device.</span>
@@ -87,7 +87,7 @@ function AppShell({ isProvider }) {
         </div>
       )}
       {announcement && !syncError && (
-        <div className="fixed top-0 inset-x-0 z-50 bg-primary-600 text-white text-xs px-4 py-2 flex items-center justify-center gap-3">
+        <div className="fixed top-0 inset-x-0 z-50 bg-accent text-on-accent text-xs px-4 py-2 flex items-center justify-center gap-3">
           <span><strong>{announcement.title}</strong>: {announcement.body}</span>
           <button onClick={dismissAnnouncement} className="underline flex-shrink-0">Dismiss</button>
         </div>

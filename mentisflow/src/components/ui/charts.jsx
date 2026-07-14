@@ -3,7 +3,7 @@
 const fmtVal = (v) => (v >= 1000 ? `${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k` : String(v))
 
 // Vertical bar chart: data = [{ label, value }]
-export function BarChart({ data, height = 120, prefix = '', color = 'fill-primary-500' }) {
+export function BarChart({ data, height = 120, prefix = '', color = 'fill-accent' }) {
   if (!data?.length) return null
   const max = Math.max(...data.map(d => d.value), 1)
   const bw = 100 / data.length
@@ -24,8 +24,8 @@ export function BarChart({ data, height = 120, prefix = '', color = 'fill-primar
       <div className="flex">
         {data.map((d, i) => (
           <div key={i} className="flex-1 text-center">
-            <p className="text-[9px] text-ink-400 truncate">{d.label}</p>
-            <p className="text-[9px] font-semibold text-ink-600 dark:text-ink-300">{d.value > 0 ? `${prefix}${fmtVal(d.value)}` : ''}</p>
+            <p className="text-[9px] text-faint truncate">{d.label}</p>
+            <p className="text-[9px] font-semibold text-muted">{d.value > 0 ? `${prefix}${fmtVal(d.value)}` : ''}</p>
           </div>
         ))}
       </div>
@@ -45,26 +45,26 @@ export function LineChart({ data, height = 110, prefix = '' }) {
   return (
     <div>
       <svg viewBox={`0 0 ${W} ${height}`} className="w-full" preserveAspectRatio="none" style={{ height }}>
-        <polygon points={area} className="fill-primary-500/15" />
-        <polyline points={pts} fill="none" className="stroke-primary-500" strokeWidth="1.8"
+        <polygon points={area} className="fill-accent/15" />
+        <polyline points={pts} fill="none" className="stroke-accent" strokeWidth="1.8"
           strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
         {data.map((d, i) => (
-          <circle key={i} cx={px(i)} cy={py(d.value)} r="1.8" className="fill-primary-500" />
+          <circle key={i} cx={px(i)} cy={py(d.value)} r="1.8" className="fill-accent" />
         ))}
       </svg>
       <div className="flex justify-between">
-        <span className="text-[9px] text-ink-400">{data[0].label}</span>
-        <span className="text-[9px] font-semibold text-ink-600 dark:text-ink-300">
+        <span className="text-[9px] text-faint">{data[0].label}</span>
+        <span className="text-[9px] font-semibold text-muted">
           peak {prefix}{fmtVal(Math.max(...data.map(d => d.value)))}
         </span>
-        <span className="text-[9px] text-ink-400">{data[data.length - 1].label}</span>
+        <span className="text-[9px] text-faint">{data[data.length - 1].label}</span>
       </div>
     </div>
   )
 }
 
 // Horizontal proportional bars: items = [{ label, value, sub? }]
-export function HBarList({ items, color = 'bg-primary-500', valueFmt = (v) => v }) {
+export function HBarList({ items, color = 'bg-accent', valueFmt = (v) => v }) {
   if (!items?.length) return null
   const max = Math.max(...items.map(i => i.value), 1)
   return (
@@ -72,12 +72,12 @@ export function HBarList({ items, color = 'bg-primary-500', valueFmt = (v) => v 
       {items.map((it, i) => (
         <div key={i}>
           <div className="flex items-center justify-between mb-0.5">
-            <span className="text-[11px] text-ink-600 dark:text-ink-300">{it.label}</span>
-            <span className="text-[11px] font-semibold text-ink-700 dark:text-ink-200">
-              {valueFmt(it.value)}{it.sub ? <span className="text-ink-400 font-normal ml-1">{it.sub}</span> : null}
+            <span className="text-[11px] text-muted">{it.label}</span>
+            <span className="text-[11px] font-semibold text-ink">
+              {valueFmt(it.value)}{it.sub ? <span className="text-faint font-normal ml-1">{it.sub}</span> : null}
             </span>
           </div>
-          <div className="h-1.5 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden">
+          <div className="h-1.5 rounded-full bg-raised overflow-hidden">
             <div className={`h-full rounded-full ${color}`} style={{ width: `${(it.value / max) * 100}%` }} />
           </div>
         </div>
@@ -100,14 +100,14 @@ export function Funnel({ steps }) {
         return (
           <div key={i} className="flex items-center gap-2">
             <div className="flex-1">
-              <div className="h-7 rounded-lg bg-primary-500 flex items-center px-2.5 transition-all"
+              <div className="h-7 rounded-lg bg-accent flex items-center px-2.5 transition-all"
                 style={{ width: `${pct}%`, opacity: 1 - i * 0.22 }}>
                 <span className="text-[10px] font-semibold text-white whitespace-nowrap">{s.value}</span>
               </div>
             </div>
             <div className="w-28 flex-shrink-0">
-              <p className="text-[10px] text-ink-600 dark:text-ink-300">{s.label}</p>
-              {conv !== null && <p className="text-[9px] text-ink-400">{conv}% of previous</p>}
+              <p className="text-[10px] text-muted">{s.label}</p>
+              {conv !== null && <p className="text-[9px] text-faint">{conv}% of previous</p>}
             </div>
           </div>
         )
@@ -122,15 +122,15 @@ export function SplitBar({ a, b, labelA, labelB }) {
   const pctA  = total > 0 ? Math.round((a / total) * 100) : 50
   return (
     <div>
-      <div className="h-2.5 rounded-full overflow-hidden flex bg-surface-100 dark:bg-surface-700">
-        {total > 0 && <div className="h-full bg-primary-500" style={{ width: `${pctA}%` }} />}
+      <div className="h-2.5 rounded-full overflow-hidden flex bg-raised">
+        {total > 0 && <div className="h-full bg-accent" style={{ width: `${pctA}%` }} />}
         {total > 0 && <div className="h-full bg-warm-400 flex-1" />}
       </div>
       <div className="flex justify-between mt-1.5">
-        <span className="text-[10px] text-ink-600 dark:text-ink-300">
-          <span className="inline-block w-2 h-2 rounded-full bg-primary-500 mr-1" />{labelA}: <strong>{a}</strong>{total > 0 ? ` (${pctA}%)` : ''}
+        <span className="text-[10px] text-muted">
+          <span className="inline-block w-2 h-2 rounded-full bg-accent mr-1" />{labelA}: <strong>{a}</strong>{total > 0 ? ` (${pctA}%)` : ''}
         </span>
-        <span className="text-[10px] text-ink-600 dark:text-ink-300">
+        <span className="text-[10px] text-muted">
           <span className="inline-block w-2 h-2 rounded-full bg-warm-400 mr-1" />{labelB}: <strong>{b}</strong>{total > 0 ? ` (${100 - pctA}%)` : ''}
         </span>
       </div>

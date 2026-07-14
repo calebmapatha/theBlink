@@ -103,7 +103,7 @@ export default function GuidedFlow({
   }
 
   const guideToggle = (
-    <label className="flex cursor-pointer items-center gap-2 text-sm text-ink-500 dark:text-ink-400">
+    <label className="flex cursor-pointer items-center gap-2 text-sm text-muted">
       <span>Guide me</span>
       <button
         type="button"
@@ -111,7 +111,7 @@ export default function GuidedFlow({
         aria-checked={guided}
         onClick={toggleGuide}
         className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 overflow-hidden ${
-          guided ? 'bg-primary-500' : 'bg-surface-300 dark:bg-surface-600'
+          guided ? 'bg-accent' : 'bg-line'
         }`}
       >
         <span
@@ -132,10 +132,10 @@ export default function GuidedFlow({
         <div className="space-y-6">
           {steps.map(step => (
             <section key={step.id}>
-              <h3 className="mb-1.5 text-sm font-medium text-ink-700 dark:text-ink-300">
+              <h3 className="mb-1.5 text-sm font-medium text-ink">
                 {step.title}
                 {step.optional && (
-                  <span className="ml-1 font-normal text-ink-400">(optional)</span>
+                  <span className="ml-1 font-normal text-faint">(optional)</span>
                 )}
               </h3>
               {step.render({ values, setValues, guided })}
@@ -143,7 +143,7 @@ export default function GuidedFlow({
           ))}
         </div>
 
-        {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
+        {error && <p className="mt-4 text-sm text-danger">{error}</p>}
 
         <footer className="mt-8 flex items-center gap-2">
           <Button variant="ghost" className="flex-1" onClick={onCancel}>Cancel</Button>
@@ -159,39 +159,39 @@ export default function GuidedFlow({
   return (
     <div>
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs text-ink-400">
+        <p className="text-xs text-faint">
           {onReview ? 'Review your answers' : `Step ${stepIndex + 1} of ${steps.length}`}
         </p>
         {guideToggle}
       </div>
       <div
-        className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-surface-200 dark:bg-surface-700"
+        className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-line"
         role="progressbar"
         aria-valuenow={onReview ? 100 : progress}
         aria-valuemin={0}
         aria-valuemax={100}
       >
         <div
-          className="h-full rounded-full bg-primary-500 transition-all motion-reduce:transition-none"
+          className="h-full rounded-full bg-accent transition-all motion-reduce:transition-none"
           style={{ width: `${onReview ? 100 : progress}%` }}
         />
       </div>
 
       {onReview ? (
         <div className="mt-5">
-          <ul className="divide-y divide-surface-100 dark:divide-surface-700 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900">
+          <ul className="divide-y divide-line rounded-2xl border border-line bg-raised">
             {steps.map((step, i) => (
               <li key={step.id} className="flex items-start justify-between gap-4 px-4 py-3">
                 <div className="min-w-0">
-                  <p className="text-xs text-ink-400">{step.title}</p>
-                  <p className="truncate text-sm text-ink-700 dark:text-ink-200">
+                  <p className="text-xs text-faint">{step.title}</p>
+                  <p className="truncate text-sm text-ink">
                     {step.summary ? step.summary(values) : '—'}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setStepIndex(i)}
-                  className="shrink-0 text-sm font-medium text-primary-500 hover:text-primary-600"
+                  className="shrink-0 text-sm font-medium text-accent hover:text-accent-strong"
                 >
                   Edit
                 </button>
@@ -199,7 +199,7 @@ export default function GuidedFlow({
             ))}
           </ul>
 
-          {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
+          {error && <p className="mt-4 text-sm text-danger">{error}</p>}
 
           <footer className="mt-6 flex items-center gap-2">
             <Button variant="ghost" className="flex-1" onClick={goBack}>Back</Button>
@@ -215,25 +215,25 @@ export default function GuidedFlow({
             <div className="mb-4 flex items-start gap-2.5">
               <span
                 aria-hidden="true"
-                className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-700/30 text-xs font-semibold text-primary-700 dark:text-primary-300"
+                className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent-soft-text"
               >
                 ?
               </span>
-              <p className="rounded-2xl rounded-tl-sm bg-primary-50 dark:bg-primary-700/15 px-4 py-2.5 text-sm leading-relaxed text-primary-900 dark:text-primary-200">
+              <p className="rounded-2xl rounded-tl-sm bg-accent-soft px-4 py-2.5 text-sm leading-relaxed text-accent-soft-text">
                 {current.guide}
               </p>
             </div>
 
-            <h3 className="mb-2 text-base font-medium text-ink-900 dark:text-ink-100">
+            <h3 className="mb-2 text-base font-medium text-ink">
               {current.title}
               {current.optional && (
-                <span className="ml-1 text-sm font-normal text-ink-400">(optional)</span>
+                <span className="ml-1 text-sm font-normal text-faint">(optional)</span>
               )}
             </h3>
 
             {current.render({ values, setValues, guided })}
 
-            {error && <p className="mt-3 text-sm text-red-500">{error}</p>}
+            {error && <p className="mt-3 text-sm text-danger">{error}</p>}
 
             <footer className="mt-8 flex items-center justify-between gap-2">
               {stepIndex > 0 ? (

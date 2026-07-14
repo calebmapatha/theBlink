@@ -59,23 +59,23 @@ function VerificationDocsButton({ uid }) {
 
   if (state === 'idle') return <Button size="sm" variant="ghost" onClick={load}><FileText size={12} /> Documents</Button>
   if (state === 'loading') return <Button size="sm" variant="ghost" disabled><Loader size={12} className="animate-spin" /></Button>
-  if (docs.length === 0) return <span className="text-[10px] text-ink-400 self-center">No documents uploaded</span>
+  if (docs.length === 0) return <span className="text-[10px] text-faint self-center">No documents uploaded</span>
   return (
     <div className="flex flex-wrap items-center gap-2 self-center">
       {docs.map(d => d.url
-        ? <a key={d.key} href={d.url} target="_blank" rel="noopener noreferrer" className="text-[10px] font-semibold text-primary-500 hover:underline flex items-center gap-0.5">{VDOC_LABELS[d.key] || d.key} <ExternalLink size={9} /></a>
-        : <span key={d.key} className="text-[10px] text-ink-400">{VDOC_LABELS[d.key] || d.key} (error)</span>)}
+        ? <a key={d.key} href={d.url} target="_blank" rel="noopener noreferrer" className="text-[10px] font-semibold text-accent hover:underline flex items-center gap-0.5">{VDOC_LABELS[d.key] || d.key} <ExternalLink size={9} /></a>
+        : <span key={d.key} className="text-[10px] text-faint">{VDOC_LABELS[d.key] || d.key} (error)</span>)}
     </div>
   )
 }
 
 function providerState(p) {
-  if (p.suspended) return { label: 'Suspended', cls: 'bg-red-50 dark:bg-red-500/10 text-red-500' }
+  if (p.suspended) return { label: 'Suspended', cls: 'bg-red-50 dark:bg-red-500/10 text-danger' }
   if (p.approvalStatus === 'pending') return { label: 'Pending approval', cls: 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400' }
-  if (p.approvalStatus === 'rejected') return { label: 'Rejected', cls: 'bg-red-50 dark:bg-red-500/10 text-red-500' }
-  if (p.subscriptionStatus === 'trial_expired') return { label: 'Trial ended', cls: 'bg-surface-100 dark:bg-surface-700 text-ink-400' }
-  if (!p.subscriptionActive) return { label: 'Inactive', cls: 'bg-surface-100 dark:bg-surface-700 text-ink-400' }
-  if (p.subscriptionStatus === 'trialing') return { label: 'Trial', cls: 'bg-primary-50 dark:bg-primary-700/15 text-primary-600 dark:text-primary-400' }
+  if (p.approvalStatus === 'rejected') return { label: 'Rejected', cls: 'bg-red-50 dark:bg-red-500/10 text-danger' }
+  if (p.subscriptionStatus === 'trial_expired') return { label: 'Trial ended', cls: 'bg-raised text-faint' }
+  if (!p.subscriptionActive) return { label: 'Inactive', cls: 'bg-raised text-faint' }
+  if (p.subscriptionStatus === 'trialing') return { label: 'Trial', cls: 'bg-accent-soft text-accent-soft-text' }
   return { label: 'Live', cls: 'bg-success-50 dark:bg-success-500/10 text-success-600 dark:text-success-400' }
 }
 
@@ -94,7 +94,7 @@ function ReasonModal({ open, onClose, title, cta, onConfirm }) {
       <div className="space-y-4">
         <textarea value={reason} onChange={e => setReason(e.target.value)} rows={3}
           placeholder="Reason (recorded in the audit log)"
-          className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 resize-none" />
+          className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none" />
         <div className="flex gap-2">
           <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
           <Button className="flex-1 bg-red-500 hover:bg-red-600" disabled={busy} onClick={submit}>
@@ -121,6 +121,8 @@ export function AdminPortal() {
   const [searchQ, setSearchQ]       = useState('')
   const [modal, setModal]           = useState(null) // { type, provider }
   const [pricing, setPricing]       = useState(DEFAULT_PRICING)
+  // Stable per mount: "N days ago" labels don't need to tick live.
+  const [nowTs]                     = useState(() => Date.now())
 
   useEffect(() => { fetchPricing().then(setPricing) }, [])
 
@@ -212,7 +214,7 @@ export function AdminPortal() {
 
   // ---------- Overview wiring (SuperAdminDashboard props) ----------
   const fmtR = v => String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
-  const now = Date.now()
+  const now = nowTs
   const createdMs = a => (a.createdAt?.seconds ? a.createdAt.seconds * 1000 : null)
   const bookings30 = appts.filter(a => { const t = createdMs(a); return t && now - t <= 30 * 864e5 }).length
   const bookingsPrev30 = appts.filter(a => { const t = createdMs(a); return t && now - t > 30 * 864e5 && now - t <= 60 * 864e5 }).length
@@ -287,8 +289,8 @@ export function AdminPortal() {
           <Shield size={18} className="text-white dark:text-ink-900" />
         </div>
         <div>
-          <h1 className="text-[1.7rem] font-bold tracking-tight text-ink-900 dark:text-ink-100 leading-tight">Super Admin</h1>
-          <p className="text-xs text-ink-400">Platform control centre</p>
+          <h1 className="text-[1.7rem] font-bold tracking-tight text-ink leading-tight">Super Admin</h1>
+          <p className="text-xs text-faint">Platform control centre</p>
         </div>
       </div>
 
@@ -298,7 +300,7 @@ export function AdminPortal() {
           <button key={t.key} onClick={() => setTab(t.key)}
             className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
               tab === t.key ? 'bg-ink-900 dark:bg-ink-100 text-white dark:text-ink-900'
-                            : 'bg-surface-100 dark:bg-surface-800 text-ink-400 hover:text-ink-700 dark:hover:text-ink-100'
+                            : 'bg-raised text-faint hover:text-ink'
             }`}>
             <t.icon size={13} /> {t.label}
             {t.key === 'doctors' && stats.pendingDocs > 0 && (
@@ -312,7 +314,7 @@ export function AdminPortal() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="h-24 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />)}</div>
+        <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="h-24 rounded-2xl bg-raised animate-pulse" />)}</div>
       ) : (
         <>
           {/* ---------------- OVERVIEW ---------------- */}
@@ -343,9 +345,9 @@ export function AdminPortal() {
           {tab === 'doctors' && (
             <>
               <div className="relative mb-4">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-faint" />
                 <input value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="Search name, email or HPCSA…"
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-800 text-sm text-ink-900 dark:text-ink-100 focus:outline-none focus:ring-2 focus:ring-primary-400" />
+                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-line bg-surface text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent" />
               </div>
               <div className="space-y-3">
                 {filteredProviders.map(p => {
@@ -356,28 +358,28 @@ export function AdminPortal() {
                         <Avatar photoUrl={p.photoURL} name={p.name} size="sm" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">{p.name}</p>
+                            <p className="text-sm font-semibold text-ink">{p.name}</p>
                             <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${st.cls}`}>{st.label}</span>
                           </div>
-                          <p className="text-[11px] text-ink-400">{p.type} · {p.email}</p>
+                          <p className="text-[11px] text-faint">{p.type} · {p.email}</p>
                           {p.hpcsa && (
-                            <p className="text-[11px] text-ink-400 flex items-center gap-1">
+                            <p className="text-[11px] text-faint flex items-center gap-1">
                               HPCSA: {p.hpcsa}
                               <a href={`https://hpcsaonline.custhelp.com/app/i_reg_form`} target="_blank" rel="noopener noreferrer"
-                                className="text-primary-500 hover:underline flex items-center gap-0.5">
+                                className="text-accent hover:underline flex items-center gap-0.5">
                                 verify <ExternalLink size={9} />
                               </a>
                             </p>
                           )}
-                          <p className="text-[10px] text-ink-400 mt-0.5">
+                          <p className="text-[10px] text-faint mt-0.5">
                             R{p.sessionFee}/session · {p.profileViews || 0} views
                             {p.ratingCount > 0 && ` · ★ ${p.ratingAvg?.overall?.toFixed(1)} (${p.ratingCount})`}
                           </p>
-                          {p.suspensionReason && <p className="text-[10px] text-red-400 mt-0.5">Suspended: {p.suspensionReason}</p>}
-                          {p.rejectionReason && <p className="text-[10px] text-red-400 mt-0.5">Rejected: {p.rejectionReason}</p>}
+                          {p.suspensionReason && <p className="text-[10px] text-danger mt-0.5">Suspended: {p.suspensionReason}</p>}
+                          {p.rejectionReason && <p className="text-[10px] text-danger mt-0.5">Rejected: {p.rejectionReason}</p>}
                         </div>
                       </div>
-                      <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-surface-100 dark:border-surface-800">
+                      <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-line">
                         {p.approvalStatus === 'pending' && (
                           <>
                             <Button size="sm" onClick={() => act(admin.approveProvider, p.id, p.name)}>
@@ -405,14 +407,14 @@ export function AdminPortal() {
                         )}
                         <VerificationDocsButton uid={p.id} />
                         <button onClick={() => setModal({ type: 'delete', provider: p })}
-                          className="ml-auto p-1.5 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title="Delete account">
+                          className="ml-auto p-1.5 rounded-lg text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title="Delete account">
                           <Trash2 size={14} />
                         </button>
                       </div>
                     </Card>
                   )
                 })}
-                {filteredProviders.length === 0 && <p className="text-sm text-ink-400 text-center py-8">No doctors found.</p>}
+                {filteredProviders.length === 0 && <p className="text-sm text-faint text-center py-8">No doctors found.</p>}
               </div>
             </>
           )}
@@ -420,7 +422,7 @@ export function AdminPortal() {
           {/* ---------------- PATIENTS ---------------- */}
           {tab === 'patients' && (
             <div className="space-y-3">
-              <p className="text-xs text-ink-400">{patients.length} patient record{patients.length !== 1 ? 's' : ''} (created when patients link a doctor, book, or upload a photo)</p>
+              <p className="text-xs text-faint">{patients.length} patient record{patients.length !== 1 ? 's' : ''} (created when patients link a doctor, book, or upload a photo)</p>
               {patients.map(p => {
                 const linked = providers.find(pr => pr.id === p.linkedDoctorUid)
                 const patAppts = appts.filter(a => a.patientUid === p.id)
@@ -429,40 +431,40 @@ export function AdminPortal() {
                     <div className="flex items-center gap-3">
                       <Avatar photoUrl={p.photoURL} name={p.id} size="sm" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-mono text-ink-600 dark:text-ink-300 truncate">{p.id}</p>
-                        <p className="text-[10px] text-ink-400">
+                        <p className="text-xs font-mono text-muted truncate">{p.id}</p>
+                        <p className="text-[10px] text-faint">
                           {linked ? `Linked: ${linked.name}` : 'No linked doctor'} · {patAppts.length} booking{patAppts.length !== 1 ? 's' : ''}
                         </p>
                       </div>
                       <button onClick={() => setModal({ type: 'deletePatient', patient: p })}
-                        className="p-1.5 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
+                        className="p-1.5 rounded-lg text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
                         <Trash2 size={14} />
                       </button>
                     </div>
                   </Card>
                 )
               })}
-              {patients.length === 0 && <p className="text-sm text-ink-400 text-center py-8">No patient records yet.</p>}
+              {patients.length === 0 && <p className="text-sm text-faint text-center py-8">No patient records yet.</p>}
             </div>
           )}
 
           {/* ---------------- REPORTS ---------------- */}
           {tab === 'reports' && (
             <div className="space-y-3">
-              {reports.length === 0 && <p className="text-sm text-ink-400 text-center py-8">No reports filed.</p>}
+              {reports.length === 0 && <p className="text-sm text-faint text-center py-8">No reports filed.</p>}
               {[...reports].sort((a, b) => (a.status === 'open' ? 0 : 1) - (b.status === 'open' ? 0 : 1)).map(r => (
                 <Card key={r.id} className="p-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <Flag size={13} className={r.status === 'open' ? 'text-red-500' : 'text-ink-400'} />
-                    <p className="text-sm font-semibold text-ink-900 dark:text-ink-100 flex-1">{r.providerName || r.providerUid}</p>
+                    <Flag size={13} className={r.status === 'open' ? 'text-danger' : 'text-faint'} />
+                    <p className="text-sm font-semibold text-ink flex-1">{r.providerName || r.providerUid}</p>
                     <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${
-                      r.status === 'open' ? 'bg-red-50 dark:bg-red-500/10 text-red-500' : 'bg-success-50 dark:bg-success-500/10 text-success-600 dark:text-success-400'}`}>
+                      r.status === 'open' ? 'bg-red-50 dark:bg-red-500/10 text-danger' : 'bg-success-50 dark:bg-success-500/10 text-success-600 dark:text-success-400'}`}>
                       {r.status}
                     </span>
                   </div>
-                  <p className="text-xs text-ink-600 dark:text-ink-300 bg-surface-50 dark:bg-surface-900 px-3 py-2 rounded-xl">"{r.reason}"</p>
-                  <p className="text-[10px] text-ink-400 mt-1.5">Reported by {r.reporterEmail || r.reporterUid}</p>
-                  {r.resolution && <p className="text-[10px] text-ink-400 mt-0.5">Resolution: {r.resolution}</p>}
+                  <p className="text-xs text-muted bg-raised px-3 py-2 rounded-xl">"{r.reason}"</p>
+                  <p className="text-[10px] text-faint mt-1.5">Reported by {r.reporterEmail || r.reporterUid}</p>
+                  {r.resolution && <p className="text-[10px] text-faint mt-0.5">Resolution: {r.resolution}</p>}
                   {r.status === 'open' && (
                     <div className="flex gap-2 mt-3">
                       <Button size="sm" variant="soft" onClick={() => act(admin.resolveReport, r.id, 'dismissed, no action')}>Dismiss</Button>
@@ -537,17 +539,17 @@ function AnnouncementsTab({ admin }) {
   return (
     <div className="space-y-4">
       <Card className="p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">New announcement</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-faint mb-3">New announcement</p>
         <div className="space-y-3">
           <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Title"
-            className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-sm text-ink-900 dark:text-ink-100 focus:outline-none focus:ring-2 focus:ring-primary-400" />
+            className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent" />
           <textarea value={body} onChange={e => setBody(e.target.value)} rows={3} placeholder="Message shown as a banner in the app"
-            className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-sm text-ink-900 dark:text-ink-100 focus:outline-none focus:ring-2 focus:ring-primary-400 resize-none" />
+            className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent resize-none" />
           <div className="flex gap-2">
             {[['all', 'Everyone'], ['patient', 'Patients'], ['provider', 'Doctors']].map(([k, l]) => (
               <button key={k} onClick={() => setAudience(k)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                  audience === k ? 'bg-primary-500 text-white' : 'bg-surface-100 dark:bg-surface-800 text-ink-400'}`}>
+                  audience === k ? 'bg-accent text-on-accent' : 'bg-raised text-faint'}`}>
                 {l}
               </button>
             ))}
@@ -563,12 +565,12 @@ function AnnouncementsTab({ admin }) {
           <Card key={a.id} className="p-3.5">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">{a.title}</p>
-                <p className="text-xs text-ink-600 dark:text-ink-300 mt-0.5">{a.body}</p>
-                <p className="text-[10px] text-ink-400 mt-1">To: {a.audience === 'all' ? 'everyone' : `${a.audience}s`}</p>
+                <p className="text-sm font-semibold text-ink">{a.title}</p>
+                <p className="text-xs text-muted mt-0.5">{a.body}</p>
+                <p className="text-[10px] text-faint mt-1">To: {a.audience === 'all' ? 'everyone' : `${a.audience}s`}</p>
               </div>
               <button onClick={async () => { await admin.deleteAnnouncement(a.id); load() }}
-                className="p-1.5 rounded-lg text-ink-400 hover:text-red-500 transition-colors flex-shrink-0"><Trash2 size={13} /></button>
+                className="p-1.5 rounded-lg text-faint hover:text-danger transition-colors flex-shrink-0"><Trash2 size={13} /></button>
             </div>
           </Card>
         ))}
@@ -580,20 +582,20 @@ function AnnouncementsTab({ admin }) {
 function LogsTab({ admin }) {
   const [logs, setLogs] = useState(null)
   useEffect(() => { admin.fetchLogs().then(setLogs) }, [])
-  if (!logs) return <div className="h-24 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />
+  if (!logs) return <div className="h-24 rounded-2xl bg-raised animate-pulse" />
   return (
     <div className="space-y-2">
-      <p className="text-xs text-ink-400">Every administrative action is recorded here permanently (append-only).</p>
-      {logs.length === 0 && <p className="text-sm text-ink-400 text-center py-8">No admin actions yet.</p>}
+      <p className="text-xs text-faint">Every administrative action is recorded here permanently (append-only).</p>
+      {logs.length === 0 && <p className="text-sm text-faint text-center py-8">No admin actions yet.</p>}
       {logs.map(l => (
         <Card key={l.id} className="p-3">
           <div className="flex items-center gap-2">
-            <ScrollText size={12} className="text-ink-400 flex-shrink-0" />
-            <p className="text-xs font-medium text-ink-800 dark:text-ink-200 flex-1">
+            <ScrollText size={12} className="text-faint flex-shrink-0" />
+            <p className="text-xs font-medium text-ink flex-1">
               {l.action.replace(/_/g, ' ')}
-              {l.detail && <span className="text-ink-400 font-normal"> · {l.detail}</span>}
+              {l.detail && <span className="text-faint font-normal"> · {l.detail}</span>}
             </p>
-            <span className="text-[10px] text-ink-400 flex-shrink-0">
+            <span className="text-[10px] text-faint flex-shrink-0">
               {l.at?.seconds ? new Date(l.at.seconds * 1000).toLocaleString('en-ZA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
             </span>
           </div>
@@ -614,7 +616,7 @@ function ConfigTab({ admin }) {
       pricing: mergePricing(c?.pricing),
     }))
   }, [])
-  if (!cfg) return <div className="h-24 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />
+  if (!cfg) return <div className="h-24 rounded-2xl bg-raised animate-pulse" />
 
   const setPricingField = (path, value) => setCfg(c => {
     const p = structuredClone(c.pricing)
@@ -633,49 +635,49 @@ function ConfigTab({ admin }) {
     setTimeout(() => setSaved(false), 2000)
   }
 
-  const numInputCls = 'w-28 px-3 py-2 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-sm text-ink-900 dark:text-ink-100 focus:outline-none focus:ring-2 focus:ring-primary-400'
+  const numInputCls = 'w-28 px-3 py-2 rounded-xl border border-line bg-raised text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent'
 
   return (
     <Card className="p-4 space-y-4">
-      <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">Platform settings</p>
+      <p className="text-xs font-semibold uppercase tracking-wider text-faint">Platform settings</p>
 
       <label className="flex items-center justify-between cursor-pointer">
         <div>
-          <p className="text-sm font-medium text-ink-900 dark:text-ink-100">Doctor signups open</p>
-          <p className="text-[11px] text-ink-400">When off, the provider signup page shows a waitlist message.</p>
+          <p className="text-sm font-medium text-ink">Doctor signups open</p>
+          <p className="text-[11px] text-faint">When off, the provider signup page shows a waitlist message.</p>
         </div>
         <button onClick={() => setCfg(c => ({ ...c, signupsOpen: !c.signupsOpen }))} aria-pressed={cfg.signupsOpen}
-          className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 overflow-hidden ${cfg.signupsOpen ? 'bg-primary-500' : 'bg-surface-300 dark:bg-surface-600'}`}>
+          className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 overflow-hidden ${cfg.signupsOpen ? 'bg-accent' : 'bg-line'}`}>
           <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${cfg.signupsOpen ? 'translate-x-5' : 'translate-x-0'}`} />
         </button>
       </label>
 
       <div className="space-y-3">
         <div>
-          <p className="text-sm font-medium text-ink-900 dark:text-ink-100">Subscription pricing</p>
-          <p className="text-[11px] text-ink-400">Shown on the doctor signup page. Existing subscriptions are not re-billed. New trials use the trial length below.</p>
+          <p className="text-sm font-medium text-ink">Subscription pricing</p>
+          <p className="text-[11px] text-faint">Shown on the doctor signup page. Existing subscriptions are not re-billed. New trials use the trial length below.</p>
         </div>
         <div className="flex flex-wrap gap-4">
           <label className="block">
-            <span className="block text-xs text-ink-400 mb-1">Free trial (days)</span>
+            <span className="block text-xs text-faint mb-1">Free trial (days)</span>
             <input type="number" min="1" max="365" value={cfg.pricing.trialDays}
               onChange={e => setPricingField(['trialDays'], Number(e.target.value))}
               className={numInputCls} />
           </label>
           <label className="block">
-            <span className="block text-xs text-ink-400 mb-1">Standard (R/mo)</span>
+            <span className="block text-xs text-faint mb-1">Standard (R/mo)</span>
             <input type="number" min="1" value={cfg.pricing.plans.standard.monthly}
               onChange={e => setPricingField(['standard', 'monthly'], Number(e.target.value))}
               className={numInputCls} />
           </label>
           <label className="block">
-            <span className="block text-xs text-ink-400 mb-1">Featured (R/mo)</span>
+            <span className="block text-xs text-faint mb-1">Featured (R/mo)</span>
             <input type="number" min="1" value={cfg.pricing.plans.featured.monthly}
               onChange={e => setPricingField(['featured', 'monthly'], Number(e.target.value))}
               className={numInputCls} />
           </label>
         </div>
-        <p className="text-[10px] text-ink-400">Doctors keep 100% of their session fees. The platform charges no per-session commission.</p>
+        <p className="text-[10px] text-faint">Doctors keep 100% of their session fees. The platform charges no per-session commission.</p>
       </div>
 
       <Button onClick={save} disabled={saving}>

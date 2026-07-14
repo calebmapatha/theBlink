@@ -17,7 +17,7 @@ import { trialDaysLeft } from '../utils/pricing'
 import { getScreeningDocs, addScreeningDocPDF, addScreeningDocText, deleteScreeningDoc, openScreeningPDF, getConsentsForAppointment, MAX_PDF_BYTES, MAX_DOCS } from '../utils/screeningDocs'
 import { shortCodeFor, normalizeCode, parseCheckInPayload, formatCode } from '../utils/checkin'
 
-const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400'
+const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent'
 
 const PLATFORMS = [
   { value: 'zoom',    label: 'Zoom' },
@@ -44,7 +44,7 @@ const ENERGY_LABELS = { 1: 'Depleted', 2: 'Low', 3: 'Moderate', 4: 'High', 5: 'P
 // Kept as a small role-locked palette (teal primary, then green/amber/violet)
 // so accent colour never leaks into page chrome.
 const TINTS = {
-  teal:   { bg: 'bg-primary-100 dark:bg-primary-700/25', fg: 'text-primary-600 dark:text-primary-300' },
+  teal:   { bg: 'bg-accent-soft', fg: 'text-accent-soft-text' },
   green:  { bg: 'bg-success-100 dark:bg-success-500/15', fg: 'text-success-600 dark:text-success-400' },
   amber:  { bg: 'bg-warm-100 dark:bg-warm-500/15',       fg: 'text-warm-600 dark:text-warm-500' },
   violet: { bg: 'bg-purple-100 dark:bg-purple-700/25',   fg: 'text-purple-700 dark:text-purple-400' },
@@ -55,7 +55,7 @@ function StarDisplay({ value, size = 14 }) {
     <div className="flex gap-0.5">
       {[1,2,3,4,5].map(n => (
         <Star key={n} size={size}
-          className={n <= Math.round(value || 0) ? 'text-warm-400 fill-warm-400' : 'text-surface-300 dark:text-surface-600'}
+          className={n <= Math.round(value || 0) ? 'text-warm-400 fill-warm-400' : 'text-line'}
         />
       ))}
     </div>
@@ -65,45 +65,45 @@ function StarDisplay({ value, size = 14 }) {
 function DataSnapshot({ snapshot }) {
   if (!snapshot || Object.keys(snapshot).length === 0) return null
   return (
-    <div className="mt-3 pt-3 border-t border-surface-100 dark:border-surface-800 space-y-3">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Last 30 days</p>
+    <div className="mt-3 pt-3 border-t border-line space-y-3">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-faint">Last 30 days</p>
 
       {snapshot.checkin && (
         <div className="flex gap-4 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <Smile size={15} className="text-primary-500 flex-shrink-0" />
+            <Smile size={15} className="text-accent flex-shrink-0" />
             <div>
-              <p className="text-[10px] text-ink-400">Avg mood</p>
-              <p className="text-xs font-semibold text-ink-800 dark:text-ink-200">
+              <p className="text-[10px] text-faint">Avg mood</p>
+              <p className="text-xs font-semibold text-ink">
                 {snapshot.checkin.avgMood}/5
-                <span className="text-ink-400 font-normal ml-1">{MOOD_LABELS[Math.round(snapshot.checkin.avgMood)]}</span>
+                <span className="text-faint font-normal ml-1">{MOOD_LABELS[Math.round(snapshot.checkin.avgMood)]}</span>
               </p>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
             <Zap size={15} className="text-warm-500 flex-shrink-0" />
             <div>
-              <p className="text-[10px] text-ink-400">Avg energy</p>
-              <p className="text-xs font-semibold text-ink-800 dark:text-ink-200">
+              <p className="text-[10px] text-faint">Avg energy</p>
+              <p className="text-xs font-semibold text-ink">
                 {snapshot.checkin.avgEnergy}/5
-                <span className="text-ink-400 font-normal ml-1">{ENERGY_LABELS[Math.round(snapshot.checkin.avgEnergy)]}</span>
+                <span className="text-faint font-normal ml-1">{ENERGY_LABELS[Math.round(snapshot.checkin.avgEnergy)]}</span>
               </p>
             </div>
           </div>
-          <p className="text-[10px] text-ink-400 self-end">{snapshot.checkin.count} check-ins</p>
+          <p className="text-[10px] text-faint self-end">{snapshot.checkin.count} check-ins</p>
         </div>
       )}
 
       {snapshot.tasks && (
         <div>
           <div className="flex items-center justify-between mb-1">
-            <p className="text-[10px] text-ink-400">Task completion</p>
-            <p className="text-[10px] font-semibold text-ink-700 dark:text-ink-300">
+            <p className="text-[10px] text-faint">Task completion</p>
+            <p className="text-[10px] font-semibold text-ink">
               {snapshot.tasks.completed}/{snapshot.tasks.total} tasks · {snapshot.tasks.rate}%
             </p>
           </div>
-          <div className="h-1.5 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden">
-            <div className="h-full rounded-full bg-primary-500" style={{ width: `${snapshot.tasks.rate}%` }} />
+          <div className="h-1.5 rounded-full bg-raised overflow-hidden">
+            <div className="h-full rounded-full bg-accent" style={{ width: `${snapshot.tasks.rate}%` }} />
           </div>
         </div>
       )}
@@ -113,11 +113,11 @@ function DataSnapshot({ snapshot }) {
           {snapshot.habits.map((h, i) => (
             <div key={i} className="flex items-center gap-2">
               <span className="text-sm w-5 flex-shrink-0">{h.emoji}</span>
-              <p className="text-[10px] text-ink-600 dark:text-ink-300 flex-1 truncate">{h.name}</p>
-              <p className="text-[10px] font-semibold text-ink-700 dark:text-ink-300 flex-shrink-0">
+              <p className="text-[10px] text-muted flex-1 truncate">{h.name}</p>
+              <p className="text-[10px] font-semibold text-ink flex-shrink-0">
                 {h.completed}/{h.total}d
               </p>
-              <div className="w-16 h-1 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden flex-shrink-0">
+              <div className="w-16 h-1 rounded-full bg-raised overflow-hidden flex-shrink-0">
                 <div className="h-full rounded-full bg-success-500"
                   style={{ width: `${Math.round(h.completed / h.total * 100)}%` }} />
               </div>
@@ -128,18 +128,18 @@ function DataSnapshot({ snapshot }) {
 
       {snapshot.treatmentPlan && (
         <div className="space-y-2 pt-1">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Treatment plan</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-faint">Treatment plan</p>
           {snapshot.treatmentPlan.goals?.length > 0 && (
             <div>
-              <p className="text-[10px] text-ink-400 mb-1">Active goals</p>
+              <p className="text-[10px] text-faint mb-1">Active goals</p>
               {snapshot.treatmentPlan.goals.map((g, i) => (
                 <div key={i} className="flex items-center gap-2 mb-1">
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] text-ink-700 dark:text-ink-200 truncate">{g.text}</p>
+                    <p className="text-[10px] text-ink truncate">{g.text}</p>
                   </div>
-                  <span className="text-[10px] text-primary-500 font-semibold flex-shrink-0">{g.progress}%</span>
-                  <div className="w-12 h-1 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden flex-shrink-0">
-                    <div className="h-full rounded-full bg-primary-500" style={{ width: `${g.progress}%` }} />
+                  <span className="text-[10px] text-accent font-semibold flex-shrink-0">{g.progress}%</span>
+                  <div className="w-12 h-1 rounded-full bg-raised overflow-hidden flex-shrink-0">
+                    <div className="h-full rounded-full bg-accent" style={{ width: `${g.progress}%` }} />
                   </div>
                 </div>
               ))}
@@ -147,10 +147,10 @@ function DataSnapshot({ snapshot }) {
           )}
           {snapshot.treatmentPlan.medications?.length > 0 && (
             <div>
-              <p className="text-[10px] text-ink-400 mb-1">Medications</p>
+              <p className="text-[10px] text-faint mb-1">Medications</p>
               <div className="flex flex-wrap gap-1">
                 {snapshot.treatmentPlan.medications.map((m, i) => (
-                  <span key={i} className="text-[10px] px-1.5 py-0.5 rounded-md bg-surface-100 dark:bg-surface-800 text-ink-600 dark:text-ink-300">
+                  <span key={i} className="text-[10px] px-1.5 py-0.5 rounded-md bg-raised text-muted">
                     {m.name} {m.dosage}
                   </span>
                 ))}
@@ -159,10 +159,10 @@ function DataSnapshot({ snapshot }) {
           )}
           {snapshot.treatmentPlan.symptoms?.length > 0 && (
             <div>
-              <p className="text-[10px] text-ink-400 mb-1">Reported symptoms</p>
+              <p className="text-[10px] text-faint mb-1">Reported symptoms</p>
               <div className="flex flex-wrap gap-1">
                 {snapshot.treatmentPlan.symptoms.map((s, i) => (
-                  <span key={i} className="text-[10px] px-1.5 py-0.5 rounded-md bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400">
+                  <span key={i} className="text-[10px] px-1.5 py-0.5 rounded-md bg-red-50 dark:bg-red-500/10 text-danger dark:text-red-400">
                     {s.name} ({s.severity}/5)
                   </span>
                 ))}
@@ -178,9 +178,9 @@ function DataSnapshot({ snapshot }) {
 const STATUS_STYLES = {
   pending:   'bg-warm-50 dark:bg-warm-500/10 text-warm-600 dark:text-warm-400',
   confirmed: 'bg-success-50 dark:bg-success-500/10 text-success-600 dark:text-success-400',
-  completed: 'bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400',
-  'no-show': 'bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400',
-  cancelled: 'bg-surface-100 dark:bg-surface-700 text-ink-400',
+  completed: 'bg-accent-soft text-accent-soft-text',
+  'no-show': 'bg-red-50 dark:bg-red-500/10 text-danger dark:text-red-400',
+  cancelled: 'bg-raised text-faint',
 }
 const STATUS_LABELS = { pending: 'Pending', confirmed: 'Confirmed', completed: 'Completed', 'no-show': 'No-show', cancelled: 'Declined' }
 
@@ -194,10 +194,10 @@ function StatusBadge({ status }) {
 
 function ApptRow({ appt }) {
   return (
-    <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-surface-50 dark:bg-surface-900">
+    <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-raised">
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-medium text-ink-900 dark:text-ink-100 truncate">{appt.patientName}</p>
-        <p className="text-[10px] text-ink-400 flex items-center gap-1 mt-0.5">
+        <p className="text-xs font-medium text-ink truncate">{appt.patientName}</p>
+        <p className="text-[10px] text-faint flex items-center gap-1 mt-0.5">
           <Calendar size={9} className="flex-shrink-0" /> {appt.date} · {appt.timeSlot}
         </p>
       </div>
@@ -208,12 +208,12 @@ function ApptRow({ appt }) {
 
 function MetricRow({ label, value, sub }) {
   return (
-    <div className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-surface-50 dark:bg-surface-900">
+    <div className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-raised">
       <div>
-        <p className="text-xs font-medium text-ink-800 dark:text-ink-200">{label}</p>
-        {sub && <p className="text-[10px] text-ink-400 mt-0.5">{sub}</p>}
+        <p className="text-xs font-medium text-ink">{label}</p>
+        {sub && <p className="text-[10px] text-faint mt-0.5">{sub}</p>}
       </div>
-      <p className="text-sm font-bold text-ink-900 dark:text-ink-100 flex-shrink-0">{value}</p>
+      <p className="text-sm font-bold text-ink flex-shrink-0">{value}</p>
     </div>
   )
 }
@@ -240,7 +240,7 @@ function StatDetailModal({ kind, onClose, stats }) {
             value={profileViews > 0 ? `${Math.round((appointments.length / profileViews) * 100)}%` : 'N/A'}
             sub="Share of profile views that turned into a booking" />
           <MetricRow label="Unique patients reached" value={uniquePatients} />
-          <p className="text-[11px] text-ink-400 leading-relaxed pt-1">
+          <p className="text-[11px] text-faint leading-relaxed pt-1">
             <Lightbulb size={12} className="inline -mt-0.5 mr-1 text-warm-500" />A complete bio, profile photo, and up-to-date diary slots help convert views into bookings.
           </p>
         </div>
@@ -249,23 +249,23 @@ function StatDetailModal({ kind, onClose, stats }) {
     patients: {
       title: `Unique patients (${patientList.length})`,
       body: patientList.length === 0 ? (
-        <p className="text-sm text-ink-400 text-center py-6">No patients yet. Your profile is live on Connect.</p>
+        <p className="text-sm text-faint text-center py-6">No patients yet. Your profile is live on Connect.</p>
       ) : (
         <div className="space-y-2">
           {patientList.map((p, i) => (
-            <div key={i} className="px-3 py-2.5 rounded-xl bg-surface-50 dark:bg-surface-900">
+            <div key={i} className="px-3 py-2.5 rounded-xl bg-raised">
               <div className="flex items-center justify-between gap-2">
-                <p className="text-xs font-medium text-ink-900 dark:text-ink-100 truncate">{p.name}</p>
-                <p className="text-[10px] text-ink-400 flex-shrink-0">
+                <p className="text-xs font-medium text-ink truncate">{p.name}</p>
+                <p className="text-[10px] text-faint flex-shrink-0">
                   {p.total} booking{p.total !== 1 ? 's' : ''}
                 </p>
               </div>
-              <p className="text-[10px] text-ink-400 truncate">{p.email}</p>
+              <p className="text-[10px] text-faint truncate">{p.email}</p>
               <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                 {p.confirmed > 0 && <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${STATUS_STYLES.confirmed}`}>{p.confirmed} confirmed</span>}
                 {p.pending > 0 && <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${STATUS_STYLES.pending}`}>{p.pending} pending</span>}
                 {p.cancelled > 0 && <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${STATUS_STYLES.cancelled}`}>{p.cancelled} declined</span>}
-                {p.lastDate && <span className="text-[10px] text-ink-400 ml-auto">Last: {p.lastDate}</span>}
+                {p.lastDate && <span className="text-[10px] text-faint ml-auto">Last: {p.lastDate}</span>}
               </div>
             </div>
           ))}
@@ -284,17 +284,17 @@ function StatDetailModal({ kind, onClose, stats }) {
           <MetricRow label="Awaiting your response" value={pending.length} />
           {(confirmed.length + declined.length) > 0 && (
             <div className="pt-1">
-              <div className="h-2 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden flex">
+              <div className="h-2 rounded-full bg-raised overflow-hidden flex">
                 <div className="h-full bg-success-500" style={{ width: `${acceptanceRate}%` }} />
-                <div className="h-full bg-surface-300 dark:bg-surface-600 flex-1" />
+                <div className="h-full bg-line flex-1" />
               </div>
               <div className="flex justify-between mt-1">
                 <span className="text-[10px] text-success-600 dark:text-success-400">Confirmed {acceptanceRate}%</span>
-                <span className="text-[10px] text-ink-400">Declined {100 - acceptanceRate}%</span>
+                <span className="text-[10px] text-faint">Declined {100 - acceptanceRate}%</span>
               </div>
             </div>
           )}
-          <p className="text-[11px] text-ink-400 leading-relaxed pt-1">
+          <p className="text-[11px] text-faint leading-relaxed pt-1">
             <Lightbulb size={12} className="inline -mt-0.5 mr-1 text-warm-500" />Responding quickly to pending requests, even declining, keeps patients informed and your profile trustworthy.
           </p>
         </div>
@@ -312,13 +312,13 @@ function StatDetailModal({ kind, onClose, stats }) {
           )}
           {sessions.length > 0 && (
             <div className="pt-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-2">Sessions</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-faint mb-2">Sessions</p>
               <div className="space-y-1.5">
                 {[...sessions].sort(byDateDesc).map((a, i) => (
-                  <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl bg-surface-50 dark:bg-surface-900">
+                  <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl bg-raised">
                     <div className="min-w-0">
-                      <p className="text-xs text-ink-800 dark:text-ink-200 truncate">{a.patientName}</p>
-                      <p className="text-[10px] text-ink-400">{a.date} · {a.timeSlot}</p>
+                      <p className="text-xs text-ink truncate">{a.patientName}</p>
+                      <p className="text-[10px] text-faint">{a.date} · {a.timeSlot}</p>
                     </div>
                     <p className="text-xs font-semibold text-success-600 dark:text-success-400 flex-shrink-0">
                       +R{fee.toLocaleString()}
@@ -328,7 +328,7 @@ function StatDetailModal({ kind, onClose, stats }) {
               </div>
             </div>
           )}
-          <p className="text-[11px] text-ink-400 leading-relaxed pt-1">
+          <p className="text-[11px] text-faint leading-relaxed pt-1">
             Estimate only, based on your current session fee and confirmed bookings. Payments are settled directly between you and the patient.
           </p>
         </div>
@@ -337,7 +337,7 @@ function StatDetailModal({ kind, onClose, stats }) {
     pending: {
       title: `Pending requests (${pending.length})`,
       body: pending.length === 0 ? (
-        <p className="text-sm text-ink-400 text-center py-6">No pending requests. You're all caught up.</p>
+        <p className="text-sm text-faint text-center py-6">No pending requests. You're all caught up.</p>
       ) : (
         <div className="space-y-2">{[...pending].sort(byDateDesc).map((a, i) => <ApptRow key={i} appt={a} />)}</div>
       ),
@@ -345,7 +345,7 @@ function StatDetailModal({ kind, onClose, stats }) {
     confirmedList: {
       title: `Confirmed appointments (${confirmed.length})`,
       body: confirmed.length === 0 ? (
-        <p className="text-sm text-ink-400 text-center py-6">No confirmed appointments yet.</p>
+        <p className="text-sm text-faint text-center py-6">No confirmed appointments yet.</p>
       ) : (
         <div className="space-y-2">{[...confirmed].sort(byDateDesc).map((a, i) => <ApptRow key={i} appt={a} />)}</div>
       ),
@@ -353,7 +353,7 @@ function StatDetailModal({ kind, onClose, stats }) {
     total: {
       title: `All appointments (${appointments.length})`,
       body: appointments.length === 0 ? (
-        <p className="text-sm text-ink-400 text-center py-6">No appointment requests yet.</p>
+        <p className="text-sm text-faint text-center py-6">No appointment requests yet.</p>
       ) : (
         <div className="space-y-2">
           {[...appointments].sort(byDateDesc).map((a, i) => <ApptRow key={i} appt={a} />)}
@@ -458,17 +458,17 @@ function PrescriptionModal({ open, onClose, appt, onSubmit }) {
   return (
     <Modal open={open} onClose={onClose} title={`Prescribe for ${appt?.patientName || 'patient'}`}>
       <div className="space-y-4">
-        <p className="text-xs text-ink-400 leading-relaxed">
-          The patient will see this under <strong className="text-ink-600 dark:text-ink-300">Scripts</strong> in
+        <p className="text-xs text-faint leading-relaxed">
+          The patient will see this under <strong className="text-muted">Scripts</strong> in
           their treatment plan. They manage their own current medications separately.
         </p>
 
         {items.map((it, i) => (
-          <div key={i} className="rounded-2xl border border-surface-100 dark:border-surface-700 p-3 space-y-2.5">
+          <div key={i} className="rounded-2xl border border-line p-3 space-y-2.5">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold text-ink-500 dark:text-ink-300">Medication {i + 1}</p>
+              <p className="text-xs font-semibold text-muted">Medication {i + 1}</p>
               {items.length > 1 && (
-                <button onClick={() => removeItem(i)} className="text-ink-400 hover:text-red-500 transition-colors"><Trash2 size={13} /></button>
+                <button onClick={() => removeItem(i)} className="text-faint hover:text-danger transition-colors"><Trash2 size={13} /></button>
               )}
             </div>
             <input value={it.name} onChange={e => setItem(i, 'name', e.target.value)} className={inputCls} placeholder="Medication name (e.g. Sertraline)" />
@@ -482,12 +482,12 @@ function PrescriptionModal({ open, onClose, appt, onSubmit }) {
           </div>
         ))}
 
-        <button onClick={addItem} className="flex items-center gap-1.5 text-xs font-semibold text-primary-500 hover:text-primary-600 transition-colors">
+        <button onClick={addItem} className="flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-accent-strong transition-colors">
           <FileText size={12} /> Add another medication
         </button>
 
         <div>
-          <label className="block text-xs font-medium text-ink-400 mb-1">Notes to patient (optional)</label>
+          <label className="block text-xs font-medium text-faint mb-1">Notes to patient (optional)</label>
           <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className={`${inputCls} resize-none`}
             placeholder="e.g. Collect from your pharmacy; review in 4 weeks." />
         </div>
@@ -537,20 +537,20 @@ function VerificationSection({ uid, upload, getMeta, getUrl, showToast }) {
   return (
     <Card className="p-4 mb-5 border-amber-200 dark:border-amber-500/30 bg-amber-50/50 dark:bg-amber-500/5">
       <div className="flex items-center justify-between mb-1">
-        <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">Verification documents</p>
-        <span className="text-[10px] font-medium text-ink-400">{uploadedCount}/{VERIFICATION_DOCS.length} uploaded</span>
+        <p className="text-sm font-semibold text-ink">Verification documents</p>
+        <span className="text-[10px] font-medium text-faint">{uploadedCount}/{VERIFICATION_DOCS.length} uploaded</span>
       </div>
-      <p className="text-xs text-ink-400 mb-3 leading-relaxed">
+      <p className="text-xs text-faint mb-3 leading-relaxed">
         Please upload these during your trial so we can verify your practice. PDF or image, up to 10 MB. Only you and our team can view them.
       </p>
       <div className="space-y-2">
         {VERIFICATION_DOCS.map(d => {
           const uploaded = !!meta[d.key]?.path
           return (
-            <div key={d.key} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white dark:bg-surface-800 border border-surface-100 dark:border-surface-700">
-              <FileText size={15} className={uploaded ? 'text-success-500' : 'text-ink-400'} />
-              <span className="flex-1 text-sm text-ink-700 dark:text-ink-200 min-w-0 truncate">{d.label}</span>
-              {uploaded && <button onClick={() => view(meta[d.key].path)} className="text-[10px] font-semibold text-primary-500 hover:underline flex-shrink-0">View</button>}
+            <div key={d.key} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-surface border border-line">
+              <FileText size={15} className={uploaded ? 'text-success-500' : 'text-faint'} />
+              <span className="flex-1 text-sm text-ink min-w-0 truncate">{d.label}</span>
+              {uploaded && <button onClick={() => view(meta[d.key].path)} className="text-[10px] font-semibold text-accent hover:underline flex-shrink-0">View</button>}
               <input ref={el => (fileRefs.current[d.key] = el)} type="file" accept="image/png,image/jpeg,image/webp,application/pdf" className="hidden" onChange={e => handleFile(d.key, e)} />
               <Button size="sm" variant={uploaded ? 'ghost' : 'soft'} disabled={busy === d.key} onClick={() => fileRefs.current[d.key]?.click()}>
                 {busy === d.key ? <Loader size={12} className="animate-spin" /> : uploaded ? 'Replace' : 'Upload'}
@@ -572,21 +572,21 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
         <div className="flex gap-3 flex-1 min-w-0">
           <Avatar name={appt.patientName} size="md" />
           <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-ink-900 dark:text-ink-100 truncate">{appt.patientName}</p>
-          <p className="text-xs text-ink-400 truncate">{appt.patientEmail}</p>
-          <p className="text-xs text-ink-400 mt-1 flex items-center gap-1">
+          <p className="text-sm font-semibold text-ink truncate">{appt.patientName}</p>
+          <p className="text-xs text-faint truncate">{appt.patientEmail}</p>
+          <p className="text-xs text-faint mt-1 flex items-center gap-1">
             <Calendar size={10} className="flex-shrink-0" />
             {appt.date} · {appt.timeSlot}
           </p>
           {appt.notes && (
-            <p className="text-xs text-ink-600 dark:text-ink-300 mt-1.5 italic bg-surface-50 dark:bg-surface-900 px-2 py-1 rounded-lg">"{appt.notes}"</p>
+            <p className="text-xs text-muted mt-1.5 italic bg-raised px-2 py-1 rounded-lg">"{appt.notes}"</p>
           )}
           {appt.sharedDataTypes?.length > 0 && (
             <div className="mt-2">
-              <p className="text-[10px] text-ink-400 mb-1">Patient shared:</p>
+              <p className="text-[10px] text-faint mb-1">Patient shared:</p>
               <div className="flex flex-wrap gap-1">
                 {appt.sharedDataTypes.map(t => DATA_LABELS[t] ? (
-                  <span key={t} className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400">
+                  <span key={t} className="text-[10px] px-1.5 py-0.5 rounded-md bg-accent-soft text-accent-soft-text">
                     {DATA_LABELS[t]}
                   </span>
                 ) : null)}
@@ -599,7 +599,7 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
               <FileSignature size={10} className="flex-shrink-0" />
               Documents signed{appt.screeningSignatureName ? `: ${appt.screeningSignatureName}` : ''}
               {onViewConsents && (
-                <button onClick={() => onViewConsents(appt)} className="text-primary-500 underline ml-1">View</button>
+                <button onClick={() => onViewConsents(appt)} className="text-accent underline ml-1">View</button>
               )}
             </p>
           ) : appt.screeningRequired && appt.status === 'confirmed' ? (
@@ -612,12 +612,12 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
             <AddToCalendar
               appt={{ ...appt, meetingLink }}
               role="provider"
-              className="mt-2.5 pt-2.5 border-t border-surface-100 dark:border-surface-800"
+              className="mt-2.5 pt-2.5 border-t border-line"
             />
           )}
           {appt.status === 'confirmed' && onPrescribe && (
             <button onClick={() => onPrescribe(appt)}
-              className="mt-2.5 flex items-center gap-1.5 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline">
+              className="mt-2.5 flex items-center gap-1.5 text-xs font-semibold text-accent-soft-text hover:underline">
               <FileText size={12} /> Write prescription
             </button>
           )}
@@ -626,11 +626,11 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
         {appt.status === 'pending' && (
           <div className="flex gap-1.5 flex-shrink-0">
             <button onClick={() => onDecline(appt.id)}
-              className="p-1.5 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title="Decline">
+              className="p-1.5 rounded-lg text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title="Decline">
               <XCircle size={20} />
             </button>
             <button onClick={() => onConfirm(appt.id)}
-              className="p-1.5 rounded-lg text-ink-400 hover:text-success-500 hover:bg-success-50 dark:hover:bg-success-500/10 transition-colors" title="Confirm">
+              className="p-1.5 rounded-lg text-faint hover:text-success-500 hover:bg-success-50 dark:hover:bg-success-500/10 transition-colors" title="Confirm">
               <CheckCircle size={20} />
             </button>
           </div>
@@ -652,7 +652,7 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
               ✓ Completed
             </button>
             <button onClick={() => onOutcome(appt.id, 'no-show')}
-              className="text-[10px] font-medium px-2 py-1 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-500 hover:bg-red-100 transition-colors">
+              className="text-[10px] font-medium px-2 py-1 rounded-lg bg-red-50 dark:bg-red-500/10 text-danger hover:bg-red-100 transition-colors">
               No-show
             </button>
           </div>
@@ -701,12 +701,12 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
     return persist(updated)
   }
 
-  if (diaryLoading) return <div className="h-40 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />
+  if (diaryLoading) return <div className="h-40 rounded-2xl bg-raised animate-pulse" />
 
   return (
     <div className="space-y-4">
-      <p className="text-xs text-ink-400 leading-relaxed">
-        Tap a cell to open or close that time. Weekdays are open <strong className="text-ink-600 dark:text-ink-300">08:00–16:00</strong> by
+      <p className="text-xs text-faint leading-relaxed">
+        Tap a cell to open or close that time. Weekdays are open <strong className="text-muted">08:00–16:00</strong> by
         default. Confirmed bookings hide their slot from patients automatically.
       </p>
 
@@ -719,7 +719,7 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
               const closed = dayMode(diary, d.key) === 'closed'
               return (
                 <div key={d.key} className="text-center">
-                  <p className={`text-[10px] font-bold uppercase ${closed ? 'text-ink-300 dark:text-ink-600' : 'text-ink-500 dark:text-ink-300'}`}>{d.label.slice(0, 3)}</p>
+                  <p className={`text-[10px] font-bold uppercase ${closed ? 'text-faint' : 'text-muted'}`}>{d.label.slice(0, 3)}</p>
                 </div>
               )
             })}
@@ -728,7 +728,7 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
           {/* Time rows */}
           {GRID_TIMES.map(time => (
             <div key={time} className="grid gap-1 mb-1" style={{ gridTemplateColumns: '2.6rem repeat(7, 1fr)' }}>
-              <div className="text-[9px] text-ink-400 flex items-center justify-end pr-1 timer-nums">{time}</div>
+              <div className="text-[9px] text-faint flex items-center justify-end pr-1 timer-nums">{time}</div>
               {DAYS.map(d => {
                 const open = slotsForDay(diary, d.key).includes(time)
                 return (
@@ -736,8 +736,8 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
                     title={`${d.label} ${time} — ${open ? 'open' : 'closed'}`}
                     className={`h-6 rounded-md transition-colors ${
                       open
-                        ? 'bg-primary-500 hover:bg-primary-600'
-                        : 'bg-surface-100 dark:bg-surface-800 hover:bg-surface-200 dark:hover:bg-surface-700'
+                        ? 'bg-accent hover:bg-accent-strong'
+                        : 'bg-raised hover:bg-line'
                     }`} />
                 )
               })}
@@ -747,21 +747,21 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
       </Card>
 
       {/* Legend + per-day quick actions */}
-      <div className="flex items-center gap-3 text-[10px] text-ink-400">
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-primary-500 inline-block" /> Open</span>
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-surface-200 dark:bg-surface-700 inline-block" /> Closed</span>
+      <div className="flex items-center gap-3 text-[10px] text-faint">
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-accent inline-block" /> Open</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-line inline-block" /> Closed</span>
       </div>
       <div className="flex flex-wrap gap-1.5">
         {DAYS.map(d => {
           const closed = dayMode(diary, d.key) === 'closed'
           const custom = dayMode(diary, d.key) === 'custom'
           return (
-            <div key={d.key} className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg bg-surface-50 dark:bg-surface-800">
-              <span className="font-semibold text-ink-600 dark:text-ink-300">{d.label.slice(0, 3)}</span>
+            <div key={d.key} className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg bg-raised">
+              <span className="font-semibold text-muted">{d.label.slice(0, 3)}</span>
               {closed
-                ? <button onClick={() => resetDay(d.key)} disabled={saving} className="text-primary-500 hover:underline">reopen</button>
-                : <button onClick={() => closeDay(d.key)} disabled={saving} className="text-ink-400 hover:text-red-500">close</button>}
-              {custom && !closed && <button onClick={() => resetDay(d.key)} disabled={saving} className="text-ink-400 hover:text-primary-500">reset</button>}
+                ? <button onClick={() => resetDay(d.key)} disabled={saving} className="text-accent hover:underline">reopen</button>
+                : <button onClick={() => closeDay(d.key)} disabled={saving} className="text-faint hover:text-danger">close</button>}
+              {custom && !closed && <button onClick={() => resetDay(d.key)} disabled={saving} className="text-faint hover:text-accent">reset</button>}
             </div>
           )
         })}
@@ -784,28 +784,28 @@ function ConsentsModal({ appt, onClose }) {
   return (
     <Modal open={!!appt} onClose={onClose} title="Signed documents">
       {consents === null ? (
-        <div className="py-8 text-center"><Loader size={18} className="animate-spin text-primary-500 mx-auto" /></div>
+        <div className="py-8 text-center"><Loader size={18} className="animate-spin text-accent mx-auto" /></div>
       ) : consents.length === 0 ? (
-        <p className="text-sm text-ink-400 text-center py-6">No signed records found for this appointment.</p>
+        <p className="text-sm text-faint text-center py-6">No signed records found for this appointment.</p>
       ) : (
         <div className="space-y-3">
-          <p className="text-xs text-ink-400">
-            Signed by <strong className="text-ink-700 dark:text-ink-300">{appt?.patientName}</strong> for
+          <p className="text-xs text-faint">
+            Signed by <strong className="text-ink">{appt?.patientName}</strong> for
             the session on {appt?.date} at {appt?.timeSlot}.
           </p>
           {consents.map(c => (
-            <div key={c.id} className="p-3 rounded-xl border border-surface-200 dark:border-surface-700 space-y-2">
+            <div key={c.id} className="p-3 rounded-xl border border-line space-y-2">
               <div className="flex items-center gap-2">
-                <FileText size={13} className="text-primary-500 flex-shrink-0" />
-                <p className="text-xs font-medium text-ink-900 dark:text-ink-100 flex-1">{c.docTitle}</p>
+                <FileText size={13} className="text-accent flex-shrink-0" />
+                <p className="text-xs font-medium text-ink flex-1">{c.docTitle}</p>
               </div>
-              <p className="text-[10px] text-ink-400">
-                Signed as <strong className="text-ink-600 dark:text-ink-300">{c.signatureName}</strong>
+              <p className="text-[10px] text-faint">
+                Signed as <strong className="text-muted">{c.signatureName}</strong>
                 {c.signedAt?.seconds ? ` · ${new Date(c.signedAt.seconds * 1000).toLocaleString('en-ZA')}` : ''}
               </p>
               {c.signatureImage && (
                 <img src={c.signatureImage} alt={`Signature of ${c.signatureName}`}
-                  className="h-16 rounded-lg border border-surface-200 dark:border-surface-700 bg-white" />
+                  className="h-16 rounded-lg border border-line bg-white" />
               )}
             </div>
           ))}
@@ -874,40 +874,40 @@ function DocumentsManager({ providerUid }) {
     }
   }
 
-  if (docsLoading) return <div className="h-20 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />
+  if (docsLoading) return <div className="h-20 rounded-2xl bg-raised animate-pulse" />
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-ink-400 leading-relaxed">
+      <p className="text-xs text-faint leading-relaxed">
         Optional. Upload documents (terms &amp; conditions, consultation agreements, practice policies)
-        for patients to sign. When you <strong className="text-ink-600 dark:text-ink-300">accept</strong> a
+        for patients to sign. When you <strong className="text-muted">accept</strong> a
         booking request, the documents are sent to the patient to read and digitally sign before the
         session. Signatures are stored with each appointment.
       </p>
 
       {docs.length === 0 ? (
         <Card className="p-4 text-center">
-          <FileSignature size={20} className="text-ink-400 mx-auto mb-1.5" />
-          <p className="text-xs text-ink-400">No pre-screening documents yet. Patients can book without signing anything.</p>
+          <FileSignature size={20} className="text-faint mx-auto mb-1.5" />
+          <p className="text-xs text-faint">No pre-screening documents yet. Patients can book without signing anything.</p>
         </Card>
       ) : (
         <div className="space-y-2">
           {docs.map(d => (
             <Card key={d.id} className="p-3 flex items-center gap-3">
-              <FileText size={16} className="text-primary-500 flex-shrink-0" />
+              <FileText size={16} className="text-accent flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-ink-900 dark:text-ink-100 truncate">{d.title}</p>
-                <p className="text-[10px] text-ink-400">
+                <p className="text-xs font-medium text-ink truncate">{d.title}</p>
+                <p className="text-[10px] text-faint">
                   {d.kind === 'pdf' ? `PDF · ${Math.round((d.size || 0) / 1024)} KB` : 'Text document'}
                 </p>
               </div>
               <button
                 onClick={() => d.kind === 'pdf' ? openScreeningPDF(d) : setViewing(d)}
-                className="text-[10px] font-medium text-primary-500 hover:underline flex-shrink-0">
+                className="text-[10px] font-medium text-accent hover:underline flex-shrink-0">
                 View
               </button>
               <button onClick={() => handleDelete(d.id)} disabled={busy}
-                className="p-1 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex-shrink-0" title="Remove">
+                className="p-1 rounded-lg text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex-shrink-0" title="Remove">
                 <Trash2 size={13} />
               </button>
             </Card>
@@ -915,7 +915,7 @@ function DocumentsManager({ providerUid }) {
         </div>
       )}
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-danger">{error}</p>}
 
       {docs.length < MAX_DOCS && (
         <div className="flex gap-2">
@@ -936,7 +936,7 @@ function DocumentsManager({ providerUid }) {
           <textarea value={textBody} onChange={e => setTextBody(e.target.value)} rows={10}
             placeholder="Paste or type the full document text…"
             className={`${inputCls} resize-none`} />
-          {error && <p className="text-xs text-red-500">{error}</p>}
+          {error && <p className="text-xs text-danger">{error}</p>}
           <div className="flex gap-2">
             <Button variant="ghost" className="flex-1" onClick={() => setTextOpen(false)}>Cancel</Button>
             <Button className="flex-1" disabled={busy || !textTitle.trim() || !textBody.trim()} onClick={handleAddText}>
@@ -947,7 +947,7 @@ function DocumentsManager({ providerUid }) {
       </Modal>
 
       <Modal open={!!viewing} onClose={() => setViewing(null)} title={viewing?.title || ''}>
-        <p className="text-xs text-ink-700 dark:text-ink-300 leading-relaxed whitespace-pre-wrap max-h-[60vh] overflow-y-auto">
+        <p className="text-xs text-ink leading-relaxed whitespace-pre-wrap max-h-[60vh] overflow-y-auto">
           {viewing?.text}
         </p>
       </Modal>
@@ -964,10 +964,10 @@ function StatCard({ icon: Icon, value, label, onClick }) {
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } }}
       className="p-5 cursor-pointer group hover:-translate-y-0.5 hover:shadow-md">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-ink-500 dark:text-ink-400">{label}</p>
-        <Icon size={15} className="text-ink-300 dark:text-ink-600 group-hover:text-primary-500 transition-colors" />
+        <p className="text-sm text-muted">{label}</p>
+        <Icon size={15} className="text-faint group-hover:text-accent transition-colors" />
       </div>
-      <p className="text-[2.1rem] leading-none font-medium tracking-tight text-ink-900 dark:text-ink-100 mt-4">{value}</p>
+      <p className="text-[2.1rem] leading-none font-medium tracking-tight text-ink mt-4">{value}</p>
     </Card>
   )
 }
@@ -977,18 +977,18 @@ function StatCard({ icon: Icon, value, label, onClick }) {
 function ToolCard({ icon: Icon, title, desc, badge, onClick }) {
   return (
     <Card as="button" flat interactive type="button" onClick={onClick}
-      className="group text-left w-full p-6 hover:border-surface-300 dark:hover:border-surface-600">
-      <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-4 bg-primary-50 dark:bg-primary-700/20">
-        <Icon size={20} className="text-primary-600 dark:text-primary-300" />
+      className="group text-left w-full p-6 hover:border-faint">
+      <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-4 bg-accent-soft">
+        <Icon size={20} className="text-accent-soft-text" />
       </div>
       <div className="flex items-center gap-2">
-        <p className="font-semibold text-ink-900 dark:text-ink-100 text-[15px]">{title}</p>
+        <p className="font-semibold text-ink text-[15px]">{title}</p>
         {badge > 0 && (
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-primary-100 dark:bg-primary-700/25 text-primary-700 dark:text-primary-300">{badge}</span>
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-accent-soft text-accent-soft-text">{badge}</span>
         )}
       </div>
-      <p className="text-sm text-ink-500 dark:text-ink-400 mt-1.5 leading-relaxed">{desc}</p>
-      <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary-600 dark:text-primary-400">
+      <p className="text-sm text-muted mt-1.5 leading-relaxed">{desc}</p>
+      <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-accent-soft-text">
         Open <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
       </span>
     </Card>
@@ -999,8 +999,8 @@ function ToolCard({ icon: Icon, title, desc, badge, onClick }) {
 function Banner({ tone = 'amber', icon: Icon, title, children, action }) {
   const tones = {
     amber: 'bg-warm-50 dark:bg-warm-500/10 border-warm-200 dark:border-warm-500/30 text-warm-700 dark:text-warm-400',
-    red:   'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400',
-    teal:  'bg-primary-50 dark:bg-primary-700/15 border-primary-200 dark:border-primary-600/40 text-primary-700 dark:text-primary-300',
+    red:   'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30 text-danger dark:text-red-400',
+    teal:  'bg-accent-soft border-accent/30 text-accent-soft-text',
   }
   return (
     <div className={`mb-5 rounded-2xl border p-4 flex items-start gap-3 ${tones[tone]}`}>
@@ -1100,7 +1100,7 @@ function CheckInModal({ open, onClose, appointments, onCheckIn }) {
   return (
     <Modal open={open} onClose={onClose} title="Check in a patient">
       <div className="space-y-4">
-        <p className="text-xs text-ink-400 leading-relaxed">
+        <p className="text-xs text-faint leading-relaxed">
           Ask the patient for their check-in pass. Type the 6-character code from it
           {canScan ? ', or scan the QR with your camera.' : '.'}
         </p>
@@ -1121,7 +1121,7 @@ function CheckInModal({ open, onClose, appointments, onCheckIn }) {
               placeholder="e.g. K7M-PQ4"
               autoFocus
               maxLength={8}
-              className="w-full px-4 py-3 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-center text-lg font-bold tracking-[0.2em] uppercase placeholder:tracking-normal placeholder:font-normal placeholder:text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
+              className="w-full px-4 py-3 rounded-xl border border-line bg-raised text-ink text-center text-lg font-bold tracking-[0.2em] uppercase placeholder:tracking-normal placeholder:font-normal placeholder:text-sm focus:outline-none focus:ring-2 focus:ring-accent"
             />
             {canScan && (
               <Button variant="soft" size="sm" className="w-full" onClick={() => { setScanError(''); setScanning(true) }}>
@@ -1131,15 +1131,15 @@ function CheckInModal({ open, onClose, appointments, onCheckIn }) {
           </>
         )}
 
-        {scanError && <p className="text-xs text-red-500">{scanError}</p>}
+        {scanError && <p className="text-xs text-danger">{scanError}</p>}
 
         {match && (
           <div className="p-3.5 rounded-2xl bg-success-50 dark:bg-success-500/10 border border-success-200 dark:border-success-500/30">
             <div className="flex items-center gap-3">
               <Avatar name={match.patientName} size="sm" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-ink-900 dark:text-ink-100 truncate">{match.patientName}</p>
-                <p className="text-xs text-ink-500 dark:text-ink-400">{match.date} at {match.timeSlot}</p>
+                <p className="text-sm font-semibold text-ink truncate">{match.patientName}</p>
+                <p className="text-xs text-muted">{match.date} at {match.timeSlot}</p>
               </div>
             </div>
             {match.date !== todayStr && (
@@ -1160,7 +1160,7 @@ function CheckInModal({ open, onClose, appointments, onCheckIn }) {
         )}
 
         {code.length === 6 && !match && !alreadyIn && (
-          <p className="text-xs text-ink-400">
+          <p className="text-xs text-faint">
             No confirmed appointment matches {formatCode(code)}. Double-check the code with the patient.
           </p>
         )}
@@ -1295,7 +1295,7 @@ export function ProviderDashboard() {
   if (loading) return (
     <PageWrapper>
       <div className="space-y-3 mt-6">
-        {[1, 2].map(i => <div key={i} className="h-24 rounded-2xl bg-surface-100 dark:bg-surface-800 animate-pulse" />)}
+        {[1, 2].map(i => <div key={i} className="h-24 rounded-2xl bg-raised animate-pulse" />)}
       </div>
     </PageWrapper>
   )
@@ -1355,7 +1355,7 @@ export function ProviderDashboard() {
       {/* Editorial greeting — oversized serif on paper, an italicised greeting
           as the one flourish, and a matched pill-button pair. No saturated
           surface: the type and the whitespace carry it. */}
-      <header className="pt-1 pb-9 sm:pb-12 border-b border-surface-200 dark:border-surface-800 mb-8">
+      <header className="pt-1 pb-9 sm:pb-12 border-b border-line mb-8">
         <div className="flex items-start justify-between gap-6">
           <div className="flex items-start gap-4 min-w-0">
             <button
@@ -1371,17 +1371,17 @@ export function ProviderDashboard() {
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoFile} />
 
             <div className="min-w-0">
-              <h1 className="font-serif text-[2.15rem] sm:text-[3rem] leading-[1.08] tracking-[-0.02em] text-ink-900 dark:text-ink-100">
-                <span className="italic text-ink-400 dark:text-ink-500">{greeting()},</span>{' '}
+              <h1 className="font-serif text-[2.15rem] sm:text-[3rem] leading-[1.08] tracking-[-0.02em] text-ink">
+                <span className="italic text-faint">{greeting()},</span>{' '}
                 <span className="text-balance">{profile?.name || 'your practice'}</span>
               </h1>
-              <div className="flex items-center gap-2.5 mt-3 flex-wrap text-sm text-ink-500 dark:text-ink-400">
+              <div className="flex items-center gap-2.5 mt-3 flex-wrap text-sm text-muted">
                 <span>{statusLabel}</span>
                 {ratingCount > 0 && ratingAvg && (
                   <>
-                    <span className="text-ink-300 dark:text-ink-600">·</span>
+                    <span className="text-faint">·</span>
                     <span className="inline-flex items-center gap-1">
-                      <Star size={12} className="fill-primary-500 text-primary-500" /> {ratingAvg.overall?.toFixed(1)} ({ratingCount} review{ratingCount !== 1 ? 's' : ''})
+                      <Star size={12} className="fill-accent text-accent" /> {ratingAvg.overall?.toFixed(1)} ({ratingCount} review{ratingCount !== 1 ? 's' : ''})
                     </span>
                   </>
                 )}
@@ -1389,33 +1389,33 @@ export function ProviderDashboard() {
 
               {/* Compact profile summary — previously the "Your profile" card
                   in the right rail (removed so details never render twice). */}
-              <p className="mt-3 text-sm text-ink-500 dark:text-ink-400">
+              <p className="mt-3 text-sm text-muted">
                 {profile?.type}
                 {profile?.experience ? ` · ${profile.experience} yrs` : ''}
                 {profile?.hpcsa ? ` · HPCSA ${profile.hpcsa}` : ''}
               </p>
-              <p className="mt-0.5 text-sm text-ink-500 dark:text-ink-400">
+              <p className="mt-0.5 text-sm text-muted">
                 {profile?.sessionFee ? `R${formatRand(profile.sessionFee)}` : 'Fee not set'}
                 {profile?.hideFee ? ' (hidden)' : ''}
                 {' · '}
                 {profile?.availability || 'Availability not set'}
               </p>
               {profile?.bio && (
-                <p className="mt-2 text-sm text-ink-600 dark:text-ink-300 max-w-xl">{profile.bio}</p>
+                <p className="mt-2 text-sm text-muted max-w-xl">{profile.bio}</p>
               )}
               {/* Only ever link out to http(s) URLs — a stored javascript: URI must not become a clickable script. */}
               {/^https?:\/\//i.test(profile?.meetingLink || '') ? (
                 <a href={profile.meetingLink} target="_blank" rel="noopener noreferrer"
-                  className="mt-2 flex items-center gap-1.5 text-xs text-primary-500 hover:underline w-fit">
+                  className="mt-2 flex items-center gap-1.5 text-xs text-accent hover:underline w-fit">
                   <ExternalLink size={10} /> {platformLabel ? `${platformLabel} meeting room` : 'Your meeting room'}
                 </a>
               ) : platformLabel && (
-                <p className="mt-2 text-xs text-ink-400">Platform: {platformLabel} · <button onClick={() => setEditOpen(true)} className="text-primary-500 hover:underline">Add link</button></p>
+                <p className="mt-2 text-xs text-faint">Platform: {platformLabel} · <button onClick={() => setEditOpen(true)} className="text-accent hover:underline">Add link</button></p>
               )}
               {(profile?.specialties || []).length > 0 && (
                 <ul className="mt-2.5 flex flex-wrap gap-1.5" aria-label="Specialisations">
                   {(profile?.specialties || []).map(s => (
-                    <li key={s} className="rounded-full bg-primary-50 dark:bg-primary-700/20 px-2.5 py-0.5 text-xs font-medium text-primary-700 dark:text-primary-300">{s}</li>
+                    <li key={s} className="rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent-soft-text">{s}</li>
                   ))}
                 </ul>
               )}
@@ -1484,11 +1484,11 @@ export function ProviderDashboard() {
       <div className="grid lg:grid-cols-3 gap-6 mb-12">
         <div className="lg:col-span-2 space-y-5" id="requests">
           <div className="flex items-center justify-between gap-3 flex-wrap">
-            <h2 className="font-serif text-[1.6rem] leading-none tracking-tight text-ink-900 dark:text-ink-100">Booking requests</h2>
-            <div className="flex items-center gap-3 text-[13px] text-ink-400">
-              <button onClick={() => setStatModal('pending')} className="hover:text-primary-600 transition-colors">{pending.length} pending</button>
-              <button onClick={() => setStatModal('confirmedList')} className="hover:text-primary-600 transition-colors">{confirmed.length} confirmed</button>
-              <button onClick={() => setStatModal('total')} className="hover:text-primary-600 transition-colors">All</button>
+            <h2 className="font-serif text-[1.6rem] leading-none tracking-tight text-ink">Booking requests</h2>
+            <div className="flex items-center gap-3 text-[13px] text-faint">
+              <button onClick={() => setStatModal('pending')} className="hover:text-accent-strong transition-colors">{pending.length} pending</button>
+              <button onClick={() => setStatModal('confirmedList')} className="hover:text-accent-strong transition-colors">{confirmed.length} confirmed</button>
+              <button onClick={() => setStatModal('total')} className="hover:text-accent-strong transition-colors">All</button>
               {/* Reception check-in only makes sense for practices that see patients in person. */}
               {['in-person', 'both'].includes(profile?.consultationType) && (
                 <Button variant="outline" size="pill" className="!px-3.5 !py-1.5 text-xs" onClick={() => setCheckInOpen(true)}>
@@ -1501,20 +1501,20 @@ export function ProviderDashboard() {
           {appointments.length === 0 ? (
             <Card className="p-10 text-center">
               <p className="text-4xl mb-3">💭</p>
-              <p className="text-sm font-medium text-ink-600 dark:text-ink-300">No appointment requests yet</p>
-              <p className="text-xs text-ink-400 mt-1">Your profile is live. Patients can book you from the Connect page.</p>
+              <p className="text-sm font-medium text-muted">No appointment requests yet</p>
+              <p className="text-xs text-faint mt-1">Your profile is live. Patients can book you from the Connect page.</p>
             </Card>
           ) : (pending.length === 0 && confirmed.length === 0) ? (
             <Card className="p-10 text-center">
               <p className="text-4xl mb-3">✅</p>
-              <p className="text-sm font-medium text-ink-600 dark:text-ink-300">You're all caught up</p>
-              <p className="text-xs text-ink-400 mt-1">No pending or upcoming appointments right now.</p>
+              <p className="text-sm font-medium text-muted">You're all caught up</p>
+              <p className="text-xs text-faint mt-1">No pending or upcoming appointments right now.</p>
             </Card>
           ) : (
             <>
               {pending.length > 0 && (
                 <div>
-                  <p className="text-[13px] font-medium text-ink-400 mb-3">Pending · {pending.length}</p>
+                  <p className="text-[13px] font-medium text-faint mb-3">Pending · {pending.length}</p>
                   <div className="grid sm:grid-cols-2 gap-3">
                     {pending.map(a => (
                       <AppointmentCard key={a.id} appt={a}
@@ -1526,7 +1526,7 @@ export function ProviderDashboard() {
               )}
               {confirmed.length > 0 && (
                 <div>
-                  <p className="text-[13px] font-medium text-ink-400 mb-3">Confirmed · {confirmed.length}</p>
+                  <p className="text-[13px] font-medium text-faint mb-3">Confirmed · {confirmed.length}</p>
                   <div className="grid sm:grid-cols-2 gap-3">
                     {confirmed.map(a => (
                       <AppointmentCard key={a.id} appt={a} onConfirm={() => {}} onDecline={() => {}}
@@ -1546,12 +1546,12 @@ export function ProviderDashboard() {
         <aside className="space-y-5">
           {feeRequests.some(r => r.status === 'pending') && (
             <Card className="p-5">
-              <p className="font-serif text-lg tracking-tight text-ink-900 dark:text-ink-100 mb-0.5">Fee requests</p>
-              <p className="text-xs text-ink-400 mb-3">Patients asking you to share your session fee. Disclosing notifies them of your R{profile?.sessionFee || '—'} fee.</p>
+              <p className="font-serif text-lg tracking-tight text-ink mb-0.5">Fee requests</p>
+              <p className="text-xs text-faint mb-3">Patients asking you to share your session fee. Disclosing notifies them of your R{profile?.sessionFee || '—'} fee.</p>
               <div className="space-y-2">
                 {feeRequests.filter(r => r.status === 'pending').map(r => (
-                  <div key={r.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-surface-50 dark:bg-surface-900">
-                    <span className="flex-1 text-sm text-ink-700 dark:text-ink-200 truncate">{r.patientName || 'A patient'}</span>
+                  <div key={r.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-raised">
+                    <span className="flex-1 text-sm text-ink truncate">{r.patientName || 'A patient'}</span>
                     <Button size="sm" variant="soft" onClick={() => handleDiscloseFee(r)}>Disclose fee</Button>
                   </div>
                 ))}
@@ -1565,7 +1565,7 @@ export function ProviderDashboard() {
       {/* Patient ratings */}
       {ratingCount > 0 && ratingAvg && (
         <div id="reviews" className="mb-12">
-          <h2 className="font-serif text-[1.6rem] leading-none tracking-tight text-ink-900 dark:text-ink-100 mb-5">Patient ratings</h2>
+          <h2 className="font-serif text-[1.6rem] leading-none tracking-tight text-ink mb-5">Patient ratings</h2>
           <Card className="p-6">
             <div className="grid md:grid-cols-2 gap-x-8 gap-y-3">
               {RATING_METRICS.map(({ key, label, desc }) => {
@@ -1574,13 +1574,13 @@ export function ProviderDashboard() {
                   <div key={key}>
                     <div className="flex items-center justify-between mb-1">
                       <div>
-                        <span className="text-xs font-medium text-ink-800 dark:text-ink-200">{label}</span>
-                        <span className="text-[10px] text-ink-400 ml-1.5">{desc}</span>
+                        <span className="text-xs font-medium text-ink">{label}</span>
+                        <span className="text-[10px] text-faint ml-1.5">{desc}</span>
                       </div>
-                      <span className="text-xs font-semibold text-ink-700 dark:text-ink-300">{val.toFixed(1)}</span>
+                      <span className="text-xs font-semibold text-ink">{val.toFixed(1)}</span>
                     </div>
-                    <div className="h-1.5 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden">
-                      <div className="h-full rounded-full bg-primary-500 transition-all duration-500" style={{ width: `${(val / 5) * 100}%` }} />
+                    <div className="h-1.5 rounded-full bg-raised overflow-hidden">
+                      <div className="h-full rounded-full bg-accent transition-all duration-500" style={{ width: `${(val / 5) * 100}%` }} />
                     </div>
                   </div>
                 )
@@ -1588,13 +1588,13 @@ export function ProviderDashboard() {
             </div>
 
             {recentComments.length > 0 && (
-              <div className="mt-5 pt-4 border-t border-surface-100 dark:border-surface-800">
-                <p className="text-[13px] font-medium text-ink-400 mb-2">Recent feedback</p>
+              <div className="mt-5 pt-4 border-t border-line">
+                <p className="text-[13px] font-medium text-faint mb-2">Recent feedback</p>
                 <div className="grid sm:grid-cols-2 gap-2">
                   {recentComments.map((r, i) => (
-                    <div key={i} className="bg-surface-50 dark:bg-surface-900 rounded-xl px-3 py-2">
+                    <div key={i} className="bg-raised rounded-xl px-3 py-2">
                       <div className="flex items-center gap-1.5 mb-1"><StarDisplay value={r.overall} size={11} /></div>
-                      <p className="text-xs text-ink-600 dark:text-ink-300 italic">"{r.comment}"</p>
+                      <p className="text-xs text-muted italic">"{r.comment}"</p>
                     </div>
                   ))}
                 </div>
@@ -1606,7 +1606,7 @@ export function ProviderDashboard() {
 
       {/* Manage your practice — shortcut launcher into the sections below. */}
       <div className="mb-12">
-        <h2 className="font-serif text-[1.6rem] leading-none tracking-tight text-ink-900 dark:text-ink-100 mb-5">Manage your practice</h2>
+        <h2 className="font-serif text-[1.6rem] leading-none tracking-tight text-ink mb-5">Manage your practice</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <ToolCard icon={CalendarCheck} title="Availability" desc="Open and close time slots in your weekly diary." onClick={() => goTo('availability')} />
           <ToolCard icon={Lock} title="Client files" desc="Encrypted notes and documents, locked with your vault password." onClick={() => navigate('/provider/files')} />
@@ -1630,12 +1630,12 @@ export function ProviderDashboard() {
       )}
 
       <div id="availability" className="mb-12 scroll-mt-6">
-        <h2 className="font-serif text-[1.6rem] leading-none tracking-tight text-ink-900 dark:text-ink-100 mb-5">Availability</h2>
+        <h2 className="font-serif text-[1.6rem] leading-none tracking-tight text-ink mb-5">Availability</h2>
         <DiaryManager providerUid={user.uid} getDiary={getDiary} saveDiary={saveDiary} />
       </div>
 
       <div id="documents" className="mb-6 scroll-mt-6">
-        <h2 className="font-serif text-[1.6rem] leading-none tracking-tight text-ink-900 dark:text-ink-100 mb-5">Pre-screening documents</h2>
+        <h2 className="font-serif text-[1.6rem] leading-none tracking-tight text-ink mb-5">Pre-screening documents</h2>
         <DocumentsManager providerUid={user.uid} />
       </div>
 

@@ -13,7 +13,7 @@ import {
   encryptJSON, decryptJSON, encryptBytes, decryptBytes,
 } from '../utils/vault'
 
-const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400'
+const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent'
 const MAX_FILE_BYTES = 10 * 1024 * 1024
 
 const ts = (t) => t?.seconds || 0
@@ -55,13 +55,13 @@ function VaultGate({ meta, onUnlocked, onCreated }) {
   return (
     <div className="max-w-sm mx-auto mt-10">
       <Card className="p-7 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-700/20 flex items-center justify-center mx-auto mb-4">
-          <Lock size={24} className="text-primary-600 dark:text-primary-300" />
+        <div className="w-14 h-14 rounded-2xl bg-accent-soft flex items-center justify-center mx-auto mb-4">
+          <Lock size={24} className="text-accent-soft-text" />
         </div>
-        <h1 className="font-serif text-2xl tracking-tight text-ink-900 dark:text-ink-100">
+        <h1 className="font-serif text-2xl tracking-tight text-ink">
           {isNew ? 'Set up your vault' : 'Client files'}
         </h1>
-        <p className="text-xs text-ink-400 mt-2 leading-relaxed">
+        <p className="text-xs text-faint mt-2 leading-relaxed">
           {isNew
             ? 'Choose a vault password. Your client files are encrypted on your device before they are stored, so only this password can open them.'
             : 'Enter your vault password to unlock your encrypted client files.'}
@@ -74,7 +74,7 @@ function VaultGate({ meta, onUnlocked, onCreated }) {
             <input type="password" value={pw2} onChange={e => setPw2(e.target.value)}
               placeholder="Repeat vault password" className={inputCls} />
           )}
-          {error && <p className="text-xs text-red-500">{error}</p>}
+          {error && <p className="text-xs text-danger">{error}</p>}
           <Button size="pill" className="w-full" disabled={busy || !pw}>
             {busy
               ? <><Loader size={14} className="animate-spin" /> {isNew ? 'Creating vault…' : 'Unlocking…'}</>
@@ -90,13 +90,13 @@ function VaultGate({ meta, onUnlocked, onCreated }) {
             </p>
           </div>
         ) : (
-          <p className="mt-5 text-[11px] text-ink-400 leading-relaxed">
+          <p className="mt-5 text-[11px] text-faint leading-relaxed">
             Forgot it? The vault cannot be reset — that is what keeps your client files unreadable to anyone else.
           </p>
         )}
       </Card>
-      <p className="text-center text-[11px] text-ink-400 mt-4 flex items-center justify-center gap-1.5">
-        <ShieldCheck size={12} className="text-primary-500" /> Encrypted on your device with AES-256. Nothing readable leaves it.
+      <p className="text-center text-[11px] text-faint mt-4 flex items-center justify-center gap-1.5">
+        <ShieldCheck size={12} className="text-accent" /> Encrypted on your device with AES-256. Nothing readable leaves it.
       </p>
     </div>
   )
@@ -279,13 +279,13 @@ export function ProviderVault() {
 
   if (meta === undefined) return (
     <PageWrapper wide>
-      <div className="h-40 rounded-3xl bg-surface-100 dark:bg-surface-800 animate-pulse mt-6" />
+      <div className="h-40 rounded-3xl bg-raised animate-pulse mt-6" />
     </PageWrapper>
   )
 
   if (!vaultKey) return (
     <PageWrapper wide>
-      <button onClick={() => navigate('/')} className="flex items-center gap-1.5 text-xs text-ink-400 hover:text-primary-600 transition-colors">
+      <button onClick={() => navigate('/')} className="flex items-center gap-1.5 text-xs text-faint hover:text-accent-strong transition-colors">
         <ArrowLeft size={13} /> Back to dashboard
       </button>
       <VaultGate meta={meta} onUnlocked={handleUnlocked} onCreated={handleCreated} />
@@ -294,11 +294,11 @@ export function ProviderVault() {
 
   return (
     <PageWrapper wide>
-      <header className="flex items-start justify-between gap-4 pb-7 border-b border-surface-200 dark:border-surface-800 mb-7 flex-wrap">
+      <header className="flex items-start justify-between gap-4 pb-7 border-b border-line mb-7 flex-wrap">
         <div>
-          <h1 className="font-serif text-[2rem] leading-tight tracking-tight text-ink-900 dark:text-ink-100">Client files</h1>
-          <p className="text-sm text-ink-400 mt-1 flex items-center gap-1.5">
-            <ShieldCheck size={13} className="text-primary-500" /> Encrypted with your vault password. Locks when you leave.
+          <h1 className="font-serif text-[2rem] leading-tight tracking-tight text-ink">Client files</h1>
+          <p className="text-sm text-faint mt-1 flex items-center gap-1.5">
+            <ShieldCheck size={13} className="text-accent" /> Encrypted with your vault password. Locks when you leave.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -308,14 +308,14 @@ export function ProviderVault() {
       </header>
 
       {loadingDocs ? (
-        <div className="h-40 rounded-3xl bg-surface-100 dark:bg-surface-800 animate-pulse" />
+        <div className="h-40 rounded-3xl bg-raised animate-pulse" />
       ) : clients.length === 0 ? (
         <Card className="p-12 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-primary-50 dark:bg-primary-700/20 flex items-center justify-center mx-auto mb-3">
-            <Users size={20} className="text-primary-600 dark:text-primary-300" />
+          <div className="w-12 h-12 rounded-2xl bg-accent-soft flex items-center justify-center mx-auto mb-3">
+            <Users size={20} className="text-accent-soft-text" />
           </div>
-          <p className="text-sm font-medium text-ink-600 dark:text-ink-300">No clients in your vault yet</p>
-          <p className="text-xs text-ink-400 mt-1 max-w-xs mx-auto leading-relaxed">
+          <p className="text-sm font-medium text-muted">No clients in your vault yet</p>
+          <p className="text-xs text-faint mt-1 max-w-xs mx-auto leading-relaxed">
             Add a client to keep encrypted session notes and documents for them, all behind your vault password.
           </p>
           <Button size="pill" className="mt-5" onClick={() => setClientModal(true)}><Plus size={14} /> Add your first client</Button>
@@ -330,11 +330,11 @@ export function ProviderVault() {
                 <button key={c.id} onClick={() => setSelected(c.id)}
                   className={`w-full text-left px-4 py-3 rounded-2xl border transition-colors ${
                     selected === c.id
-                      ? 'border-primary-300 dark:border-primary-600 bg-primary-50 dark:bg-primary-700/15'
-                      : 'border-surface-200 dark:border-surface-700/60 bg-white dark:bg-surface-800 hover:border-surface-300 dark:hover:border-surface-600'
+                      ? 'border-accent/40 bg-accent-soft'
+                      : 'border-line/60 bg-surface hover:border-faint'
                   }`}>
-                  <p className="text-sm font-semibold text-ink-900 dark:text-ink-100 truncate">{c.plain.name}</p>
-                  <p className="text-[11px] text-ink-400 mt-0.5">{count} item{count === 1 ? '' : 's'}</p>
+                  <p className="text-sm font-semibold text-ink truncate">{c.plain.name}</p>
+                  <p className="text-[11px] text-faint mt-0.5">{count} item{count === 1 ? '' : 's'}</p>
                 </button>
               )
             })}
@@ -344,12 +344,12 @@ export function ProviderVault() {
           <section className="lg:col-span-2">
             {!client ? (
               <Card className="p-10 text-center">
-                <p className="text-sm text-ink-400">Select a client to see their notes and files.</p>
+                <p className="text-sm text-faint">Select a client to see their notes and files.</p>
               </Card>
             ) : (
               <div className="space-y-6">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
-                  <h2 className="font-serif text-xl tracking-tight text-ink-900 dark:text-ink-100">{client.plain.name}</h2>
+                  <h2 className="font-serif text-xl tracking-tight text-ink">{client.plain.name}</h2>
                   <div className="flex items-center gap-2">
                     <Button variant="soft" size="sm" onClick={() => setNoteModal({})}><StickyNote size={13} /> New note</Button>
                     <Button variant="soft" size="sm" disabled={busyFile === 'upload'} onClick={() => fileRef.current?.click()}>
@@ -361,22 +361,22 @@ export function ProviderVault() {
 
                 {notesFor(client.id).length === 0 && filesFor(client.id).length === 0 && (
                   <Card className="p-8 text-center">
-                    <p className="text-xs text-ink-400">Nothing here yet. Add a session note or upload a document.</p>
+                    <p className="text-xs text-faint">Nothing here yet. Add a session note or upload a document.</p>
                   </Card>
                 )}
 
                 {notesFor(client.id).length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-[13px] font-medium text-ink-400">Notes · {notesFor(client.id).length}</p>
+                    <p className="text-[13px] font-medium text-faint">Notes · {notesFor(client.id).length}</p>
                     {notesFor(client.id).map(n => (
                       <Card key={n.id} className="p-4">
                         <div className="flex items-start justify-between gap-3">
                           <button className="flex-1 min-w-0 text-left" onClick={() => setNoteModal({ note: n })}>
-                            <p className="text-sm font-semibold text-ink-900 dark:text-ink-100 truncate">{n.plain.title}</p>
-                            {n.plain.body && <p className="text-xs text-ink-500 dark:text-ink-400 mt-1 line-clamp-2 whitespace-pre-wrap">{n.plain.body}</p>}
+                            <p className="text-sm font-semibold text-ink truncate">{n.plain.title}</p>
+                            {n.plain.body && <p className="text-xs text-muted mt-1 line-clamp-2 whitespace-pre-wrap">{n.plain.body}</p>}
                           </button>
                           <button onClick={() => deleteNote(n)} title="Delete note"
-                            className="p-1.5 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex-shrink-0">
+                            className="p-1.5 rounded-lg text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex-shrink-0">
                             <Trash2 size={14} />
                           </button>
                         </div>
@@ -387,22 +387,22 @@ export function ProviderVault() {
 
                 {filesFor(client.id).length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-[13px] font-medium text-ink-400">Files · {filesFor(client.id).length}</p>
+                    <p className="text-[13px] font-medium text-faint">Files · {filesFor(client.id).length}</p>
                     {filesFor(client.id).map(f => (
                       <Card key={f.id} className="p-3.5 flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-primary-50 dark:bg-primary-700/20 flex items-center justify-center flex-shrink-0">
-                          <FileText size={16} className="text-primary-600 dark:text-primary-300" />
+                        <div className="w-9 h-9 rounded-xl bg-accent-soft flex items-center justify-center flex-shrink-0">
+                          <FileText size={16} className="text-accent-soft-text" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-ink-900 dark:text-ink-100 truncate">{f.plain.name}</p>
-                          <p className="text-[11px] text-ink-400">{fmtSize(f.plain.size)} · encrypted</p>
+                          <p className="text-sm font-medium text-ink truncate">{f.plain.name}</p>
+                          <p className="text-[11px] text-faint">{fmtSize(f.plain.size)} · encrypted</p>
                         </div>
                         <button onClick={() => openFile(f)} disabled={busyFile === f.id} title="Decrypt and download"
-                          className="p-1.5 rounded-lg text-ink-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-700/15 transition-colors flex-shrink-0">
+                          className="p-1.5 rounded-lg text-faint hover:text-accent-strong hover:bg-accent-soft transition-colors flex-shrink-0">
                           {busyFile === f.id ? <Loader size={15} className="animate-spin" /> : <Download size={15} />}
                         </button>
                         <button onClick={() => deleteFile(f)} title="Delete file"
-                          className="p-1.5 rounded-lg text-ink-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex-shrink-0">
+                          className="p-1.5 rounded-lg text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex-shrink-0">
                           <Trash2 size={14} />
                         </button>
                       </Card>
@@ -411,7 +411,7 @@ export function ProviderVault() {
                 )}
 
                 <button onClick={() => deleteClient(client)}
-                  className="text-xs text-ink-400 hover:text-red-500 transition-colors">
+                  className="text-xs text-faint hover:text-danger transition-colors">
                   Delete {client.plain.name} and all their items
                 </button>
               </div>
@@ -422,7 +422,7 @@ export function ProviderVault() {
 
       <Modal open={clientModal} onClose={() => setClientModal(false)} title="Add client">
         <div className="space-y-3">
-          <p className="text-xs text-ink-400 leading-relaxed">
+          <p className="text-xs text-faint leading-relaxed">
             The client's name is encrypted too — it is only readable inside your unlocked vault.
           </p>
           <input value={clientName} onChange={e => setClientName(e.target.value)} autoFocus

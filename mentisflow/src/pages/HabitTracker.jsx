@@ -44,11 +44,11 @@ function SummaryRing({ checked, total }) {
     <div className="flex flex-col items-center py-6">
       <ProgressRing progress={progress} size={156} strokeWidth={15} color="#14b8a6">
         <div className="text-center">
-          <p className="text-4xl font-bold text-ink-900 dark:text-ink-100 leading-none">{checked}</p>
-          <p className="text-sm text-ink-400 mt-1">of {total}</p>
+          <p className="text-4xl font-bold text-ink leading-none">{checked}</p>
+          <p className="text-sm text-faint mt-1">of {total}</p>
         </div>
       </ProgressRing>
-      <p className={`text-sm font-medium mt-4 transition-colors ${allDone ? 'text-success-500' : 'text-ink-400'}`}>
+      <p className={`text-sm font-medium mt-4 transition-colors ${allDone ? 'text-success-500' : 'text-faint'}`}>
         {allDone ? 'All habits complete!' : 'habits today'}
       </p>
     </div>
@@ -67,8 +67,8 @@ function HabitCard({ habit, checked, onToggle, streak, weeklyCount }) {
       onClick={() => onToggle(habit.id)}
       className={`flex flex-col items-center gap-2.5 p-4 rounded-2xl border transition-colors w-full ${
         checked || weeklyMet
-          ? 'bg-surface-50 dark:bg-surface-800/60 border-surface-100 dark:border-surface-700'
-          : 'bg-white dark:bg-surface-800 border-surface-100 dark:border-surface-700'
+          ? 'bg-raised/60 border-line'
+          : 'bg-surface border-line'
       }`}
     >
       <ProgressRing progress={progress} size={76} strokeWidth={7} color={habit.color}>
@@ -82,11 +82,11 @@ function HabitCard({ habit, checked, onToggle, streak, weeklyCount }) {
       </ProgressRing>
 
       <div className="text-center">
-        <p className="text-xs font-semibold text-ink-900 dark:text-ink-100 leading-tight line-clamp-2">{habit.name}</p>
+        <p className="text-xs font-semibold text-ink leading-tight line-clamp-2">{habit.name}</p>
         {isWeekly ? (
-          <p className="text-[10px] text-ink-400 mt-0.5">{weeklyCount}/{habit.weeklyTarget}× week</p>
+          <p className="text-[10px] text-faint mt-0.5">{weeklyCount}/{habit.weeklyTarget}× week</p>
         ) : streak > 0 ? (
-          <p className="flex items-center justify-center gap-0.5 text-[10px] text-ink-400 mt-0.5"><Flame size={10} className="text-warm-500" /> {streak} day{streak !== 1 ? 's' : ''}</p>
+          <p className="flex items-center justify-center gap-0.5 text-[10px] text-faint mt-0.5"><Flame size={10} className="text-warm-500" /> {streak} day{streak !== 1 ? 's' : ''}</p>
         ) : null}
       </div>
     </motion.button>
@@ -116,22 +116,22 @@ function HabitFormModal({ open, onClose, onSave, initial }) {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-ink-400 mb-2">Color</label>
+          <label className="block text-xs font-medium text-faint mb-2">Color</label>
           <div className="flex flex-wrap gap-2.5">
             {HABIT_COLORS.map(c => (
               <button key={c} onClick={() => setColor(c)}
-                className={`w-8 h-8 rounded-full transition-all ${color === c ? 'scale-125 ring-2 ring-offset-2 ring-offset-white dark:ring-offset-surface-800 ring-surface-400' : 'hover:scale-110'}`}
+                className={`w-8 h-8 rounded-full transition-all ${color === c ? 'scale-125 ring-2 ring-offset-2 ring-offset-surface ring-faint' : 'hover:scale-110'}`}
                 style={{ backgroundColor: c }} />
             ))}
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-ink-400 mb-2">Icon</label>
-          <div className="flex flex-wrap gap-1.5 p-2.5 rounded-xl bg-surface-50 dark:bg-surface-900 max-h-24 overflow-y-auto">
+          <label className="block text-xs font-medium text-faint mb-2">Icon</label>
+          <div className="flex flex-wrap gap-1.5 p-2.5 rounded-xl bg-raised max-h-24 overflow-y-auto">
             {EMOJI_OPTIONS.map(e => (
               <button key={e} onClick={() => setEmoji(e)}
-                className={`text-lg p-1 rounded-lg transition-colors ${emoji === e ? 'bg-primary-100 dark:bg-primary-700/30 ring-1 ring-primary-400' : 'hover:bg-surface-100 dark:hover:bg-surface-700'}`}>
+                className={`text-lg p-1 rounded-lg transition-colors ${emoji === e ? 'bg-accent-soft ring-1 ring-accent' : 'hover:bg-raised'}`}>
                 {e}
               </button>
             ))}
@@ -139,22 +139,22 @@ function HabitFormModal({ open, onClose, onSave, initial }) {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-ink-400 mb-1">Habit name</label>
+          <label className="block text-xs font-medium text-faint mb-1">Habit name</label>
           <input value={name} onChange={e => setName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSave()}
             placeholder="e.g. Go to gym"
-            className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-900 text-ink-900 dark:text-ink-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400" />
+            className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-ink-400 mb-2">Frequency</label>
+          <label className="block text-xs font-medium text-faint mb-2">Frequency</label>
           <div className="flex gap-2">
             {FREQ_OPTIONS.map(f => (
               <button key={f.value} onClick={() => setFrequency(f.value)}
                 className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all ${
                   frequency === f.value
-                    ? 'bg-primary-50 dark:bg-primary-700/20 border-primary-400 text-primary-600 dark:text-primary-300'
-                    : 'border-surface-200 dark:border-surface-700 text-ink-400 hover:border-surface-300'
+                    ? 'bg-accent-soft border-accent text-accent-soft-text'
+                    : 'border-line text-faint hover:border-faint'
                 }`}>
                 {f.label}
               </button>
@@ -164,14 +164,14 @@ function HabitFormModal({ open, onClose, onSave, initial }) {
 
         {frequency === 'weekly' && (
           <div>
-            <label className="block text-xs font-medium text-ink-400 mb-2">
+            <label className="block text-xs font-medium text-faint mb-2">
               Times per week: <span className="font-semibold" style={{ color }}>{target}</span>
             </label>
             <div className="flex gap-1.5">
               {[1,2,3,4,5,6,7].map(n => (
                 <button key={n} onClick={() => setTarget(n)}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-                    target === n ? 'text-white' : 'bg-surface-100 dark:bg-surface-700 text-ink-700 dark:text-ink-300 hover:bg-surface-200'
+                    target === n ? 'text-white' : 'bg-raised text-ink hover:bg-line'
                   }`}
                   style={target === n ? { backgroundColor: color } : {}}>
                   {n}
@@ -201,19 +201,19 @@ function ManageModal({ open, onClose, habits, onAdd, onEdit, onRemove }) {
       <Modal open={open} onClose={onClose} title="Manage Habits">
         <div className="space-y-3">
           {habits.map(habit => (
-            <div key={habit.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-surface-50 dark:bg-surface-900">
+            <div key={habit.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-raised">
               <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: habit.color }} />
               <span className="text-lg">{habit.emoji}</span>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-ink-900 dark:text-ink-100">{habit.name}</p>
-                <p className="text-xs text-ink-400">
+                <p className="text-sm font-medium text-ink">{habit.name}</p>
+                <p className="text-xs text-faint">
                   {habit.frequency === 'weekly' ? `${habit.weeklyTarget}× per week` : 'Daily'}
                 </p>
               </div>
-              <button onClick={() => setEditTarget(habit)} className="p-1.5 rounded-lg text-ink-400 hover:text-primary-500 transition-colors">
+              <button onClick={() => setEditTarget(habit)} className="p-1.5 rounded-lg text-faint hover:text-accent transition-colors">
                 <Edit2 size={13} />
               </button>
-              <button onClick={() => onRemove(habit.id)} className="p-1.5 rounded-lg text-ink-400 hover:text-red-500 transition-colors">
+              <button onClick={() => onRemove(habit.id)} className="p-1.5 rounded-lg text-faint hover:text-danger transition-colors">
                 <Trash2 size={13} />
               </button>
             </div>
@@ -224,7 +224,7 @@ function ManageModal({ open, onClose, habits, onAdd, onEdit, onRemove }) {
               <Plus size={14} /> Add habit
             </Button>
           ) : (
-            <p className="text-xs text-ink-400 text-center py-2">Maximum 10 habits reached</p>
+            <p className="text-xs text-faint text-center py-2">Maximum 10 habits reached</p>
           )}
         </div>
       </Modal>
@@ -285,8 +285,8 @@ export function HabitTracker() {
 
       {habits.habits.length === 0 ? (
         <div className="py-12 text-center">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center"><Sprout size={22} className="text-ink-400" /></div>
-          <p className="text-sm text-ink-400 mb-4">No habits yet.</p>
+          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-raised flex items-center justify-center"><Sprout size={22} className="text-faint" /></div>
+          <p className="text-sm text-faint mb-4">No habits yet.</p>
           <Button onClick={() => setManageOpen(true)}><Plus size={15} /> Add habits</Button>
         </div>
       ) : (
