@@ -160,7 +160,7 @@ For automated Firebase deploys, add a `FIREBASE_TOKEN` secret (from `firebase lo
 | Function | Trigger | Purpose |
 |---|---|---|
 | `aggregateRating` | Firestore `onCreate` on `ratings/{id}` | Recomputes `ratingCount` and `ratingAvg` on the provider document — idempotent, race-condition safe |
-| `activateProvider` | HTTPS Callable | Starts the 2-month free trial or activates a plan on a provider document using the Admin SDK (bypasses client rules); returns a Paystack checkout URL when a secret key is configured |
+| `activateProvider` | HTTPS Callable | Starts the 2-month free trial or activates a plan on a provider document using the Admin SDK (bypasses client rules); returns a PayFast checkout URL when merchant credentials are configured |
 | `expireTrials` | Scheduled (every 24 h) | Deactivates providers whose free trial has ended |
 | `notifyBookingRequested` | Firestore `onCreate` on `appointments/{id}` | In-app notification + queued email to the practitioner about a new booking request |
 | `notifyBookingStatus` | Firestore `onUpdate` on `appointments/{id}` | In-app notification + queued email when an appointment is confirmed or cancelled (routed to whichever party did not act) |
@@ -168,20 +168,20 @@ For automated Firebase deploys, add a `FIREBASE_TOKEN` secret (from `firebase lo
 | `notifyFeeDisclosed` | Firestore `onUpdate` on `feeRequests/{id}` | Notifies the patient when the practitioner discloses the fee |
 | `notifyProviderModeration` | Firestore `onUpdate` on `providers/{uid}` | Notifies a practitioner when their account is verified, rejected, or suspended |
 | `purgeOldAppointments` | Scheduled (every 24 h) | Deletes appointments older than 2 years — POPIA data retention compliance |
-| `paymentWebhook` | HTTPS Request | Verifies Paystack webhook signatures (HMAC-SHA512) and activates/deactivates subscriptions on charge.success, subscription.disable, and invoice.payment_failed |
+| `paymentWebhook` | HTTPS Request | Verifies PayFast ITN signatures (MD5) and source IPs, then activates subscriptions on `payment_status=COMPLETE` |
 
 In-app notifications are written to the `notifications` collection (bell icon in the app; pruned to the newest 30 per user). Booking emails are queued into the `mail` collection in the format used by the official **Trigger Email from Firestore** extension. Install it once with your SMTP credentials (`firebase ext:install firebase/firestore-send-email`, collection `mail`) and the queued emails start sending; until then they sit unsent.
 
-### Payments (Paystack)
+### Payments (PayFast)
 
-Paid practitioner plans use Paystack checkout. Without a configured key, paid plans activate in **demo mode** (no charge) so the platform stays demoable. To go live:
+Paid practitioner plans use PayFast's classic checkout + ITN (Instant Transaction Notification) flow. Without merchant credentials configured, paid plans activate in **demo mode** (no charge) so the platform stays demoable. To go live:
 
-1. Create a Paystack business and four ZAR subscription Plans: Standard and Featured, each with a monthly and an annual variant (annual is priced at 10x monthly, i.e. 2 months free).
-2. Store the plan codes on the `config/platform` document: `paystack: { plans: { standard: { monthly: 'PLN_...', annual: 'PLN_...' }, featured: { monthly: 'PLN_...', annual: 'PLN_...' } } }`.
-3. Copy `functions/.env.example` to `functions/.env`, set `PAYSTACK_SECRET_KEY`, and redeploy functions.
-4. In the Paystack dashboard, point a webhook at the deployed `paymentWebhook` function URL.
+1. Register a PayFast merchant account. Note the Merchant ID and Merchant Key (Settings → Integration), and set a Salt Passphrase there — required for recurring billing.
+2. Copy `functions/.env.example` to `functions/.env`, set `PAYFAST_MERCHANT_ID`, `PAYFAST_MERCHANT_KEY`, and `PAYFAST_PASSPHRASE` (must match the dashboard exactly), leave `PAYFAST_MODE=sandbox`, and redeploy functions.
+3. Test a full checkout end-to-end with a PayFast **sandbox** card — no separate webhook registration is needed; the deployed `paymentWebhook` function URL is already sent as the ITN `notify_url` on every checkout.
+4. Once a sandbox subscription activates correctly, switch to the **live** Merchant ID/Key/Passphrase, set `PAYFAST_MODE=live`, and redeploy.
 
-Flow: `activateProvider` creates a checkout and returns its URL; the app redirects the doctor to Paystack; `paymentWebhook` activates the subscription on `charge.success`. Free trials never touch Paystack.
+Flow: `activateProvider` builds a signed PayFast checkout URL; the app redirects the doctor there; PayFast POSTs an ITN to `paymentWebhook` once payment completes, which is verified against two hard security gates (a recomputed MD5 signature and PayFast's published source-IP ranges) before activating the subscription on `payment_status=COMPLETE`. Free trials never touch PayFast.
 
 ---
 

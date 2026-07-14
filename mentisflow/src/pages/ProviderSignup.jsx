@@ -145,7 +145,8 @@ export function ProviderSignup() {
     try {
       // Save the profile WITHOUT any subscription/trial fields — those are
       // granted only by the trusted activateProvider Cloud Function (paid
-      // plans are demo mode until Paystack billing lands; trials are real).
+      // plans are demo mode until PayFast credentials are configured; trials
+      // are real either way).
       await saveProvider(user.uid, {
         ...form,
         email: user.email,
@@ -156,8 +157,9 @@ export function ProviderSignup() {
       const res = await activateProvider({ plan, cycle })
       localStorage.setItem('mf_role', 'provider')
       if (res?.data?.authorizationUrl) {
-        // Paid plan with live billing: complete checkout on Paystack. The
-        // paymentWebhook function activates the subscription on success.
+        // Paid plan with live billing: complete checkout on PayFast. The
+        // paymentWebhook function activates the subscription once PayFast's
+        // ITN reports the payment as complete.
         window.location.href = res.data.authorizationUrl
         return
       }
@@ -421,7 +423,7 @@ export function ProviderSignup() {
         <div className="space-y-4">
           {pendingPayment && (
             <div className="rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 px-3 py-2.5 text-xs text-amber-700 dark:text-amber-400">
-              We're waiting for Paystack to confirm your payment. This usually takes a few
+              We're waiting for your payment to be confirmed. This usually takes a few
               seconds. Refresh this page once you've completed checkout, or choose a plan
               again to restart payment.
             </div>
@@ -522,7 +524,7 @@ export function ProviderSignup() {
             <div className="rounded-xl bg-surface-50 dark:bg-surface-800 px-3.5 py-3 flex items-start gap-2.5">
               <CreditCard size={15} className="text-primary-500 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-ink-500 dark:text-ink-400 leading-relaxed">
-                <span className="font-semibold text-ink-700 dark:text-ink-300">Secure checkout with Paystack.</span>{' '}
+                <span className="font-semibold text-ink-700 dark:text-ink-300">Secure checkout with PayFast.</span>{' '}
                 You'll be redirected to complete your subscription safely. Your listing goes
                 live as soon as payment is confirmed.
               </p>
