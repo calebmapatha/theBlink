@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Shield, Users, Stethoscope, Flag, Megaphone, ScrollText, Settings2,
-  CheckCircle, XCircle, Ban, RotateCcw, Trash2, Download, Search, BadgeCheck,
+  CheckCircle, XCircle, Ban, RotateCcw, Trash2, Search, BadgeCheck,
   TrendingUp, Loader, ExternalLink, FileText,
 } from 'lucide-react'
 import { doc, getDoc } from 'firebase/firestore'
@@ -12,11 +12,12 @@ import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
+import Avatar from '../components/ui/Avatar'
+import SuperAdminDashboard from '../components/SuperAdminDashboard'
 import { useAuth } from '../context/AuthContext'
 import { useAdmin } from '../hooks/useAdmin'
 import { isAdminUser, exportCSV } from '../utils/admin'
-import { DEFAULT_PRICING, fetchPricing, mergePricing } from '../utils/pricing'
-import { BarChart, LineChart } from '../components/ui/charts'
+import { DEFAULT_PRICING, fetchPricing, mergePricing, trialDaysLeft } from '../utils/pricing'
 import { isSession } from '../utils/providerStats'
 
 const TABS = [
@@ -105,16 +106,6 @@ function ReasonModal({ open, onClose, title, cta, onConfirm }) {
   )
 }
 
-function StatTile({ label, value, sub }) {
-  return (
-    <Card className="p-3">
-      <p className="text-[10px] text-ink-400">{label}</p>
-      <p className="text-xl font-bold text-ink-900 dark:text-ink-100 mt-0.5">{value}</p>
-      {sub && <p className="text-[10px] text-ink-400 mt-0.5">{sub}</p>}
-    </Card>
-  )
-}
-
 export function AdminPortal() {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -125,6 +116,7 @@ export function AdminPortal() {
   const [patients, setPatients]     = useState([])
   const [appts, setAppts]           = useState([])
   const [reports, setReports]       = useState([])
+  const [logs, setLogs]             = useState([])
   const [loading, setLoading]       = useState(true)
   const [searchQ, setSearchQ]       = useState('')
   const [modal, setModal]           = useState(null) // { type, provider }
@@ -136,16 +128,18 @@ export function AdminPortal() {
 
   const reload = useCallback(async () => {
     setLoading(true)
-    const [prov, pats, ap, rep] = await Promise.all([
+    const [prov, pats, ap, rep, lg] = await Promise.all([
       admin.fetchAllProviders(),
       admin.fetchAllPatients().catch(() => []),
       admin.fetchAllAppointments().catch(() => []),
       admin.fetchReports().catch(() => []),
+      admin.fetchLogs().catch(() => []),
     ])
     setProviders(prov)
     setPatients(pats)
     setAppts(ap)
     setReports(rep)
+    setLogs(lg)
     setLoading(false)
   }, [])
 
@@ -216,6 +210,76 @@ export function AdminPortal() {
 
   const act = async (fn, ...args) => { await fn(...args); await reload() }
 
+  // ---------- Overview wiring (SuperAdminDashboard props) ----------
+  const fmtR = v => String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+  const now = Date.now()
+  const createdMs = a => (a.createdAt?.seconds ? a.createdAt.seconds * 1000 : null)
+  const bookings30 = appts.filter(a => { const t = createdMs(a); return t && now - t <= 30 * 864e5 }).length
+  const bookingsPrev30 = appts.filter(a => { const t = createdMs(a); return t && now - t > 30 * 864e5 && now - t <= 60 * 864e5 }).length
+  const bookingsDelta = bookingsPrev30 > 0 ? Math.round(((bookings30 - bookingsPrev30) / bookingsPrev30) * 100) : undefined
+
+  const trialsExpiring = providers.filter(p =>
+    p.subscriptionStatus === 'trialing' && p.trialEndsAt && trialDaysLeft(p.trialEndsAt) <= 14).length
+
+  const kpis = [
+    { label: 'Doctors', value: String(stats.doctors), sub: `${stats.live} live · ${stats.pendingDocs} pending` },
+    { label: 'Patients', value: String(stats.patients) },
+    { label: 'Bookings (30d)', value: String(bookings30), sub: `${stats.bookings} all time`, delta: bookingsDelta },
+    { label: 'Completion rate', value: stats.completionRate !== null ? `${stats.completionRate}%` : 'N/A', sub: 'past appointments' },
+    { label: 'Gross booking value', value: `R${fmtR(stats.gross)}`, sub: 'doctors keep 100%' },
+    { label: 'Subscription MRR', value: `R${fmtR(stats.mrr)}`, sub: `${stats.trials} on free trial` },
+  ]
+
+  const attention = [
+    { id: 'verify', label: 'Practitioners awaiting HPCSA verification', count: stats.pendingDocs, onOpen: () => setTab('doctors') },
+    { id: 'reports', label: 'Flagged reports to review', count: stats.openReports, urgent: true, onOpen: () => setTab('reports') },
+    { id: 'trials', label: 'Free trials expiring within 14 days', count: trialsExpiring, onOpen: () => setTab('doctors') },
+    { id: 'suspended', label: 'Suspended accounts', count: stats.suspended, onOpen: () => setTab('doctors') },
+  ]
+
+  const verificationQueue = providers
+    .filter(p => p.approvalStatus === 'pending')
+    .map(p => {
+      const t = createdMs(p)
+      const days = t ? Math.floor((now - t) / 864e5) : null
+      return {
+        id: p.id,
+        name: p.name,
+        practitionerType: p.type,
+        hpcsaNumber: p.hpcsa,
+        submitted: days === null ? '' : days === 0 ? 'today' : `${days} day${days === 1 ? '' : 's'} ago`,
+      }
+    })
+
+  const todayStr = new Date().toISOString().split('T')[0]
+  const topPractitioners = providers
+    .map(p => {
+      const list = appts.filter(a => a.providerUid === p.id)
+      if (list.length === 0) return null
+      const past = list.filter(a => a.date && a.date < todayStr)
+      const kept = past.filter(a => ['completed', 'confirmed'].includes(a.status)).length
+      const sessions = list.filter(isSession).length
+      return {
+        id: p.id,
+        name: p.name,
+        bookings: list.length,
+        completion: past.length > 0 ? Math.round((kept / past.length) * 100) : null,
+        value: `R${fmtR(sessions * (Number(p.sessionFee) || 0))}`,
+      }
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.bookings - a.bookings)
+    .slice(0, 5)
+
+  const activity = logs.slice(0, 6).map(l => ({
+    id: l.id,
+    when: l.at?.seconds
+      ? new Date(l.at.seconds * 1000).toLocaleString('en-ZA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+      : '',
+    actor: (l.by || 'admin').split('@')[0],
+    action: `${(l.action || '').replace(/_/g, ' ')}${l.detail ? ` · ${l.detail}` : ''}`,
+  }))
+
   return (
     <PageWrapper>
       <div className="mb-5 flex items-center gap-3">
@@ -253,34 +317,26 @@ export function AdminPortal() {
         <>
           {/* ---------------- OVERVIEW ---------------- */}
           {tab === 'overview' && (
-            <>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                <StatTile label="Doctors" value={stats.doctors} sub={`${stats.live} live · ${stats.pendingDocs} pending`} />
-                <StatTile label="Patients" value={stats.patients} />
-                <StatTile label="Bookings" value={stats.bookings} sub={`${stats.sessions} sessions`} />
-                <StatTile label="Completion" value={stats.completionRate !== null ? `${stats.completionRate}%` : 'N/A'} sub="past appointments" />
-              </div>
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <StatTile label="Gross booking value" value={`R${stats.gross.toLocaleString()}`} sub="all sessions · doctors keep 100%" />
-                <StatTile label="Est. subscription MRR" value={`R${stats.mrr.toLocaleString()}`} sub={`${stats.trials} on free trial`} />
-              </div>
-              <Card className="p-4 mb-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">Bookings: last 12 months</p>
-                <BarChart data={stats.byMonth} />
-              </Card>
-              <div className="flex gap-2">
-                <Button variant="soft" size="sm" onClick={() => exportCSV(
-                  appts.map(a => ({ id: a.id, date: a.date, time: a.timeSlot, status: a.status, provider: a.providerName, patient: a.patientName })),
-                  'mentisflow-appointments.csv')}>
-                  <Download size={13} /> Export bookings CSV
-                </Button>
-                <Button variant="soft" size="sm" onClick={() => exportCSV(
-                  providers.map(p => ({ id: p.id, name: p.name, email: p.email, hpcsa: p.hpcsa, type: p.type, fee: p.sessionFee, status: providerState(p).label, views: p.profileViews || 0, rating: p.ratingAvg?.overall || '' })),
-                  'mentisflow-doctors.csv')}>
-                  <Download size={13} /> Export doctors CSV
-                </Button>
-              </div>
-            </>
+            <SuperAdminDashboard
+              kpis={kpis}
+              attention={attention}
+              verificationQueue={verificationQueue}
+              monthlyBookings={stats.byMonth}
+              topPractitioners={topPractitioners}
+              activity={activity}
+              onApprove={(id) => {
+                const p = providers.find(x => x.id === id)
+                return act(admin.approveProvider, id, p?.name)
+              }}
+              onReject={(id) => setModal({ type: 'reject', provider: providers.find(x => x.id === id) })}
+              onOpenAuditLog={() => setTab('logs')}
+              onExportBookings={() => exportCSV(
+                appts.map(a => ({ id: a.id, date: a.date, time: a.timeSlot, status: a.status, provider: a.providerName, patient: a.patientName })),
+                'mentisflow-appointments.csv')}
+              onExportDoctors={() => exportCSV(
+                providers.map(p => ({ id: p.id, name: p.name, email: p.email, hpcsa: p.hpcsa, type: p.type, fee: p.sessionFee, status: providerState(p).label, views: p.profileViews || 0, rating: p.ratingAvg?.overall || '' })),
+                'mentisflow-doctors.csv')}
+            />
           )}
 
           {/* ---------------- DOCTORS ---------------- */}
@@ -297,9 +353,7 @@ export function AdminPortal() {
                   return (
                     <Card key={p.id} className="p-4">
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0 bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-xl">
-                          {p.photoURL ? <img src={p.photoURL} alt="" className="w-full h-full object-cover" /> : (p.avatar || '🧠')}
-                        </div>
+                        <Avatar photoUrl={p.photoURL} name={p.name} size="sm" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">{p.name}</p>
@@ -373,9 +427,7 @@ export function AdminPortal() {
                 return (
                   <Card key={p.id} className="p-3.5">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-lg">
-                        {p.photoURL ? <img src={p.photoURL} alt="" className="w-full h-full object-cover" /> : '🙂'}
-                      </div>
+                      <Avatar photoUrl={p.photoURL} name={p.id} size="sm" />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-mono text-ink-600 dark:text-ink-300 truncate">{p.id}</p>
                         <p className="text-[10px] text-ink-400">

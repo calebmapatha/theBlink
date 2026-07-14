@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { User, Moon, Sun, LogOut, Trash2, Check, ChevronRight, Bell, BellOff, RotateCcw, Camera, Loader, Database, Send, Shield, Lock, CheckCircle } from 'lucide-react'
+import { User, LogOut, Trash2, Check, ChevronRight, Bell, BellOff, RotateCcw, Camera, Loader, Database, Send, Shield, Lock, CheckCircle } from 'lucide-react'
+import { ThemeToggle } from '../theme/ThemeProvider'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { PageHeader } from '../components/layout/PageHeader'
 import { TimePicker } from '../components/ui/TimePicker'
@@ -9,12 +10,12 @@ import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import { useApp } from '../context/AppContext'
 import { useAuth } from '../context/AuthContext'
-import { useProviders } from '../hooks/useProviders'
 import { seedDemoProviders } from '../utils/seedProviders'
 import { isAdminUser } from '../utils/admin'
 import { FOCUSBLINK_TOOLS } from '../hooks/useToolPrefs'
-
-const AVATAR_OPTIONS = ['🧠','😊','⚡','🎯','🦁','🐢','🦊','🌟','🔥','💎','🏔️','🌊','🎨','🎥','🚀']
+import Avatar from '../components/ui/Avatar'
+import { setProfilePhoto, removeProfilePhoto } from '../services/profilePhoto'
+import { useProfilePhoto } from '../hooks/useProfilePhoto'
 
 function Section({ title, children }) {
   return (
@@ -39,23 +40,17 @@ function SettingsRow({ icon: Icon, label, value, onClick, danger }) {
   )
 }
 
-function PhotoAvatar({ photoURL, avatar, size = 'lg', onClick, uploading }) {
-  const sz = size === 'lg' ? 'w-16 h-16 text-3xl' : 'w-14 h-14 text-2xl'
+// Photo or silhouette, nothing else — tapping opens the file picker.
+function PhotoAvatar({ photoURL, name, size = 'md', onClick, uploading }) {
   return (
     <button
       onClick={onClick}
-      className={`relative ${sz} rounded-2xl flex-shrink-0 overflow-hidden group`}
+      className="relative flex-shrink-0 overflow-hidden rounded-full group"
       disabled={uploading}
       title="Change photo"
     >
-      {photoURL ? (
-        <img src={photoURL} alt="Profile" className="w-full h-full object-cover" />
-      ) : (
-        <div className={`w-full h-full bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center ${size === 'lg' ? 'text-3xl' : 'text-2xl'}`}>
-          {avatar}
-        </div>
-      )}
-      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl">
+      <Avatar photoUrl={photoURL} name={name} size={size} />
+      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
         {uploading
           ? <Loader size={16} className="text-white animate-spin" />
           : <Camera size={16} className="text-white" />
@@ -65,9 +60,8 @@ function PhotoAvatar({ photoURL, avatar, size = 'lg', onClick, uploading }) {
   )
 }
 
-function ProfileModal({ open, onClose, profile, onSave, authUser, photoURL, onPhotoUpload }) {
+function ProfileModal({ open, onClose, profile, onSave, authUser, photoURL, onPhotoUpload, onPhotoRemove }) {
   const [name, setName]       = useState(profile.displayName || authUser?.displayName || '')
-  const [avatar, setAvatar]   = useState(profile.avatarEmoji || '🧠')
   const [pharmacy, setPharmacy] = useState(profile.pharmacy || '')
   const [uploading, setUploading] = useState(false)
   const fileRef               = useRef()
@@ -80,30 +74,26 @@ function ProfileModal({ open, onClose, profile, onSave, authUser, photoURL, onPh
     setUploading(false)
   }
 
+  const handleRemove = async () => {
+    setUploading(true)
+    await onPhotoRemove()
+    setUploading(false)
+  }
+
   return (
     <Modal open={open} onClose={onClose} title="Edit Profile">
       <div className="space-y-4">
-        <div className="flex flex-col items-center gap-3">
-          <div className="relative">
-            <PhotoAvatar photoURL={photoURL} avatar={avatar} size="lg" onClick={() => fileRef.current.click()} uploading={uploading} />
-          </div>
+        <div className="flex flex-col items-center gap-2">
+          <PhotoAvatar photoURL={photoURL} name={name} size="xl" onClick={() => fileRef.current.click()} uploading={uploading} />
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
           <p className="text-xs text-ink-400">Tap photo to change</p>
+          {photoURL && (
+            <button onClick={handleRemove} disabled={uploading}
+              className="text-xs font-medium text-ink-400 underline-offset-2 hover:text-ink-700 dark:hover:text-ink-200 hover:underline">
+              Remove photo
+            </button>
+          )}
         </div>
-
-        {!photoURL && (
-          <div>
-            <label className="block text-xs font-medium text-ink-400 mb-2">Avatar emoji</label>
-            <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-surface-50 dark:bg-surface-900 max-h-28 overflow-y-auto">
-              {AVATAR_OPTIONS.map(e => (
-                <button key={e} onClick={() => setAvatar(e)}
-                  className={`text-2xl p-1.5 rounded-xl transition-colors ${avatar === e ? 'bg-primary-100 dark:bg-primary-700/30 ring-1 ring-primary-400' : 'hover:bg-surface-100 dark:hover:bg-surface-700'}`}>
-                  {e}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         <div>
           <label className="block text-xs font-medium text-ink-400 mb-1">Display name</label>
@@ -122,7 +112,7 @@ function ProfileModal({ open, onClose, profile, onSave, authUser, photoURL, onPh
         </div>
         <div className="flex gap-2">
           <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
-          <Button className="flex-1" onClick={() => { onSave({ displayName: name, avatarEmoji: avatar, pharmacy: pharmacy.trim() }); onClose() }}>
+          <Button className="flex-1" onClick={() => { onSave({ displayName: name, pharmacy: pharmacy.trim() }); onClose() }}>
             <Check size={14} /> Save
           </Button>
         </div>
@@ -359,15 +349,14 @@ function ToolsSection({ tools }) {
 }
 
 export function Settings() {
-  const { theme, userProfile, userId, notifications, showToast, tools } = useApp()
+  const { userProfile, userId, notifications, showToast, tools } = useApp()
   const { user, signOut }    = useAuth()
   const navigate             = useNavigate()
-  const { uploadPhoto, getPatientProfile } = useProviders()
   const [profileOpen, setProfileOpen] = useState(false)
   const [pwOpen, setPwOpen]           = useState(false)
   const [resetOpen, setResetOpen]     = useState(false)
   const [clearOpen, setClearOpen]     = useState(false)
-  const [photoURL, setPhotoURL]       = useState(null)
+  const photoURL = useProfilePhoto(user?.uid, 'patient')
   const [seeding, setSeeding]         = useState(false)
   const [seedMsg, setSeedMsg]         = useState('')
 
@@ -386,21 +375,25 @@ export function Settings() {
     }
   }
 
-  useEffect(() => {
-    if (!user) return
-    getPatientProfile(user.uid).then(p => {
-      if (p?.photoURL) setPhotoURL(p.photoURL)
-    })
-  }, [user])
-
   const handlePhotoUpload = async (file) => {
-    const url = await uploadPhoto(user.uid, file, 'patient')
-    if (url) { setPhotoURL(url); showToast('Photo updated') }
-    else showToast('Could not upload photo. Use an image under 5MB and try again.', { variant: 'error' })
+    try {
+      await setProfilePhoto(user.uid, file, 'patient')
+      showToast('Photo updated')
+    } catch (e) {
+      showToast(e.message || 'Could not upload photo. Use an image under 5MB and try again.', { variant: 'error' })
+    }
+  }
+
+  const handlePhotoRemove = async () => {
+    try {
+      await removeProfilePhoto(user.uid, 'patient')
+      showToast('Photo removed')
+    } catch {
+      showToast('Could not remove photo. Try again.', { variant: 'error' })
+    }
   }
 
   const displayName = userProfile.profile.displayName || user?.displayName || user?.email?.split('@')[0] || 'You'
-  const avatar      = userProfile.profile.avatarEmoji || '🧠'
 
   const KEEP_KEYS = ['adhd_profile', 'adhd_theme']
 
@@ -428,22 +421,33 @@ export function Settings() {
 
       <Card className="p-4 mb-6">
         <div className="flex items-center gap-4">
-          <PhotoAvatar photoURL={photoURL} avatar={avatar} size="lg" onClick={() => setProfileOpen(true)} />
+          <PhotoAvatar photoURL={photoURL} name={displayName} size="md" onClick={() => setProfileOpen(true)} />
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-ink-900 dark:text-ink-100 truncate">{displayName}</p>
             <p className="text-xs text-ink-400 truncate">{user?.email}</p>
-            <p className="text-xs text-primary-500 mt-0.5 cursor-pointer hover:underline" onClick={() => setProfileOpen(true)}>
-              Change photo
-            </p>
+            <span className="inline-flex gap-3">
+              <p className="text-xs text-primary-500 mt-0.5 cursor-pointer hover:underline" onClick={() => setProfileOpen(true)}>
+                Change photo
+              </p>
+              {photoURL && (
+                <p className="text-xs text-ink-400 mt-0.5 cursor-pointer hover:underline" onClick={handlePhotoRemove}>
+                  Remove photo
+                </p>
+              )}
+            </span>
           </div>
           <Button variant="soft" size="sm" onClick={() => setProfileOpen(true)}>Edit</Button>
         </div>
       </Card>
 
       <Section title="Appearance">
-        <SettingsRow icon={theme.isDark ? Moon : Sun}
-          label={theme.isDark ? 'Dark mode' : 'Light mode'} value={theme.isDark ? 'On' : 'Off'}
-          onClick={theme.toggleTheme} />
+        <div className="flex flex-wrap items-center gap-3 px-4 py-3.5">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-ink-900 dark:text-ink-100">Theme</p>
+            <p className="text-[11px] text-ink-400">Light, dark, or follow your device.</p>
+          </div>
+          <ThemeToggle />
+        </div>
       </Section>
 
       <ToolsSection tools={tools} />
@@ -485,7 +489,7 @@ export function Settings() {
       <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)}
         profile={userProfile.profile} authUser={user}
         onSave={(u) => { userProfile.updateProfile(u); showToast('Profile updated') }}
-        photoURL={photoURL} onPhotoUpload={handlePhotoUpload} />
+        photoURL={photoURL} onPhotoUpload={handlePhotoUpload} onPhotoRemove={handlePhotoRemove} />
       <ChangePasswordModal open={pwOpen} onClose={() => setPwOpen(false)} />
       <ResetModal open={resetOpen} onClose={() => setResetOpen(false)} onConfirm={handleResetDefaults} />
       <ClearDataModal open={clearOpen} onClose={() => setClearOpen(false)} onConfirm={handleClearData} />

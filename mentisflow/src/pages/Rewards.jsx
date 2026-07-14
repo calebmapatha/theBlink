@@ -34,7 +34,7 @@ export function Rewards() {
           </div>
           <div className="h-3 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-primary-500 to-accent-500"
+              className="h-full rounded-full bg-gradient-to-r from-primary-500 to-purple-500"
               animate={{ width: `${Math.min(100, progress)}%` }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
             />

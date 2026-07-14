@@ -21,7 +21,6 @@ const SA_LANGUAGES = ['English', 'Afrikaans', 'Zulu', 'Xhosa', 'Ndebele', 'Swati
 const LANGUAGES   = [...SA_LANGUAGES, 'Spanish', 'French', 'Portuguese', 'Mandarin']
 const SA_PROVINCES = ['Gauteng', 'Western Cape', 'KwaZulu-Natal', 'Eastern Cape', 'Free State', 'Limpopo', 'Mpumalanga', 'North West', 'Northern Cape']
 const TIMEZONES   = ['South Africa (SAST, UTC+2)', 'GMT', 'Eastern (ET)', 'Central (CT)', 'Western Europe (CET)', 'India (IST)', 'Australia (AEST)']
-const AVATARS     = ['🧠', '😊', '⚕️', '🌟', '💙', '🌿', '🔬', '🏥', '💊', '🌸', '🌊', '☀️']
 const PLATFORMS   = [
   { value: 'zoom',    label: 'Zoom' },
   { value: 'meet',    label: 'Google Meet' },
@@ -77,7 +76,6 @@ export function ProviderSignup() {
     bio:             '',
     experience:      '',
     languages:       ['English'],
-    avatar:          '🧠',
     sessionFee:      '',
     hideFee:         false,
     availability:    '',
@@ -224,20 +222,6 @@ export function ProviderSignup() {
 
       {step === 1 && (
         <div className="space-y-4">
-          <Card className="p-4">
-            <p className="text-xs font-medium text-ink-400 mb-2">Choose an avatar</p>
-            <div className="flex flex-wrap gap-2">
-              {AVATARS.map(e => (
-                <button key={e} onClick={() => set('avatar', e)}
-                  className={`text-2xl p-2 rounded-xl transition-colors ${
-                    form.avatar === e ? 'bg-primary-100 dark:bg-primary-700/30 ring-1 ring-primary-400' : 'hover:bg-surface-100 dark:hover:bg-surface-700'
-                  }`}>
-                  {e}
-                </button>
-              ))}
-            </div>
-          </Card>
-
           <Card className="p-4 space-y-4">
             <div>
               <label className="block text-xs font-medium text-ink-400 mb-1">Full name</label>

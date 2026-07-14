@@ -1,0 +1,70 @@
+/*
+ * Mentisflow theme tokens — theme.css
+ *
+ * A real dark mode: warm charcoal surfaces, off white text and a
+ * brighter emerald accent, instead of the old purple wash.
+ *
+ * Values are raw RGB triplets so Tailwind's alpha modifier keeps
+ * working: rgb(var(--surface) / <alpha-value>).
+ *
+ * Imported once in main.jsx: import "./styles/theme.css";
+ */
+
+:root {
+  color-scheme: light;
+
+  --bg: 251 247 238;             /* cream page background  #FBF7EE */
+  --surface: 255 255 255;        /* cards and modals        #FFFFFF */
+  --raised: 245 241 232;         /* hovers, wells           #F5F1E8 */
+  --line: 214 211 205;           /* borders                 #D6D3CD */
+
+  --ink: 41 37 36;               /* primary text            #292524 */
+  --muted: 87 83 78;             /* secondary text          #57534E */
+  --faint: 168 162 158;          /* placeholders, captions  #A8A29E */
+
+  --accent: 16 185 129;          /* emerald 500             #10B981 */
+  --accent-strong: 5 150 105;    /* hover                   #059669 */
+  --on-accent: 255 255 255;      /* text on accent          #FFFFFF */
+  --accent-soft: 209 250 229;    /* tinted chips, bubbles   #D1FAE5 */
+  --accent-soft-text: 6 95 70;   /* text on soft tint       #065F46 */
+
+  --danger: 220 38 38;           /* red 600                 #DC2626 */
+
+  --warn: 180 83 9;              /* amber 700               #B45309 */
+  --warn-soft: 254 243 199;      /* amber 100               #FEF3C7 */
+}
+
+.dark {
+  color-scheme: dark;            /* native inputs, scrollbars, pickers go dark too */
+
+  --bg: 18 17 15;                /* warm near black         #121110 */
+  --surface: 28 27 24;           /* cards and modals        #1C1B18 */
+  --raised: 40 38 34;            /* hovers, wells           #282622 */
+  --line: 62 59 54;              /* borders                 #3E3B36 */
+
+  --ink: 240 237 230;            /* primary text            #F0EDE6 */
+  --muted: 176 171 163;          /* secondary text          #B0ABA3 */
+  --faint: 120 116 109;          /* placeholders, captions  #78746D */
+
+  --accent: 52 211 153;          /* emerald 400, brighter for contrast #34D399 */
+  --accent-strong: 45 212 167;   /* hover                   #2DD4A7 */
+  --on-accent: 6 37 26;          /* dark green text on bright accent   #06251A */
+  --accent-soft: 16 46 37;       /* deep green tint         #102E25 */
+  --accent-soft-text: 110 231 183; /* emerald 300           #6EE7B7 */
+
+  --danger: 248 113 113;         /* red 400                 #F87171 */
+
+  --warn: 251 191 36;            /* amber 400               #FBBF24 */
+  --warn-soft: 69 49 8;          /* deep amber tint         #453108 */
+}
+
+body {
+  background-color: rgb(var(--bg));
+  color: rgb(var(--ink));
+}
+
+/* Focus rings stay visible on both themes */
+:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}

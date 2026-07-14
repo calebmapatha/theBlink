@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, Eye, TrendingUp, Camera, Loader, Star, FileText, Trash2, FileSignature, MapPin, Smile, Zap, Lightbulb, CalendarCheck, LineChart, Wallet, ArrowRight, QrCode, Lock } from 'lucide-react'
+import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Eye, TrendingUp, Camera, Loader, Star, FileText, Trash2, FileSignature, Smile, Zap, Lightbulb, CalendarCheck, LineChart, Wallet, ArrowRight, QrCode, Lock } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
+import Avatar from '../components/ui/Avatar'
+import EditProfileGuided from '../components/forms/EditProfileGuided'
+import { setProfilePhoto } from '../services/profilePhoto'
 import { useAuth } from '../context/AuthContext'
 import { useApp } from '../context/AppContext'
 import { useProviders } from '../hooks/useProviders'
-import { detectLocation } from '../utils/geolocate'
 import { AddToCalendar } from '../components/ui/AddToCalendar'
 import { slotsForDay, dayMode, DEFAULT_HOURS } from '../utils/availability'
 import { trialDaysLeft } from '../utils/pricing'
@@ -45,23 +47,7 @@ const TINTS = {
   teal:   { bg: 'bg-primary-100 dark:bg-primary-700/25', fg: 'text-primary-600 dark:text-primary-300' },
   green:  { bg: 'bg-success-100 dark:bg-success-500/15', fg: 'text-success-600 dark:text-success-400' },
   amber:  { bg: 'bg-warm-100 dark:bg-warm-500/15',       fg: 'text-warm-600 dark:text-warm-500' },
-  violet: { bg: 'bg-accent-100 dark:bg-accent-700/25',   fg: 'text-accent-700 dark:text-accent-500' },
-}
-const AV_TINTS = [TINTS.teal, TINTS.violet, TINTS.amber, TINTS.green]
-
-// Coloured monogram avatar — gives patient rows a face instead of plain text.
-function Avatar({ name, size = 44 }) {
-  const clean = (name || '').trim()
-  const initials = clean
-    ? clean.split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase()).join('')
-    : '?'
-  const tint = AV_TINTS[(clean.charCodeAt(0) || 0) % AV_TINTS.length]
-  return (
-    <div style={{ width: size, height: size }}
-      className={`rounded-2xl flex items-center justify-center font-bold text-sm flex-shrink-0 ${tint.bg} ${tint.fg}`}>
-      {initials}
-    </div>
-  )
+  violet: { bg: 'bg-purple-100 dark:bg-purple-700/25',   fg: 'text-purple-700 dark:text-purple-400' },
 }
 
 function StarDisplay({ value, size = 14 }) {
@@ -385,6 +371,11 @@ function StatDetailModal({ kind, onClose, stats }) {
   )
 }
 
+// Currency convention: R1 500 (space thousands separator).
+function formatRand(value) {
+  return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+}
+
 function greeting() {
   const h = new Date().getHours()
   if (h < 12) return 'Good morning'
@@ -402,140 +393,36 @@ const DAYS = [
   { key: 'sun', label: 'Sunday' },
 ]
 
-const SA_PROVINCES = ['Gauteng', 'Western Cape', 'KwaZulu-Natal', 'Eastern Cape', 'Free State', 'Limpopo', 'Mpumalanga', 'North West', 'Northern Cape']
 
+// Edit Profile, rebuilt on the guided flow (one step per screen, guide
+// bubbles, review screen; the "Guide me" toggle collapses it to the classic
+// single form). Mounted fresh on each open so it always shows saved values.
 function EditModal({ open, onClose, profile, onSave }) {
-  const [form, setForm] = useState({
-    bio:             profile?.bio || '',
-    sessionFee:      profile?.sessionFee || '',
-    hideFee:         !!profile?.hideFee,
-    availability:    profile?.availability || '',
-    meetingPlatform: profile?.meetingPlatform || '',
-    meetingLink:     profile?.meetingLink || '',
-    city:            profile?.city || '',
-    province:        profile?.province || '',
-    consultationType: profile?.consultationType || 'remote',
-    address:         profile?.address || '',
-  })
-  const [saving, setSaving] = useState(false)
-  const [locating, setLocating] = useState(false)
-  const [locError, setLocError] = useState('')
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
-
-  const handleUseLocation = async () => {
-    setLocating(true)
-    setLocError('')
-    try {
-      const { city, province } = await detectLocation()
-      if (!city && !province) setLocError('Could not determine your location.')
-      else setForm(f => ({ ...f, city: city || f.city, province: province || f.province }))
-    } catch (e) {
-      setLocError(e.message)
-    }
-    setLocating(false)
-  }
-
-  const handle = async () => {
-    setSaving(true)
-    await onSave(form)
-    setSaving(false)
+  const handleSave = async (values) => {
+    await onSave(values)
     onClose()
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Edit Profile">
-      <div className="space-y-4">
-        <div>
-          <label className="block text-xs font-medium text-ink-400 mb-1">Bio</label>
-          <textarea value={form.bio} onChange={e => set('bio', e.target.value)} rows={4} className={`${inputCls} resize-none`} />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-ink-400 mb-1">Session fee (ZAR)</label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400 text-sm">R</span>
-            <input type="number" value={form.sessionFee} onChange={e => set('sessionFee', e.target.value)} min="0" className={`${inputCls} pl-7`} />
-          </div>
-          <label className="flex items-start gap-2.5 mt-2.5 cursor-pointer">
-            <input type="checkbox" checked={!!form.hideFee} onChange={e => set('hideFee', e.target.checked)}
-              className="mt-0.5 w-4 h-4 rounded accent-primary-500 flex-shrink-0" />
-            <span className="text-xs text-ink-500 dark:text-ink-400 leading-relaxed">
-              Hide my session fee from patients. Your profile will show "Fee on request" instead of the amount.
-            </span>
-          </label>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-ink-400 mb-1">Availability</label>
-          <input value={form.availability} onChange={e => set('availability', e.target.value)} className={inputCls} />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-ink-400 mb-2">Video platform</label>
-          <div className="grid grid-cols-3 gap-2">
-            {PLATFORMS.map(p => (
-              <button key={p.value} type="button" onClick={() => set('meetingPlatform', p.value)}
-                className={`py-2 rounded-xl text-xs font-medium border transition-colors ${
-                  form.meetingPlatform === p.value
-                    ? 'border-primary-400 bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400'
-                    : 'border-surface-200 dark:border-surface-700 text-ink-400 hover:border-surface-300'
-                }`}>
-                {p.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-ink-400 mb-1">
-            Meeting link <span className="text-ink-400 font-normal">(optional)</span>
-          </label>
-          <input value={form.meetingLink} onChange={e => set('meetingLink', e.target.value)} className={inputCls} placeholder="https://…" />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-ink-400 mb-1">City</label>
-            <input value={form.city} onChange={e => set('city', e.target.value)} className={inputCls} placeholder="e.g. Cape Town" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-ink-400 mb-1">Province</label>
-            <select value={form.province} onChange={e => set('province', e.target.value)} className={inputCls}>
-              <option value="">Select…</option>
-              {SA_PROVINCES.map(p => <option key={p}>{p}</option>)}
-            </select>
-          </div>
-        </div>
-        <button type="button" onClick={handleUseLocation} disabled={locating}
-          className="flex items-center gap-1.5 text-xs font-semibold text-primary-500 hover:text-primary-600 disabled:opacity-50 transition-colors">
-          {locating ? <Loader size={12} className="animate-spin" /> : <MapPin size={12} />}
-          {locating ? 'Finding your location…' : 'Use my current location'}
-        </button>
-        {locError && <p className="text-xs text-red-500">{locError}</p>}
-        <div>
-          <label className="block text-xs font-medium text-ink-400 mb-2">Consultation type</label>
-          <div className="grid grid-cols-3 gap-2">
-            {[['remote', 'Online only'], ['in-person', 'In person'], ['both', 'Both']].map(([v, label]) => (
-              <button key={v} type="button" onClick={() => set('consultationType', v)}
-                className={`py-2 rounded-xl text-xs font-medium border transition-colors ${
-                  form.consultationType === v
-                    ? 'border-primary-400 bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400'
-                    : 'border-surface-200 dark:border-surface-700 text-ink-400 hover:border-surface-300'
-                }`}>
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-        {(form.consultationType === 'in-person' || form.consultationType === 'both') && (
-          <div>
-            <label className="block text-xs font-medium text-ink-400 mb-1">Practice address</label>
-            <input value={form.address} onChange={e => set('address', e.target.value)} className={inputCls} placeholder="e.g. 12 Oak Ave, Rosebank, Johannesburg" />
-            <p className="text-[10px] text-ink-400 mt-1">Shown to patients on a map — use a full address Google Maps can find.</p>
-          </div>
-        )}
-        <div className="flex gap-2">
-          <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
-          <Button className="flex-1" disabled={saving} onClick={handle}>
-            <Save size={13} /> {saving ? 'Saving…' : 'Save'}
-          </Button>
-        </div>
-      </div>
+    <Modal open={open} onClose={onClose} title="Edit profile">
+      {open && (
+        <EditProfileGuided
+          initialValues={{
+            bio:             profile?.bio || '',
+            sessionFee:      profile?.sessionFee || '',
+            hideFee:         !!profile?.hideFee,
+            availability:    profile?.availability || '',
+            meetingPlatform: profile?.meetingPlatform || '',
+            meetingLink:     profile?.meetingLink || '',
+            city:            profile?.city || '',
+            province:        profile?.province || '',
+            consultationType: profile?.consultationType || 'remote',
+            address:         profile?.address || '',
+          }}
+          onSave={handleSave}
+          onCancel={onClose}
+        />
+      )}
     </Modal>
   )
 }
@@ -683,7 +570,7 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
     <Card className="p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex gap-3 flex-1 min-w-0">
-          <Avatar name={appt.patientName} />
+          <Avatar name={appt.patientName} size="md" />
           <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-ink-900 dark:text-ink-100 truncate">{appt.patientName}</p>
           <p className="text-xs text-ink-400 truncate">{appt.patientEmail}</p>
@@ -1249,7 +1136,7 @@ function CheckInModal({ open, onClose, appointments, onCheckIn }) {
         {match && (
           <div className="p-3.5 rounded-2xl bg-success-50 dark:bg-success-500/10 border border-success-200 dark:border-success-500/30">
             <div className="flex items-center gap-3">
-              <Avatar name={match.patientName} size={40} />
+              <Avatar name={match.patientName} size="sm" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-ink-900 dark:text-ink-100 truncate">{match.patientName}</p>
                 <p className="text-xs text-ink-500 dark:text-ink-400">{match.date} at {match.timeSlot}</p>
@@ -1285,7 +1172,7 @@ function CheckInModal({ open, onClose, appointments, onCheckIn }) {
 export function ProviderDashboard() {
   const { user }                                                                                                    = useAuth()
   const { showToast }                                                                                               = useApp()
-  const { getProvider, getPrivateProfile, getAppointments, updateAppointment, confirmAppointment, saveProvider, getDiary, saveDiary, uploadPhoto, getProviderRatings, createPrescription, uploadVerificationDoc, getVerification, getVerificationURL, getProviderFeeRequests, discloseFee } = useProviders()
+  const { getProvider, getPrivateProfile, getAppointments, updateAppointment, confirmAppointment, saveProvider, getDiary, saveDiary, getProviderRatings, createPrescription, uploadVerificationDoc, getVerification, getVerificationURL, getProviderFeeRequests, discloseFee } = useProviders()
   const navigate                                                                                                    = useNavigate()
   const [profile, setProfile]           = useState(null)
   const [appointments, setAppointments] = useState([])
@@ -1392,9 +1279,12 @@ export function ProviderDashboard() {
     const file = e.target.files?.[0]
     if (!file) return
     setPhotoUploading(true)
-    const url = await uploadPhoto(user.uid, file, 'provider')
-    if (url) setProfile(p => ({ ...p, photoURL: url }))
-    else showToast('Could not upload photo. Use an image under 5MB and try again.', { variant: 'error' })
+    try {
+      const url = await setProfilePhoto(user.uid, file, 'provider')
+      setProfile(p => ({ ...p, photoURL: url }))
+    } catch (err) {
+      showToast(err.message || 'Could not upload photo. Use an image under 5MB and try again.', { variant: 'error' })
+    }
     setPhotoUploading(false)
     e.target.value = '' // allow re-selecting the same file after a failure
   }
@@ -1472,13 +1362,9 @@ export function ProviderDashboard() {
               onClick={() => fileRef.current.click()}
               disabled={photoUploading}
               title="Change photo"
-              className="relative w-14 h-14 rounded-2xl overflow-hidden flex-shrink-0 group ring-1 ring-surface-200 dark:ring-surface-700 mt-1.5">
-              {profile?.photoURL ? (
-                <img src={profile.photoURL} alt={profile.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-primary-50 dark:bg-primary-700/20 flex items-center justify-center text-2xl">{profile?.avatar || '🧠'}</div>
-              )}
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              className="relative rounded-full overflow-hidden flex-shrink-0 group mt-1.5">
+              <Avatar photoUrl={profile?.photoURL} name={profile?.name || 'Your profile'} size="lg" />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
                 {photoUploading ? <Loader size={15} className="text-white animate-spin" /> : <Camera size={15} className="text-white" />}
               </div>
             </button>
@@ -1500,6 +1386,39 @@ export function ProviderDashboard() {
                   </>
                 )}
               </div>
+
+              {/* Compact profile summary — previously the "Your profile" card
+                  in the right rail (removed so details never render twice). */}
+              <p className="mt-3 text-sm text-ink-500 dark:text-ink-400">
+                {profile?.type}
+                {profile?.experience ? ` · ${profile.experience} yrs` : ''}
+                {profile?.hpcsa ? ` · HPCSA ${profile.hpcsa}` : ''}
+              </p>
+              <p className="mt-0.5 text-sm text-ink-500 dark:text-ink-400">
+                {profile?.sessionFee ? `R${formatRand(profile.sessionFee)}` : 'Fee not set'}
+                {profile?.hideFee ? ' (hidden)' : ''}
+                {' · '}
+                {profile?.availability || 'Availability not set'}
+              </p>
+              {profile?.bio && (
+                <p className="mt-2 text-sm text-ink-600 dark:text-ink-300 max-w-xl">{profile.bio}</p>
+              )}
+              {/* Only ever link out to http(s) URLs — a stored javascript: URI must not become a clickable script. */}
+              {/^https?:\/\//i.test(profile?.meetingLink || '') ? (
+                <a href={profile.meetingLink} target="_blank" rel="noopener noreferrer"
+                  className="mt-2 flex items-center gap-1.5 text-xs text-primary-500 hover:underline w-fit">
+                  <ExternalLink size={10} /> {platformLabel ? `${platformLabel} meeting room` : 'Your meeting room'}
+                </a>
+              ) : platformLabel && (
+                <p className="mt-2 text-xs text-ink-400">Platform: {platformLabel} · <button onClick={() => setEditOpen(true)} className="text-primary-500 hover:underline">Add link</button></p>
+              )}
+              {(profile?.specialties || []).length > 0 && (
+                <ul className="mt-2.5 flex flex-wrap gap-1.5" aria-label="Specialisations">
+                  {(profile?.specialties || []).map(s => (
+                    <li key={s} className="rounded-full bg-primary-50 dark:bg-primary-700/20 px-2.5 py-0.5 text-xs font-medium text-primary-700 dark:text-primary-300">{s}</li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
 
@@ -1640,36 +1559,6 @@ export function ProviderDashboard() {
             </Card>
           )}
 
-          <Card className="p-5">
-            <p className="font-serif text-lg tracking-tight text-ink-900 dark:text-ink-100 mb-3">Your profile</p>
-            <div className="space-y-2 text-xs">
-              <div className="flex items-center justify-between gap-3"><span className="text-ink-400">Type</span><span className="font-medium text-ink-800 dark:text-ink-200 text-right truncate">{profile?.type}</span></div>
-              <div className="flex items-center justify-between gap-3"><span className="text-ink-400">Experience</span><span className="font-medium text-ink-800 dark:text-ink-200">{profile?.experience} yrs</span></div>
-              {profile?.hpcsa && <div className="flex items-center justify-between gap-3"><span className="text-ink-400">HPCSA</span><span className="font-medium text-ink-800 dark:text-ink-200">{profile.hpcsa}</span></div>}
-              <div className="flex items-center justify-between gap-3"><span className="text-ink-400">Session fee</span><span className="font-medium text-ink-800 dark:text-ink-200">R{profile?.sessionFee}{profile?.hideFee ? ' · hidden' : ''}</span></div>
-              <div className="flex items-center justify-between gap-3"><span className="text-ink-400">Availability</span><span className="font-medium text-ink-800 dark:text-ink-200 text-right truncate">{profile?.availability || '—'}</span></div>
-            </div>
-            {profile?.bio && (
-              <p className="mt-3 pt-3 border-t border-surface-100 dark:border-surface-800 text-xs text-ink-600 dark:text-ink-300 leading-relaxed line-clamp-4">{profile.bio}</p>
-            )}
-            {/* Only ever link out to http(s) URLs — a stored javascript: URI must not become a clickable script. */}
-            {/^https?:\/\//i.test(profile?.meetingLink || '') && (
-              <a href={profile.meetingLink} target="_blank" rel="noopener noreferrer"
-                className="mt-3 flex items-center gap-1.5 text-xs text-primary-500 hover:underline w-fit">
-                <ExternalLink size={10} /> {platformLabel ? `${platformLabel} meeting room` : 'Your meeting room'}
-              </a>
-            )}
-            {!profile?.meetingLink && platformLabel && (
-              <p className="mt-3 text-xs text-ink-400">Platform: {platformLabel} · <button onClick={() => setEditOpen(true)} className="text-primary-500 hover:underline">Add link</button></p>
-            )}
-            {(profile?.specialties || []).length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-3">
-                {(profile?.specialties || []).map(s => (
-                  <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400">{s}</span>
-                ))}
-              </div>
-            )}
-          </Card>
         </aside>
       </div>
 

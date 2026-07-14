@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, Clock, Globe, BadgeCheck, Calendar, X, HeartHandshake, Sprout, Link2, Unlink, Check, Star, MessageSquare, Loader, ClipboardList, Video, MapPin, FileText, FileSignature, QrCode } from 'lucide-react'
 import QRCode from 'qrcode'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -7,15 +7,15 @@ import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
+import Avatar from '../components/ui/Avatar'
 import { useProviders } from '../hooks/useProviders'
 import { useAuth } from '../context/AuthContext'
 import { useApp } from '../context/AppContext'
 import { AddToCalendar } from '../components/ui/AddToCalendar'
-import { availableSlotsForDate } from '../utils/availability'
+import AdvanceBookingCalendar from '../components/booking/AdvanceBookingCalendar'
 import { submitReport } from '../hooks/useAdmin'
 import { getScreeningDocs, signScreeningDocs, openScreeningPDF } from '../utils/screeningDocs'
 import { SignatureField } from '../components/ui/SignatureField'
-import { DatePicker } from '../components/ui/DatePicker'
 import { detectLocation } from '../utils/geolocate'
 import { shortCodeFor, formatCode, checkInPayload } from '../utils/checkin'
 
@@ -248,15 +248,7 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
       <div className="space-y-5 -mt-1">
         {/* Header */}
         <div className="flex items-start gap-4">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0">
-            {provider.photoURL ? (
-              <img src={provider.photoURL} alt={provider.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-3xl">
-                {provider.avatar || '🧠'}
-              </div>
-            )}
-          </div>
+          <Avatar photoUrl={provider.photoURL} name={provider.name} size="lg" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               <p className="font-bold text-ink-900 dark:text-ink-100">{provider.name}</p>
@@ -424,15 +416,7 @@ function ProviderCard({ provider, onBook, onLink, linked, onViewProfile }) {
       {/* Tappable profile area */}
       <button className="w-full text-left" onClick={() => onViewProfile?.(provider)}>
         <div className="flex items-start gap-3">
-          <div className="w-12 h-12 rounded-2xl overflow-hidden flex-shrink-0">
-            {provider.photoURL ? (
-              <img src={provider.photoURL} alt={provider.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-2xl">
-                {provider.avatar || '🧠'}
-              </div>
-            )}
-          </div>
+          <Avatar photoUrl={provider.photoURL} name={provider.name} size="md" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               <p className="font-semibold text-ink-900 dark:text-ink-100 text-sm">{provider.name}</p>
@@ -620,13 +604,6 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
     })
   }, [provider?.id, open])
 
-  // Open-by-default: weekday default hours unless the provider customised or
-  // closed the day, minus slots already confirmed for that date.
-  const availableSlots = useMemo(
-    () => availableSlotsForDate(bookingInfo.diary, bookingInfo.bookedSlots, date),
-    [date, bookingInfo],
-  )
-
   const toggleType = (id) =>
     setSharedTypes(prev => prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id])
 
@@ -675,40 +652,20 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
         </div>
       ) : (
         <div className="space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-ink-400 mb-1">Preferred date</label>
-            <DatePicker
-              value={date}
-              onChange={d => { setDate(d); setTimeSlot(null) }}
-              min={new Date().toISOString().split('T')[0]}
-              placeholder="Pick a date"
+          {/* Month calendar, bookable up to six months ahead. The weekly diary
+              stays the source of truth; booked and past slots are hidden. */}
+          {diaryLoading ? (
+            <p className="text-xs text-ink-400">Loading availability…</p>
+          ) : (
+            <AdvanceBookingCalendar
+              diary={bookingInfo.diary}
+              bookedSlots={bookingInfo.bookedSlots}
+              horizonMonths={6}
+              selectedDate={date}
+              selectedSlot={timeSlot}
+              onSelectDate={d => { setDate(d); setTimeSlot(null) }}
+              onSelectSlot={setTimeSlot}
             />
-          </div>
-
-          {date && (
-            <div>
-              <label className="block text-xs font-medium text-ink-400 mb-2">Available slots</label>
-              {diaryLoading ? (
-                <p className="text-xs text-ink-400">Loading slots…</p>
-              ) : availableSlots.length === 0 ? (
-                <p className="text-xs text-ink-400 bg-surface-50 dark:bg-surface-900 px-3 py-2 rounded-xl">
-                  No open slots for this day. It may be fully booked or the provider is unavailable. Try another date.
-                </p>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {availableSlots.map(slot => (
-                    <button key={slot} onClick={() => setTimeSlot(slot)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
-                        timeSlot === slot
-                          ? 'border-primary-400 bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400'
-                          : 'border-surface-200 dark:border-surface-700 text-ink-400 hover:border-surface-300'
-                      }`}>
-                      {slot}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
           )}
 
           <div>
@@ -954,7 +911,11 @@ export function Connect() {
     }
   }
 
-  const [tab, setTab]                   = useState('find')
+  // Default tab derives from the link status instead of being hardcoded:
+  // patients with a doctor land on My Doctor, everyone else on Find. The
+  // null default matters because the doctor link loads asynchronously from
+  // Firebase — the user's own choice (chosenTab) always wins once made.
+  const [chosenTab, setChosenTab]       = useState(null)
   const [search, setSearch]             = useState('')
   const [typeFilter, setTypeFilter]     = useState('All')
   const [specFilter, setSpecFilter]     = useState('')
@@ -965,6 +926,7 @@ export function Connect() {
 
   const [linkedDoctor, setLinkedDoctor]     = useState(undefined)
   const [linkLoading, setLinkLoading]       = useState(true)
+  const tab = chosenTab ?? (linkedDoctor ? 'my-doctor' : 'find')
   const [hpcsaQuery, setHpcsaQuery]         = useState('')
   const [searchResult, setSearchResult]     = useState(null)
   const [searchError, setSearchError]       = useState('')
@@ -1036,6 +998,7 @@ export function Connect() {
   const handleUnlink = async () => {
     await unlinkDoctor(user.uid)
     setLinkedDoctor(null)
+    setChosenTab('find')
   }
 
   const handleRatingSubmit = async (scores) => {
@@ -1101,7 +1064,7 @@ export function Connect() {
           { key: 'find',      label: 'Find a Doctor' },
           { key: 'my-doctor', label: 'My Doctor' },
         ].map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)}
+          <button key={t.key} onClick={() => setChosenTab(t.key)}
             className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors ${
               tab === t.key
                 ? 'bg-primary-500 text-white'
@@ -1252,15 +1215,7 @@ export function Connect() {
             <>
               <Card className="p-4">
                 <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-2xl overflow-hidden flex-shrink-0">
-                    {linkedDoctor.photoURL ? (
-                      <img src={linkedDoctor.photoURL} alt={linkedDoctor.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-2xl">
-                        {linkedDoctor.avatar || '🧠'}
-                      </div>
-                    )}
-                  </div>
+                  <Avatar photoUrl={linkedDoctor.photoURL} name={linkedDoctor.name} size="md" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <p className="font-semibold text-ink-900 dark:text-ink-100 text-sm">{linkedDoctor.name}</p>
@@ -1419,15 +1374,7 @@ export function Connect() {
                 {searchResult && (
                   <div className="mt-3 p-3 rounded-xl bg-surface-50 dark:bg-surface-900 border border-surface-200 dark:border-surface-700">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl overflow-hidden flex-shrink-0">
-                        {searchResult.photoURL ? (
-                          <img src={searchResult.photoURL} alt={searchResult.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-xl">
-                            {searchResult.avatar || '🧠'}
-                          </div>
-                        )}
-                      </div>
+                      <Avatar photoUrl={searchResult.photoURL} name={searchResult.name} size="sm" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1">
                           <p className="text-sm font-semibold text-ink-900 dark:text-ink-100">{searchResult.name}</p>

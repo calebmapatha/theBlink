@@ -18,7 +18,7 @@ const MODE_LABELS = {
 const MODE_COLORS = {
   work:       'text-primary-500',
   shortBreak: 'text-success-500',
-  longBreak:  'text-accent-500',
+  longBreak:  'text-purple-500',
 }
 
 function formatTime(seconds) {

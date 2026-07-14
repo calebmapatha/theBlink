@@ -4,6 +4,7 @@ import { AnimatePresence } from 'framer-motion'
 import { getDoc, doc } from 'firebase/firestore'
 import { db } from './lib/firebase'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ThemeProvider } from './theme/ThemeProvider'
 import { AppProvider } from './context/AppContext'
 import { Sidebar } from './components/layout/Sidebar'
 import { Toast } from './components/ui/Toast'
@@ -41,10 +42,11 @@ function AppShell({ isProvider }) {
   const [syncError, setSyncError] = useState(false)
   const [announcement, setAnnouncement] = useState(null)
 
-  // Patients can disable FocusBlink tools; a disabled tool's route (and Home,
-  // when every tool is off) falls back to Connect so the URL is never a
-  // dead end. Guards a route element behind its tool preference.
-  const homeFallback = tools.anyEnabled ? '/' : '/connect'
+  // Users can disable FocusBlink tools; a disabled tool's route (and Home,
+  // when every tool is off) falls back so the URL is never a dead end.
+  // Guards a route element behind its tool preference. The same toggles now
+  // drive BOTH roles: practitioners get the tools too (Settings > FocusBlink).
+  const homeFallback = isProvider || tools.anyEnabled ? '/' : '/connect'
   const gate = (key, element) =>
     tools.isEnabled(key) ? element : <Navigate to={homeFallback} replace />
 
@@ -103,6 +105,14 @@ function AppShell({ isProvider }) {
                 <Route path="/provider/dashboard" element={<ProviderDashboard />} />
                 <Route path="/provider/analytics" element={<ProviderAnalytics />} />
                 <Route path="/provider/files"     element={<ProviderVault />} />
+                {/* FocusBlink tools, driven by the same Settings toggles as the patient side. */}
+                <Route path="/timer"              element={gate('timer', <FocusTimer />)} />
+                <Route path="/tasks"              element={gate('tasks', <TaskBoard />)} />
+                <Route path="/dump"               element={gate('dump', <BrainDump />)} />
+                <Route path="/habits"             element={gate('habits', <HabitTracker />)} />
+                <Route path="/monthly"            element={gate('monthly', <MonthlyTracker />)} />
+                <Route path="/checkin"            element={gate('checkin', <DailyCheckin />)} />
+                <Route path="/rewards"            element={gate('rewards', <Rewards />)} />
                 <Route path="/settings"           element={<Settings />} />
                 <Route path="/admin"              element={<AdminPortal />} />
                 <Route path="*"                   element={<Navigate to="/" replace />} />
@@ -207,8 +217,10 @@ function AuthGate() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AuthGate />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AuthGate />
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
