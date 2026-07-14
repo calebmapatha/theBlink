@@ -1077,7 +1077,7 @@ function StatCard({ icon: Icon, value, label, onClick }) {
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } }}
       className="p-5 cursor-pointer group hover:-translate-y-0.5 hover:shadow-md">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-ink-400">{label}</p>
+        <p className="text-sm text-ink-500 dark:text-ink-400">{label}</p>
         <Icon size={15} className="text-ink-300 dark:text-ink-600 group-hover:text-primary-500 transition-colors" />
       </div>
       <p className="text-[2.1rem] leading-none font-medium tracking-tight text-ink-900 dark:text-ink-100 mt-4">{value}</p>
@@ -1089,8 +1089,8 @@ function StatCard({ icon: Icon, value, label, onClick }) {
 // keeps the accent disciplined; the title stays in the sans.
 function ToolCard({ icon: Icon, title, desc, badge, onClick }) {
   return (
-    <button onClick={onClick}
-      className="group text-left rounded-3xl bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700/60 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-surface-300 dark:hover:border-surface-600">
+    <Card as="button" flat interactive type="button" onClick={onClick}
+      className="group text-left w-full p-6 hover:border-surface-300 dark:hover:border-surface-600">
       <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-4 bg-primary-50 dark:bg-primary-700/20">
         <Icon size={20} className="text-primary-600 dark:text-primary-300" />
       </div>
@@ -1100,11 +1100,11 @@ function ToolCard({ icon: Icon, title, desc, badge, onClick }) {
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-primary-100 dark:bg-primary-700/25 text-primary-700 dark:text-primary-300">{badge}</span>
         )}
       </div>
-      <p className="text-sm text-ink-400 mt-1.5 leading-relaxed">{desc}</p>
+      <p className="text-sm text-ink-500 dark:text-ink-400 mt-1.5 leading-relaxed">{desc}</p>
       <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary-600 dark:text-primary-400">
         Open <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
       </span>
-    </button>
+    </Card>
   )
 }
 

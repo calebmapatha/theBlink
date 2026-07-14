@@ -124,7 +124,7 @@ function GoalsTab({ plan, addGoal, updateGoal, deleteGoal }) {
                     <input
                       type="range" min="0" max="100" value={g.progress}
                       onChange={e => updateGoal(g.id, { progress: Number(e.target.value) })}
-                      className="w-full accent-teal-500 h-1.5"
+                      className="w-full accent-primary-500 h-1.5"
                     />
                   </div>
                 </div>
@@ -311,12 +311,12 @@ function AddNoteModal({ open, onClose, onAdd }) {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-medium text-ink-400 mb-1">Mood before (1-5)</label>
-            <input type="range" min="1" max="5" value={form.moodBefore} onChange={e => set('moodBefore', Number(e.target.value))} className="w-full accent-teal-500" />
+            <input type="range" min="1" max="5" value={form.moodBefore} onChange={e => set('moodBefore', Number(e.target.value))} className="w-full accent-primary-500" />
             <p className="text-[10px] text-ink-400 text-center">{form.moodBefore}/5</p>
           </div>
           <div>
             <label className="block text-xs font-medium text-ink-400 mb-1">Mood after (1-5)</label>
-            <input type="range" min="1" max="5" value={form.moodAfter} onChange={e => set('moodAfter', Number(e.target.value))} className="w-full accent-teal-500" />
+            <input type="range" min="1" max="5" value={form.moodAfter} onChange={e => set('moodAfter', Number(e.target.value))} className="w-full accent-primary-500" />
             <p className="text-[10px] text-ink-400 text-center">{form.moodAfter}/5</p>
           </div>
         </div>
@@ -405,7 +405,7 @@ function AddSymptomModal({ open, onClose, onAdd }) {
           <label className="block text-xs font-medium text-ink-400 mb-1">
             Severity: <span className="font-semibold text-ink-700 dark:text-ink-300">{SEVERITY_LABELS[form.severity]}</span>
           </label>
-          <input type="range" min="1" max="5" value={form.severity} onChange={e => set('severity', Number(e.target.value))} className="w-full accent-teal-500" />
+          <input type="range" min="1" max="5" value={form.severity} onChange={e => set('severity', Number(e.target.value))} className="w-full accent-primary-500" />
           <div className="flex justify-between text-[10px] text-ink-400 mt-0.5">
             <span>Mild</span><span>Very severe</span>
           </div>
@@ -468,7 +468,7 @@ function SymptomsTab({ plan, addSymptom, updateSymptom, deleteSymptom }) {
                   <label className="text-[10px] text-ink-400 mb-1 block">Update severity</label>
                   <input type="range" min="1" max="5" value={s.severity}
                     onChange={e => updateSymptom(s.id, { severity: Number(e.target.value) })}
-                    className="w-full accent-teal-500 h-1.5" />
+                    className="w-full accent-primary-500 h-1.5" />
                 </div>
               </div>
               <button onClick={() => deleteSymptom(s.id)} className="text-ink-400 hover:text-red-500 transition-colors flex-shrink-0 mt-0.5">
