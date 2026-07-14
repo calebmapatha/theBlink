@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
-  HeartHandshake, Shield, Zap, Search, CalendarCheck, TrendingUp, Timer,
+  HeartHandshake, Shield, Search, CalendarCheck, TrendingUp, Timer,
   Stethoscope, Lock, Trash2, CheckCircle2, ArrowRight, Menu, X,
 } from 'lucide-react'
 
@@ -164,10 +164,6 @@ export function Landing({ onSignIn, onGetStarted }) {
       <section className="relative overflow-hidden bg-gradient-to-b from-teal-50/80 via-white to-white">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-14 pb-16 lg:pt-20 lg:pb-24 grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <div className="inline-flex items-center gap-2 text-xs font-semibold text-teal-700 bg-teal-50 border border-teal-100 px-3 py-1.5 rounded-full mb-5">
-              <Shield size={12} />
-              Built for South Africa
-            </div>
             <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-bold tracking-tight leading-[1.08] [text-wrap:balance]">
               Mental health care,{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-teal-700">connected.</span>
@@ -195,7 +191,6 @@ export function Landing({ onSignIn, onGetStarted }) {
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-7 text-xs text-slate-400">
               <span className="flex items-center gap-1.5"><Shield size={12} className="text-teal-400" /> HPCSA-registered practitioners</span>
               <span className="flex items-center gap-1.5"><Lock size={12} className="text-teal-400" /> Your data stays yours</span>
-              <span className="flex items-center gap-1.5"><Zap size={12} className="text-teal-400" /> Installs as an app (PWA)</span>
             </div>
           </motion.div>
 
