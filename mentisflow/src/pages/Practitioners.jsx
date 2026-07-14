@@ -1,11 +1,13 @@
-import { HeartHandshake, Stethoscope, CalendarCheck, FileCheck, LineChart, ArrowRight, Star, Clock } from 'lucide-react'
+import { HeartHandshake, Stethoscope, CalendarCheck, FileCheck, LineChart, ArrowRight, Star, Clock, Lock, ClipboardList } from 'lucide-react'
 import { DEFAULT_PRICING } from '../utils/pricing'
 
 const POINTS = [
-  { icon: Stethoscope,   title: 'Verified listing',     desc: 'List your practice with your HPCSA number and reach patients across South Africa.' },
-  { icon: CalendarCheck, title: 'Diary & availability', desc: 'Set your available slots once. Patients book directly, no phone tag.' },
-  { icon: FileCheck,     title: 'Patient snapshots',    desc: 'See mood, habit, and check-in trends your patients consent to share at booking.' },
-  { icon: LineChart,     title: 'Practice analytics',   desc: 'Appointment volumes, ratings, and growth trends for your practice at a glance.' },
+  { icon: Stethoscope,   title: 'Verified listing',        desc: 'List your practice with your HPCSA number and reach patients across South Africa.' },
+  { icon: CalendarCheck, title: 'Diary & availability',    desc: 'Set your available slots once. Patients book directly, no phone tag.' },
+  { icon: FileCheck,     title: 'Patient snapshots',       desc: 'See mood, habit, and check-in trends your patients consent to share at booking.' },
+  { icon: ClipboardList, title: 'Client management',       desc: 'Send scripts, share pre-screening documents for digital signature, and check clients in with a QR pass for in-person visits.' },
+  { icon: Lock,          title: 'Encrypted client vault',  desc: 'Session notes and client files, encrypted on your device before upload. Zero-knowledge: no one else can read them, not even us.' },
+  { icon: LineChart,     title: 'Practice analytics',      desc: 'Appointment volumes, ratings, and growth trends for your practice at a glance.' },
 ]
 
 const DIARY_ROWS = [
