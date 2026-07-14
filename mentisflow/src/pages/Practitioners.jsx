@@ -96,7 +96,7 @@ export function Practitioners() {
         <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-14 pb-16 lg:pt-20 lg:pb-20 grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
           <div>
             <p className="text-sm font-bold text-teal-600 uppercase tracking-wide">For practitioners</p>
-            <h1 className="font-display text-4xl sm:text-5xl font-semibold tracking-tight mt-2 leading-[1.08] [text-wrap:balance]">
+            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mt-2 leading-[1.08] [text-wrap:balance]">
               Grow your practice. Focus on your patients.
             </h1>
             <p className="text-base sm:text-lg text-slate-500 mt-5 max-w-2xl leading-relaxed">
@@ -121,7 +121,7 @@ export function Practitioners() {
       {/* Feature points */}
       <section className="border-t border-slate-100 bg-slate-50/60">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-14 lg:py-20">
-          <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight max-w-xl [text-wrap:balance]">
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight max-w-xl [text-wrap:balance]">
             Everything a modern practice needs, nothing it doesn’t.
           </h2>
           <div className="grid sm:grid-cols-2 gap-x-12 gap-y-10 mt-10">
@@ -144,7 +144,7 @@ export function Practitioners() {
       <section className="max-w-6xl mx-auto px-5 sm:px-8 py-14 lg:py-20">
         <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-teal-500 to-teal-700 text-white px-7 py-14 sm:px-14 text-center">
           <p className="text-sm font-bold text-teal-100 uppercase tracking-wide">Start with a 2-month free trial</p>
-          <h2 className="font-display text-3xl sm:text-4xl font-semibold tracking-tight mt-2 [text-wrap:balance]">
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2 [text-wrap:balance]">
             Try everything, commitment-free.
           </h2>
           <p className="text-teal-50/90 mt-4 max-w-xl mx-auto leading-relaxed">
