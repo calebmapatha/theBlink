@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, Eye, TrendingUp, Camera, Loader, Star, FileText, Trash2, FileSignature, MapPin, Smile, Zap, Lightbulb } from 'lucide-react'
+import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Save, Eye, TrendingUp, Camera, Loader, Star, FileText, Trash2, FileSignature, MapPin, Smile, Zap, Lightbulb, CalendarCheck, LineChart, Wallet, ArrowRight } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
-import { PageHeader } from '../components/layout/PageHeader'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
@@ -37,6 +36,32 @@ const RATING_METRICS = [
 const DATA_LABELS = { habits: '🔄 Habits', checkin: '😊 Mood', focus: '⏱️ Focus', tasks: '✅ Tasks', treatmentPlan: '📋 Treatment plan' }
 const MOOD_LABELS   = { 1: 'Very low', 2: 'Low', 3: 'Neutral', 4: 'Good',   5: 'Great' }
 const ENERGY_LABELS = { 1: 'Depleted', 2: 'Low', 3: 'Moderate', 4: 'High', 5: 'Peak' }
+
+// Category tints — soft icon-tile backgrounds used across stat and tool cards.
+// Kept as a small role-locked palette (teal primary, then green/amber/violet)
+// so accent colour never leaks into page chrome.
+const TINTS = {
+  teal:   { bg: 'bg-primary-100 dark:bg-primary-700/25', fg: 'text-primary-600 dark:text-primary-300' },
+  green:  { bg: 'bg-success-100 dark:bg-success-500/15', fg: 'text-success-600 dark:text-success-400' },
+  amber:  { bg: 'bg-warm-100 dark:bg-warm-500/15',       fg: 'text-warm-600 dark:text-warm-500' },
+  violet: { bg: 'bg-accent-100 dark:bg-accent-700/25',   fg: 'text-accent-700 dark:text-accent-500' },
+}
+const AV_TINTS = [TINTS.teal, TINTS.violet, TINTS.amber, TINTS.green]
+
+// Coloured monogram avatar — gives patient rows a face instead of plain text.
+function Avatar({ name, size = 44 }) {
+  const clean = (name || '').trim()
+  const initials = clean
+    ? clean.split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase()).join('')
+    : '?'
+  const tint = AV_TINTS[(clean.charCodeAt(0) || 0) % AV_TINTS.length]
+  return (
+    <div style={{ width: size, height: size }}
+      className={`rounded-2xl flex items-center justify-center font-bold text-sm flex-shrink-0 ${tint.bg} ${tint.fg}`}>
+      {initials}
+    </div>
+  )
+}
 
 function StarDisplay({ value, size = 14 }) {
   return (
@@ -656,9 +681,11 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
   return (
     <Card className="p-4">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-ink-900 dark:text-ink-100">{appt.patientName}</p>
-          <p className="text-xs text-ink-400">{appt.patientEmail}</p>
+        <div className="flex gap-3 flex-1 min-w-0">
+          <Avatar name={appt.patientName} />
+          <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-ink-900 dark:text-ink-100 truncate">{appt.patientName}</p>
+          <p className="text-xs text-ink-400 truncate">{appt.patientEmail}</p>
           <p className="text-xs text-ink-400 mt-1 flex items-center gap-1">
             <Calendar size={10} className="flex-shrink-0" />
             {appt.date} · {appt.timeSlot}
@@ -706,6 +733,7 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
               <FileText size={12} /> Write prescription
             </button>
           )}
+          </div>
         </div>
         {appt.status === 'pending' && (
           <div className="flex gap-1.5 flex-shrink-0">
@@ -1036,6 +1064,65 @@ function DocumentsManager({ providerUid }) {
   )
 }
 
+// A KPI tile — editorial and number-forward: quiet label, ghost icon, an
+// oversized metric. The metric stays in the sans (per the reference, serif is
+// reserved for headlines). Tappable → detail modal.
+function StatCard({ icon: Icon, value, label, onClick }) {
+  return (
+    <Card role="button" tabIndex={0} onClick={onClick}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } }}
+      className="p-5 cursor-pointer group hover:-translate-y-0.5 hover:shadow-md">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-ink-400">{label}</p>
+        <Icon size={15} className="text-ink-300 dark:text-ink-600 group-hover:text-primary-500 transition-colors" />
+      </div>
+      <p className="text-[2.1rem] leading-none font-medium tracking-tight text-ink-900 dark:text-ink-100 mt-4">{value}</p>
+    </Card>
+  )
+}
+
+// A shortcut card in the "Manage your practice" row. Single rationed teal tile
+// keeps the accent disciplined; the title stays in the sans.
+function ToolCard({ icon: Icon, title, desc, badge, onClick }) {
+  return (
+    <button onClick={onClick}
+      className="group text-left rounded-3xl bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700/60 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-surface-300 dark:hover:border-surface-600">
+      <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-4 bg-primary-50 dark:bg-primary-700/20">
+        <Icon size={20} className="text-primary-600 dark:text-primary-300" />
+      </div>
+      <div className="flex items-center gap-2">
+        <p className="font-semibold text-ink-900 dark:text-ink-100 text-[15px]">{title}</p>
+        {badge > 0 && (
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-primary-100 dark:bg-primary-700/25 text-primary-700 dark:text-primary-300">{badge}</span>
+        )}
+      </div>
+      <p className="text-sm text-ink-400 mt-1.5 leading-relaxed">{desc}</p>
+      <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary-600 dark:text-primary-400">
+        Open <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+      </span>
+    </button>
+  )
+}
+
+// Contextual attention strip shown at most once at the top of the dashboard.
+function Banner({ tone = 'amber', icon: Icon, title, children, action }) {
+  const tones = {
+    amber: 'bg-warm-50 dark:bg-warm-500/10 border-warm-200 dark:border-warm-500/30 text-warm-700 dark:text-warm-400',
+    red:   'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400',
+    teal:  'bg-primary-50 dark:bg-primary-700/15 border-primary-200 dark:border-primary-600/40 text-primary-700 dark:text-primary-300',
+  }
+  return (
+    <div className={`mb-5 rounded-2xl border p-4 flex items-start gap-3 ${tones[tone]}`}>
+      {Icon && <Icon size={18} className="flex-shrink-0 mt-0.5" />}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold">{title}</p>
+        {children && <p className="text-xs opacity-80 leading-relaxed mt-0.5">{children}</p>}
+      </div>
+      {action && <div className="flex-shrink-0 self-center">{action}</div>}
+    </div>
+  )
+}
+
 export function ProviderDashboard() {
   const { user }                                                                                                    = useAuth()
   const { showToast }                                                                                               = useApp()
@@ -1139,6 +1226,9 @@ export function ProviderDashboard() {
     e.target.value = '' // allow re-selecting the same file after a failure
   }
 
+  // Tool cards deep-link to the in-page management sections below.
+  const goTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
   if (loading) return (
     <PageWrapper>
       <div className="space-y-3 mt-6">
@@ -1194,299 +1284,289 @@ export function ProviderDashboard() {
     .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
     .slice(0, 5)
 
-  return (
-    <PageWrapper>
-      <PageHeader
-        title={`${greeting()}${profile?.name ? `, ${profile.name}` : ''} 👋`}
-        subtitle={statusLabel}
-        action={
-          <Button variant="soft" size="sm" onClick={() => setEditOpen(true)}>
-            <Edit2 size={13} /> Edit profile
-          </Button>
-        }
-      />
+  const hasRevenue = sessions.length > 0 && profile?.sessionFee
+  const grossEarnings = sessions.length * Number(profile?.sessionFee || 0)
 
-      {subInactive && (
-        <div className="mb-5 p-3.5 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30">
-          <p className="text-xs font-semibold text-red-600 dark:text-red-400 mb-0.5">Your subscription is inactive</p>
-          <p className="text-[11px] text-red-600/80 dark:text-red-400/80 leading-relaxed mb-2">
-            {profile?.subscriptionStatus === 'trial_expired'
-              ? 'Your free trial has ended. Your profile is hidden from patients until you choose a plan. Your data and reviews are safe.'
-              : 'Your profile is hidden from patients until you reactivate your plan.'}
-          </p>
-          <Button size="sm" onClick={() => navigate('/provider/signup')}>Choose a plan</Button>
+  return (
+    <PageWrapper wide>
+      {/* Editorial greeting — oversized serif on paper, an italicised greeting
+          as the one flourish, and a matched pill-button pair. No saturated
+          surface: the type and the whitespace carry it. */}
+      <header className="pt-1 pb-9 sm:pb-12 border-b border-surface-200 dark:border-surface-800 mb-8">
+        <div className="flex items-start justify-between gap-6">
+          <div className="flex items-start gap-4 min-w-0">
+            <button
+              onClick={() => fileRef.current.click()}
+              disabled={photoUploading}
+              title="Change photo"
+              className="relative w-14 h-14 rounded-2xl overflow-hidden flex-shrink-0 group ring-1 ring-surface-200 dark:ring-surface-700 mt-1.5">
+              {profile?.photoURL ? (
+                <img src={profile.photoURL} alt={profile.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-primary-50 dark:bg-primary-700/20 flex items-center justify-center text-2xl">{profile?.avatar || '🧠'}</div>
+              )}
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                {photoUploading ? <Loader size={15} className="text-white animate-spin" /> : <Camera size={15} className="text-white" />}
+              </div>
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoFile} />
+
+            <div className="min-w-0">
+              <h1 className="font-serif text-[2.15rem] sm:text-[3rem] leading-[1.08] tracking-[-0.02em] text-ink-900 dark:text-ink-100">
+                <span className="italic text-ink-400 dark:text-ink-500">{greeting()},</span>{' '}
+                <span className="text-balance">{profile?.name || 'your practice'}</span>
+              </h1>
+              <div className="flex items-center gap-2.5 mt-3 flex-wrap text-sm text-ink-500 dark:text-ink-400">
+                <span>{statusLabel}</span>
+                {ratingCount > 0 && ratingAvg && (
+                  <>
+                    <span className="text-ink-300 dark:text-ink-600">·</span>
+                    <span className="inline-flex items-center gap-1">
+                      <Star size={12} className="fill-primary-500 text-primary-500" /> {ratingAvg.overall?.toFixed(1)} ({ratingCount} review{ratingCount !== 1 ? 's' : ''})
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-2 flex-shrink-0 pt-1.5">
+            <Button variant="outline" size="pill" onClick={() => navigate('/provider/analytics')}>
+              <LineChart size={14} /> Analytics
+            </Button>
+            <Button size="pill" onClick={() => setEditOpen(true)}>
+              <Edit2 size={14} /> Edit profile
+            </Button>
+          </div>
         </div>
+        <div className="flex sm:hidden gap-2 mt-5">
+          <Button size="pill" className="flex-1" onClick={() => setEditOpen(true)}>
+            <Edit2 size={14} /> Edit profile
+          </Button>
+          <Button variant="outline" size="pill" className="flex-1" onClick={() => navigate('/provider/analytics')}>
+            <LineChart size={14} /> Analytics
+          </Button>
+        </div>
+      </header>
+
+      {/* Contextual attention strips — at most a couple, styled consistently. */}
+      {subInactive && (
+        <Banner tone="red" icon={XCircle} title="Your subscription is inactive"
+          action={<Button size="sm" onClick={() => navigate('/provider/signup')}>Choose a plan</Button>}>
+          {profile?.subscriptionStatus === 'trial_expired'
+            ? 'Your free trial has ended. Your profile is hidden from patients until you choose a plan. Your data and reviews are safe.'
+            : 'Your profile is hidden from patients until you reactivate your plan.'}
+        </Banner>
       )}
       {trialing && trialDays <= 7 && (
-        <div className="mb-5 p-3.5 rounded-2xl bg-primary-50 dark:bg-primary-700/15 border border-primary-200 dark:border-primary-600/40">
-          <p className="text-xs font-semibold text-primary-700 dark:text-primary-300 mb-0.5">
-            ⏳ {trialDays === 0 ? 'Your free trial ends today' : `${trialDays} day${trialDays === 1 ? '' : 's'} left in your free trial`}
-          </p>
-          <p className="text-[11px] text-primary-700/80 dark:text-primary-300/80 leading-relaxed mb-2">
-            Pick a plan now to keep your profile visible to patients without interruption.
-          </p>
-          <Button size="sm" variant="soft" onClick={() => navigate('/provider/signup')}>Choose a plan</Button>
-        </div>
+        <Banner tone="teal" icon={Clock}
+          title={trialDays === 0 ? 'Your free trial ends today' : `${trialDays} day${trialDays === 1 ? '' : 's'} left in your free trial`}
+          action={<Button size="sm" variant="soft" onClick={() => navigate('/provider/signup')}>Choose a plan</Button>}>
+          Pick a plan now to keep your profile visible to patients without interruption.
+        </Banner>
       )}
       {profile?.approvalStatus === 'pending' && (
-        <div className="mb-5 p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30">
-          <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-0.5">⏳ Awaiting approval</p>
-          <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 leading-relaxed">
-            Your profile is being reviewed and isn't visible to patients yet. You can set up your diary
-            and profile in the meantime. You'll go live as soon as you're approved.
-          </p>
-        </div>
+        <Banner tone="amber" icon={Clock} title="Awaiting approval"
+          action={<Button size="sm" variant="soft" onClick={() => goTo('verification')}>Upload docs</Button>}>
+          Your profile is being reviewed and isn't visible to patients yet. You can set up your diary and profile in the meantime. You'll go live as soon as you're approved.
+        </Banner>
       )}
       {profile?.suspended && (
-        <div className="mb-5 p-3.5 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30">
-          <p className="text-xs font-semibold text-red-600 dark:text-red-400 mb-0.5">🚫 Account suspended</p>
-          <p className="text-[11px] text-red-600/80 dark:text-red-400/80 leading-relaxed">
-            Your profile has been suspended and is hidden from patients.
-            {profile.suspensionReason ? ` Reason: ${profile.suspensionReason}` : ''} Contact support to resolve this.
-          </p>
+        <Banner tone="red" icon={XCircle} title="Account suspended">
+          Your profile has been suspended and is hidden from patients.
+          {profile.suspensionReason ? ` Reason: ${profile.suspensionReason}` : ''} Contact support to resolve this.
+        </Banner>
+      )}
+
+      {/* KPI row — tap any tile for the full breakdown. */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10">
+        <StatCard icon={Eye} value={profileViews} label="Profile views" onClick={() => setStatModal('views')} />
+        <StatCard icon={Users} value={uniquePatients} label="Unique patients" onClick={() => setStatModal('patients')} />
+        <StatCard icon={TrendingUp} value={acceptanceRate !== null ? `${acceptanceRate}%` : 'N/A'} label="Accept rate" onClick={() => setStatModal('acceptRate')} />
+        {hasRevenue
+          ? <StatCard icon={Wallet} value={`R${grossEarnings.toLocaleString()}`} label="Est. earnings" onClick={() => setStatModal('revenue')} />
+          : <StatCard icon={Clock} value={pending.length} label="Pending" onClick={() => setStatModal('pending')} />}
+      </div>
+
+      {/* Booking requests (wide) + practice detail rail. */}
+      <div className="grid lg:grid-cols-3 gap-6 mb-12">
+        <div className="lg:col-span-2 space-y-5" id="requests">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-serif text-[1.6rem] leading-none tracking-tight text-ink-900 dark:text-ink-100">Booking requests</h2>
+            <div className="flex items-center gap-3 text-[13px] text-ink-400">
+              <button onClick={() => setStatModal('pending')} className="hover:text-primary-600 transition-colors">{pending.length} pending</button>
+              <button onClick={() => setStatModal('confirmedList')} className="hover:text-primary-600 transition-colors">{confirmed.length} confirmed</button>
+              <button onClick={() => setStatModal('total')} className="hover:text-primary-600 transition-colors">All</button>
+            </div>
+          </div>
+
+          {appointments.length === 0 ? (
+            <Card className="p-10 text-center">
+              <p className="text-4xl mb-3">💭</p>
+              <p className="text-sm font-medium text-ink-600 dark:text-ink-300">No appointment requests yet</p>
+              <p className="text-xs text-ink-400 mt-1">Your profile is live. Patients can book you from the Connect page.</p>
+            </Card>
+          ) : (pending.length === 0 && confirmed.length === 0) ? (
+            <Card className="p-10 text-center">
+              <p className="text-4xl mb-3">✅</p>
+              <p className="text-sm font-medium text-ink-600 dark:text-ink-300">You're all caught up</p>
+              <p className="text-xs text-ink-400 mt-1">No pending or upcoming appointments right now.</p>
+            </Card>
+          ) : (
+            <>
+              {pending.length > 0 && (
+                <div>
+                  <p className="text-[13px] font-medium text-ink-400 mb-3">Pending · {pending.length}</p>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {pending.map(a => (
+                      <AppointmentCard key={a.id} appt={a}
+                        onConfirm={id => handleAction(id, 'confirmed')}
+                        onDecline={id => handleAction(id, 'cancelled')} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {confirmed.length > 0 && (
+                <div>
+                  <p className="text-[13px] font-medium text-ink-400 mb-3">Confirmed · {confirmed.length}</p>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {confirmed.map(a => (
+                      <AppointmentCard key={a.id} appt={a} onConfirm={() => {}} onDecline={() => {}}
+                        onOutcome={(id, status) => handleAction(id, status)}
+                        meetingLink={profile?.meetingLink}
+                        onViewConsents={setConsentAppt}
+                        onPrescribe={setPrescribeAppt} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Right rail */}
+        <aside className="space-y-5">
+          {feeRequests.some(r => r.status === 'pending') && (
+            <Card className="p-5">
+              <p className="font-serif text-lg tracking-tight text-ink-900 dark:text-ink-100 mb-0.5">Fee requests</p>
+              <p className="text-xs text-ink-400 mb-3">Patients asking you to share your session fee. Disclosing notifies them of your R{profile?.sessionFee || '—'} fee.</p>
+              <div className="space-y-2">
+                {feeRequests.filter(r => r.status === 'pending').map(r => (
+                  <div key={r.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-surface-50 dark:bg-surface-900">
+                    <span className="flex-1 text-sm text-ink-700 dark:text-ink-200 truncate">{r.patientName || 'A patient'}</span>
+                    <Button size="sm" variant="soft" onClick={() => handleDiscloseFee(r)}>Disclose fee</Button>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          <Card className="p-5">
+            <p className="font-serif text-lg tracking-tight text-ink-900 dark:text-ink-100 mb-3">Your profile</p>
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center justify-between gap-3"><span className="text-ink-400">Type</span><span className="font-medium text-ink-800 dark:text-ink-200 text-right truncate">{profile?.type}</span></div>
+              <div className="flex items-center justify-between gap-3"><span className="text-ink-400">Experience</span><span className="font-medium text-ink-800 dark:text-ink-200">{profile?.experience} yrs</span></div>
+              {profile?.hpcsa && <div className="flex items-center justify-between gap-3"><span className="text-ink-400">HPCSA</span><span className="font-medium text-ink-800 dark:text-ink-200">{profile.hpcsa}</span></div>}
+              <div className="flex items-center justify-between gap-3"><span className="text-ink-400">Session fee</span><span className="font-medium text-ink-800 dark:text-ink-200">R{profile?.sessionFee}{profile?.hideFee ? ' · hidden' : ''}</span></div>
+              <div className="flex items-center justify-between gap-3"><span className="text-ink-400">Availability</span><span className="font-medium text-ink-800 dark:text-ink-200 text-right truncate">{profile?.availability || '—'}</span></div>
+            </div>
+            {profile?.bio && (
+              <p className="mt-3 pt-3 border-t border-surface-100 dark:border-surface-800 text-xs text-ink-600 dark:text-ink-300 leading-relaxed line-clamp-4">{profile.bio}</p>
+            )}
+            {/* Only ever link out to http(s) URLs — a stored javascript: URI must not become a clickable script. */}
+            {/^https?:\/\//i.test(profile?.meetingLink || '') && (
+              <a href={profile.meetingLink} target="_blank" rel="noopener noreferrer"
+                className="mt-3 flex items-center gap-1.5 text-xs text-primary-500 hover:underline w-fit">
+                <ExternalLink size={10} /> {platformLabel ? `${platformLabel} meeting room` : 'Your meeting room'}
+              </a>
+            )}
+            {!profile?.meetingLink && platformLabel && (
+              <p className="mt-3 text-xs text-ink-400">Platform: {platformLabel} · <button onClick={() => setEditOpen(true)} className="text-primary-500 hover:underline">Add link</button></p>
+            )}
+            {(profile?.specialties || []).length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-3">
+                {(profile?.specialties || []).map(s => (
+                  <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400">{s}</span>
+                ))}
+              </div>
+            )}
+          </Card>
+        </aside>
+      </div>
+
+      {/* Patient ratings */}
+      {ratingCount > 0 && ratingAvg && (
+        <div id="reviews" className="mb-12">
+          <h2 className="font-serif text-[1.6rem] leading-none tracking-tight text-ink-900 dark:text-ink-100 mb-5">Patient ratings</h2>
+          <Card className="p-6">
+            <div className="grid md:grid-cols-2 gap-x-8 gap-y-3">
+              {RATING_METRICS.map(({ key, label, desc }) => {
+                const val = ratingAvg[key] || 0
+                return (
+                  <div key={key}>
+                    <div className="flex items-center justify-between mb-1">
+                      <div>
+                        <span className="text-xs font-medium text-ink-800 dark:text-ink-200">{label}</span>
+                        <span className="text-[10px] text-ink-400 ml-1.5">{desc}</span>
+                      </div>
+                      <span className="text-xs font-semibold text-ink-700 dark:text-ink-300">{val.toFixed(1)}</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden">
+                      <div className="h-full rounded-full bg-primary-500 transition-all duration-500" style={{ width: `${(val / 5) * 100}%` }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {recentComments.length > 0 && (
+              <div className="mt-5 pt-4 border-t border-surface-100 dark:border-surface-800">
+                <p className="text-[13px] font-medium text-ink-400 mb-2">Recent feedback</p>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  {recentComments.map((r, i) => (
+                    <div key={i} className="bg-surface-50 dark:bg-surface-900 rounded-xl px-3 py-2">
+                      <div className="flex items-center gap-1.5 mb-1"><StarDisplay value={r.overall} size={11} /></div>
+                      <p className="text-xs text-ink-600 dark:text-ink-300 italic">"{r.comment}"</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Card>
         </div>
       )}
+
+      {/* Manage your practice — shortcut launcher into the sections below. */}
+      <div className="mb-12">
+        <h2 className="font-serif text-[1.6rem] leading-none tracking-tight text-ink-900 dark:text-ink-100 mb-5">Manage your practice</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <ToolCard icon={CalendarCheck} title="Availability" desc="Open and close time slots in your weekly diary." onClick={() => goTo('availability')} />
+          <ToolCard icon={FileSignature} title="Documents" desc="Pre-screening forms patients sign before a session." onClick={() => goTo('documents')} />
+          <ToolCard icon={LineChart} title="Analytics" desc="Bookings, ratings and growth for your practice." onClick={() => navigate('/provider/analytics')} />
+          {profile && profile.approvalStatus !== 'approved' ? (
+            <ToolCard icon={BadgeCheck} title="Verification" desc="Upload the documents that verify your practice." onClick={() => goTo('verification')} />
+          ) : ratingCount > 0 ? (
+            <ToolCard icon={Star} title="Reviews" desc="See what your patients are saying." onClick={() => goTo('reviews')} />
+          ) : (
+            <ToolCard icon={Edit2} title="Public profile" desc="Keep your bio, fee and photo up to date." onClick={() => setEditOpen(true)} />
+          )}
+        </div>
+      </div>
 
       {/* Verification documents — required while the account is not yet approved. */}
       {profile && profile.approvalStatus !== 'approved' && (
-        <VerificationSection uid={user.uid} upload={uploadVerificationDoc} getMeta={getVerification} getUrl={getVerificationURL} showToast={showToast} />
-      )}
-
-      {/* Pending fee-disclosure requests from patients. */}
-      {feeRequests.some(r => r.status === 'pending') && (
-        <Card className="p-4 mb-5">
-          <p className="text-sm font-semibold text-ink-900 dark:text-ink-100 mb-0.5">Fee requests</p>
-          <p className="text-xs text-ink-400 mb-3">Patients asking you to share your session fee. Disclosing notifies them of your R{profile?.sessionFee || '—'} fee.</p>
-          <div className="space-y-2">
-            {feeRequests.filter(r => r.status === 'pending').map(r => (
-              <div key={r.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-surface-50 dark:bg-surface-900">
-                <span className="flex-1 text-sm text-ink-700 dark:text-ink-200 truncate">{r.patientName || 'A patient'}</span>
-                <Button size="sm" variant="soft" onClick={() => handleDiscloseFee(r)}>Disclose fee</Button>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
-
-      {/* Profile card */}
-      <Card className="p-4 mb-5">
-        <div className="flex items-center gap-3">
-          {/* Photo with upload overlay */}
-          <button
-            className="relative w-14 h-14 rounded-2xl overflow-hidden flex-shrink-0 group"
-            onClick={() => fileRef.current.click()}
-            disabled={photoUploading}
-            title="Change photo"
-          >
-            {profile?.photoURL ? (
-              <img src={profile.photoURL} alt={profile.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-primary-100 dark:bg-primary-700/20 flex items-center justify-center text-3xl">
-                {profile?.avatar || '🧠'}
-              </div>
-            )}
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              {photoUploading
-                ? <Loader size={16} className="text-white animate-spin" />
-                : <Camera size={16} className="text-white" />
-              }
-            </div>
-          </button>
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoFile} />
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
-              <p className="font-semibold text-ink-900 dark:text-ink-100">{profile?.name}</p>
-              <BadgeCheck size={14} className="text-primary-500" />
-            </div>
-            <p className="text-xs text-ink-400">{profile?.type} · {profile?.experience} yrs exp</p>
-            {profile?.hpcsa && <p className="text-xs text-ink-400">HPCSA: {profile.hpcsa}</p>}
-            <p className="text-xs text-ink-400 mt-0.5">R{profile?.sessionFee}/session · {profile?.availability}</p>
-            {ratingCount > 0 && ratingAvg && (
-              <div className="flex items-center gap-1.5 mt-1">
-                <StarDisplay value={ratingAvg.overall} size={12} />
-                <span className="text-xs text-ink-400">{ratingAvg.overall?.toFixed(1)} ({ratingCount} review{ratingCount !== 1 ? 's' : ''})</span>
-              </div>
-            )}
-          </div>
+        <div id="verification" className="mb-8 scroll-mt-6">
+          <VerificationSection uid={user.uid} upload={uploadVerificationDoc} getMeta={getVerification} getUrl={getVerificationURL} showToast={showToast} />
         </div>
-        {profile?.bio && (
-          <p className="mt-3 text-xs text-ink-600 dark:text-ink-300 leading-relaxed line-clamp-3">{profile.bio}</p>
-        )}
-        {/* Only ever link out to http(s) URLs — a stored javascript: URI must
-            not become a clickable script. */}
-        {/^https?:\/\//i.test(profile?.meetingLink || '') && (
-          <a href={profile.meetingLink} target="_blank" rel="noopener noreferrer"
-            className="mt-2 flex items-center gap-1.5 text-xs text-primary-500 hover:underline w-fit">
-            <ExternalLink size={10} /> {platformLabel ? `${platformLabel} meeting room` : 'Your meeting room'}
-          </a>
-        )}
-        {!profile?.meetingLink && platformLabel && (
-          <p className="mt-2 text-xs text-ink-400">Platform: {platformLabel} · <button onClick={() => setEditOpen(true)} className="text-primary-500 hover:underline">Add meeting link</button></p>
-        )}
-        <div className="flex flex-wrap gap-1 mt-3">
-          {(profile?.specialties || []).map(s => (
-            <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary-50 dark:bg-primary-700/20 text-primary-600 dark:text-primary-400">{s}</span>
-          ))}
-        </div>
-      </Card>
-
-      {/* Activity stats — tap any card for a detailed breakdown */}
-      <div className="grid grid-cols-3 gap-3 mb-5">
-        {[
-          { kind: 'views',      icon: Eye,        color: 'text-primary-500', value: profileViews, label: 'Profile views' },
-          { kind: 'patients',   icon: Users,      color: 'text-success-500', value: uniquePatients, label: 'Unique patients' },
-          { kind: 'acceptRate', icon: TrendingUp, color: 'text-warm-500',    value: acceptanceRate !== null ? `${acceptanceRate}%` : 'N/A', label: 'Accept rate' },
-        ].map(({ kind, icon: Icon, color, value, label }) => (
-          <Card key={kind} role="button" tabIndex={0} onClick={() => setStatModal(kind)}
-            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setStatModal(kind) } }}
-            className="p-3 text-center cursor-pointer transition-all hover:border-primary-300 dark:hover:border-primary-600 active:scale-95">
-            <Icon size={17} className={`${color} mx-auto mb-1`} />
-            <p className="text-xl font-bold text-ink-900 dark:text-ink-100">{value}</p>
-            <p className="text-xs text-ink-400">{label}</p>
-          </Card>
-        ))}
-      </div>
-
-      {/* Revenue estimate — tap for per-session breakdown */}
-      {sessions.length > 0 && profile?.sessionFee && (
-        <Card role="button" tabIndex={0} onClick={() => setStatModal('revenue')}
-          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setStatModal('revenue') } }}
-          className="p-4 mb-5 cursor-pointer transition-all hover:border-primary-300 dark:hover:border-primary-600 active:scale-[0.98]">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">Revenue estimate</p>
-            <span className="text-[10px] text-primary-500 font-medium">Tap for breakdown</span>
-          </div>
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div>
-              <p className="text-[10px] text-ink-400 mb-0.5">Sessions</p>
-              <p className="text-lg font-bold text-ink-900 dark:text-ink-100">{sessions.length}</p>
-              <p className="text-[10px] text-ink-400">confirmed + completed</p>
-            </div>
-            <div>
-              <p className="text-[10px] text-ink-400 mb-0.5">Per session</p>
-              <p className="text-lg font-bold text-ink-900 dark:text-ink-100">
-                R{Number(profile.sessionFee).toLocaleString()}
-              </p>
-              <p className="text-[10px] text-ink-400">no commission</p>
-            </div>
-            <div>
-              <p className="text-[10px] text-ink-400 mb-0.5">Your earnings</p>
-              <p className="text-lg font-bold text-success-600 dark:text-success-400">
-                R{(sessions.length * Number(profile.sessionFee)).toLocaleString()}
-              </p>
-              <p className="text-[10px] text-ink-400">you keep 100%</p>
-            </div>
-          </div>
-        </Card>
       )}
 
-      {/* Rating breakdown */}
-      {ratingCount > 0 && ratingAvg && (
-        <Card className="p-4 mb-5">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">Patient ratings</p>
-            <span className="text-xs text-ink-400">{ratingCount} review{ratingCount !== 1 ? 's' : ''}</span>
-          </div>
-          <div className="space-y-3">
-            {RATING_METRICS.map(({ key, label, desc }) => {
-              const val = ratingAvg[key] || 0
-              return (
-                <div key={key}>
-                  <div className="flex items-center justify-between mb-1">
-                    <div>
-                      <span className="text-xs font-medium text-ink-800 dark:text-ink-200">{label}</span>
-                      <span className="text-[10px] text-ink-400 ml-1.5">{desc}</span>
-                    </div>
-                    <span className="text-xs font-semibold text-ink-700 dark:text-ink-300">{val.toFixed(1)}</span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-surface-100 dark:bg-surface-700 overflow-hidden">
-                    <div className="h-full rounded-full bg-primary-500 transition-all duration-500"
-                      style={{ width: `${(val / 5) * 100}%` }} />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-
-          {recentComments.length > 0 && (
-            <div className="mt-4 pt-3 border-t border-surface-100 dark:border-surface-800">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-ink-400 mb-2">Recent feedback</p>
-              <div className="space-y-2">
-                {recentComments.map((r, i) => (
-                  <div key={i} className="bg-surface-50 dark:bg-surface-900 rounded-xl px-3 py-2">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <StarDisplay value={r.overall} size={11} />
-                    </div>
-                    <p className="text-xs text-ink-600 dark:text-ink-300 italic">"{r.comment}"</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </Card>
-      )}
-
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        {[
-          { kind: 'pending',       label: 'Pending',   value: pending.length,      icon: Clock,       color: 'text-warm-500' },
-          { kind: 'confirmedList', label: 'Confirmed', value: confirmed.length,    icon: CheckCircle, color: 'text-success-500' },
-          { kind: 'total',         label: 'Total',     value: appointments.length, icon: Users,       color: 'text-primary-500' },
-        ].map(({ kind, label, value, icon: Icon, color }) => (
-          <Card key={label} role="button" tabIndex={0} onClick={() => setStatModal(kind)}
-            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setStatModal(kind) } }}
-            className="p-3 text-center cursor-pointer transition-all hover:border-primary-300 dark:hover:border-primary-600 active:scale-95">
-            <Icon size={17} className={`${color} mx-auto mb-1`} />
-            <p className="text-xl font-bold text-ink-900 dark:text-ink-100">{value}</p>
-            <p className="text-xs text-ink-400">{label}</p>
-          </Card>
-        ))}
-      </div>
-
-      {appointments.length === 0 ? (
-        <div className="py-14 text-center mb-6">
-          <p className="text-4xl mb-3">💭</p>
-          <p className="text-sm text-ink-400">No appointment requests yet.</p>
-          <p className="text-xs text-ink-400 mt-1">Your profile is live. Patients can book you from the Connect page.</p>
-        </div>
-      ) : (
-        <>
-          {pending.length > 0 && (
-            <div className="mb-5">
-              <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">Pending requests ({pending.length})</p>
-              <div className="space-y-3">
-                {pending.map(a => (
-                  <AppointmentCard key={a.id} appt={a}
-                    onConfirm={id => handleAction(id, 'confirmed')}
-                    onDecline={id => handleAction(id, 'cancelled')} />
-                ))}
-              </div>
-            </div>
-          )}
-          {confirmed.length > 0 && (
-            <div className="mb-6">
-              <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">Confirmed ({confirmed.length})</p>
-              <div className="space-y-3">
-                {confirmed.map(a => (
-                  <AppointmentCard key={a.id} appt={a} onConfirm={() => {}} onDecline={() => {}}
-                    onOutcome={(id, status) => handleAction(id, status)}
-                    meetingLink={profile?.meetingLink}
-                    onViewConsents={setConsentAppt}
-                    onPrescribe={setPrescribeAppt} />
-                ))}
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      <div className="mb-6">
-        <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-4">Manage Diary</p>
+      <div id="availability" className="mb-12 scroll-mt-6">
+        <h2 className="font-serif text-[1.6rem] leading-none tracking-tight text-ink-900 dark:text-ink-100 mb-5">Availability</h2>
         <DiaryManager providerUid={user.uid} getDiary={getDiary} saveDiary={saveDiary} />
       </div>
 
-      <div className="mb-6">
-        <p className="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-4">Pre-screening documents</p>
+      <div id="documents" className="mb-6 scroll-mt-6">
+        <h2 className="font-serif text-[1.6rem] leading-none tracking-tight text-ink-900 dark:text-ink-100 mb-5">Pre-screening documents</h2>
         <DocumentsManager providerUid={user.uid} />
       </div>
 
