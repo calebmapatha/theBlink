@@ -14,7 +14,7 @@ function Section({ title, children }) {
 
 export function Privacy() {
   return (
-    <div className="min-h-screen bg-surface-50 dark:bg-surface-950 text-ink-900 dark:text-ink-100">
+    <div className="h-[100dvh] overflow-y-auto bg-surface-50 dark:bg-surface-950 text-ink-900 dark:text-ink-100">
       <div className="max-w-2xl mx-auto px-5 py-10 space-y-8">
         <header className="space-y-3">
           <div className="flex items-center gap-2">

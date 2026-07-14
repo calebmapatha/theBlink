@@ -56,7 +56,7 @@ export function Login({ onBack, initialRole = null }) {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-b from-teal-50 via-white to-slate-50 overflow-y-auto">
+    <div className="h-[100dvh] bg-gradient-to-b from-teal-50 via-white to-slate-50 overflow-y-auto">
       <div className="flex flex-col items-center max-w-md mx-auto px-6 pt-8 pb-12">
 
         {/* Back to home */}

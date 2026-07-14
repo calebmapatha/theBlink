@@ -168,7 +168,7 @@ export function Landing({ onSignIn, onGetStarted }) {
               <Shield size={12} />
               Built for South Africa
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-extrabold tracking-tight leading-[1.08] [text-wrap:balance]">
+            <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-bold tracking-tight leading-[1.08] [text-wrap:balance]">
               Mental health care,{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-teal-700">connected.</span>
             </h1>
@@ -220,7 +220,7 @@ export function Landing({ onSignIn, onGetStarted }) {
             ['2 roles', 'one platform for patients & practitioners'],
           ].map(([big, small]) => (
             <div key={big}>
-              <p className="text-2xl font-extrabold text-slate-900 tracking-tight">{big}</p>
+              <p className="text-2xl font-bold text-slate-900 tracking-tight">{big}</p>
               <p className="text-xs text-slate-500 mt-1 leading-snug">{small}</p>
             </div>
           ))}
@@ -232,7 +232,7 @@ export function Landing({ onSignIn, onGetStarted }) {
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 lg:py-24">
           <motion.div {...fadeUp} className="max-w-2xl">
             <p className="text-sm font-bold text-teal-300 uppercase tracking-wide">For patients</p>
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2 [text-wrap:balance]">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mt-2 [text-wrap:balance]">
               From “I need help” to a booked appointment in minutes.
             </h2>
             <p className="text-slate-300 mt-4 leading-relaxed">
@@ -258,7 +258,7 @@ export function Landing({ onSignIn, onGetStarted }) {
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 lg:py-24">
           <motion.div {...fadeUp} className="max-w-2xl">
             <p className="text-sm font-bold text-teal-600 uppercase tracking-wide">Security & privacy</p>
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2 [text-wrap:balance]">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mt-2 [text-wrap:balance]">
               Health data deserves hospital-grade care.
             </h2>
           </motion.div>
@@ -290,7 +290,7 @@ export function Landing({ onSignIn, onGetStarted }) {
           className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-teal-500 to-teal-700 text-white px-7 py-14 sm:px-14 text-center"
         >
           <div className="absolute -top-16 -right-10 w-64 h-64 bg-white/10 rounded-full blur-2xl" aria-hidden="true" />
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight [text-wrap:balance]">Take the first step today.</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight [text-wrap:balance]">Take the first step today.</h2>
           <p className="text-teal-50/90 mt-4 max-w-xl mx-auto leading-relaxed">
             Whether you're looking for support or offering it, MentisFlow connects you
             securely, privately, and on your terms.
