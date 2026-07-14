@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Search, Clock, Globe, BadgeCheck, Calendar, X, HeartHandshake, Sprout, Link2, Unlink, Check, Star, MessageSquare, Loader, ClipboardList, Video, MapPin, FileText, FileSignature } from 'lucide-react'
+import { Search, Clock, Globe, BadgeCheck, Calendar, X, HeartHandshake, Sprout, Link2, Unlink, Check, Star, MessageSquare, Loader, ClipboardList, Video, MapPin, FileText, FileSignature, QrCode } from 'lucide-react'
+import QRCode from 'qrcode'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { PageWrapper } from '../components/layout/PageWrapper'
@@ -16,6 +17,7 @@ import { getScreeningDocs, signScreeningDocs, openScreeningPDF } from '../utils/
 import { SignatureField } from '../components/ui/SignatureField'
 import { DatePicker } from '../components/ui/DatePicker'
 import { detectLocation } from '../utils/geolocate'
+import { shortCodeFor, formatCode, checkInPayload } from '../utils/checkin'
 
 const SPECIALTIES  = ['ADHD', 'Anxiety', 'Depression', 'OCD', 'PTSD', 'Autism Spectrum', 'Bipolar Disorder', 'Stress Management', 'Sleep Disorders', 'Trauma']
 const SA_PROVINCES = ['Gauteng', 'Western Cape', 'KwaZulu-Natal', 'Eastern Cape', 'Free State', 'Limpopo', 'Mpumalanga', 'North West', 'Northern Cape']
@@ -43,6 +45,58 @@ const sessionHasPassed = (a) => {
   if (!a?.date) return false
   const dt = new Date(`${a.date}T${a.timeSlot || '23:59'}:00`)
   return !isNaN(dt.getTime()) && dt.getTime() <= Date.now()
+}
+
+// Ticket-style check-in pass for an in-person session: a large QR the
+// practice scans on arrival, with a short code as the always-works fallback
+// they can type instead. Both are derived from the appointment id.
+function CheckInTicket({ appt, doctor, onClose }) {
+  const [qrUrl, setQrUrl] = useState('')
+
+  useEffect(() => {
+    if (!appt) { setQrUrl(''); return }
+    let stale = false
+    QRCode.toDataURL(checkInPayload(appt.id), { width: 480, margin: 2 })
+      .then(url => { if (!stale) setQrUrl(url) })
+      .catch(() => { if (!stale) setQrUrl('') })
+    return () => { stale = true }
+  }, [appt?.id])
+
+  return (
+    <Modal open={!!appt} onClose={onClose} title="Check-in pass">
+      {appt && (
+        <div className="text-center">
+          <div className="mx-auto w-fit p-3 rounded-3xl bg-white border border-surface-200 dark:border-surface-600">
+            {qrUrl
+              ? <img src={qrUrl} alt="Check-in QR code" className="w-52 h-52" />
+              : <div className="w-52 h-52 flex items-center justify-center"><Loader size={20} className="animate-spin text-primary-500" /></div>}
+          </div>
+
+          <p className="mt-4 text-sm font-semibold text-ink-900 dark:text-ink-100">{doctor?.name}</p>
+          <p className="text-xs text-ink-400 mt-0.5">
+            {appt.patientName ? `${appt.patientName} · ` : ''}{appt.date} at {appt.timeSlot}
+          </p>
+
+          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface-100 dark:bg-surface-800">
+            <span className="text-xs text-ink-400">Code</span>
+            <span className="text-base font-bold tracking-[0.15em] text-ink-900 dark:text-ink-100 timer-nums">
+              {formatCode(shortCodeFor(appt.id))}
+            </span>
+          </div>
+
+          {appt.checkedInAt ? (
+            <p className="mt-4 text-xs text-success-600 dark:text-success-400 flex items-center justify-center gap-1">
+              <Check size={12} /> Checked in{appt.checkedInAt.length >= 16 ? ` at ${new Date(appt.checkedInAt).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}` : ''}
+            </p>
+          ) : (
+            <p className="mt-4 text-xs text-ink-400 leading-relaxed max-w-[260px] mx-auto">
+              Show this at reception when you arrive. The practice scans the code or types it in to check you in.
+            </p>
+          )}
+        </div>
+      )}
+    </Modal>
+  )
 }
 
 function buildDataSnapshot(uid, types) {
@@ -920,6 +974,7 @@ export function Connect() {
   const [viewingProvider, setViewingProvider] = useState(null)
   const [reportingProvider, setReportingProvider] = useState(null)
   const [signingAppt, setSigningAppt]       = useState(null)
+  const [ticketAppt, setTicketAppt]         = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -1248,7 +1303,11 @@ export function Connect() {
                               <Calendar size={11} className="text-ink-400 flex-shrink-0" /> {a.date} at {a.timeSlot}
                             </p>
                             <p className="text-[11px] text-ink-400 mt-0.5 flex items-center gap-1">
-                              <Video size={10} className="flex-shrink-0" /> Online video session
+                              {linkedDoctor.consultationType === 'in-person'
+                                ? <><MapPin size={10} className="flex-shrink-0" /> In-person session</>
+                                : linkedDoctor.consultationType === 'both'
+                                  ? <><MapPin size={10} className="flex-shrink-0" /> Online or in person</>
+                                  : <><Video size={10} className="flex-shrink-0" /> Online video session</>}
                             </p>
                             {a.sharedDataTypes?.length > 0 && (
                               <div className="flex gap-1 mt-1.5 flex-wrap">
@@ -1305,6 +1364,22 @@ export function Connect() {
                             role="patient"
                             className="mt-2.5 pt-2.5 border-t border-surface-100 dark:border-surface-800"
                           />
+                        )}
+                        {/* In-person arrivals: the ticket-style pass the practice
+                            scans (or types) at reception. */}
+                        {a.status === 'confirmed' && !sessionHasPassed(a) &&
+                          ['in-person', 'both'].includes(linkedDoctor.consultationType) && (
+                          a.checkedInAt ? (
+                            <p className="mt-2.5 text-[11px] text-success-600 dark:text-success-400 flex items-center gap-1">
+                              <Check size={11} className="flex-shrink-0" /> Checked in at the practice
+                            </p>
+                          ) : (
+                            <button onClick={() => setTicketAppt(a)}
+                              className="mt-2.5 w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-primary-50 dark:bg-primary-700/15 border border-primary-200 dark:border-primary-600/40 text-primary-700 dark:text-primary-300 text-xs font-semibold hover:bg-primary-100 dark:hover:bg-primary-700/25 transition-colors">
+                              <QrCode size={14} className="flex-shrink-0" />
+                              Going in person? Show your check-in pass
+                            </button>
+                          )
                         )}
                         {['pending', 'confirmed'].includes(a.status) && !sessionHasPassed(a) && (
                           <button onClick={() => handleCancelAppt(a)} disabled={cancelling === a.id}
@@ -1437,6 +1512,12 @@ export function Connect() {
         appointment={ratingAppt}
         providerName={linkedDoctor?.name || ''}
         onSubmit={handleRatingSubmit}
+      />
+
+      <CheckInTicket
+        appt={ticketAppt}
+        doctor={linkedDoctor}
+        onClose={() => setTicketAppt(null)}
       />
     </PageWrapper>
   )

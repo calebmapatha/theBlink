@@ -23,6 +23,7 @@ import { TreatmentPlan } from './pages/TreatmentPlan'
 import { ProviderSignup } from './pages/ProviderSignup'
 import { ProviderDashboard } from './pages/ProviderDashboard'
 import { ProviderAnalytics } from './pages/ProviderAnalytics'
+import { ProviderVault } from './pages/ProviderVault'
 import { AdminPortal } from './pages/AdminPortal'
 import { fetchLatestAnnouncement } from './hooks/useAdmin'
 import { Login } from './pages/Login'
@@ -101,6 +102,7 @@ function AppShell({ isProvider }) {
                 <Route path="/"                   element={<ProviderDashboard />} />
                 <Route path="/provider/dashboard" element={<ProviderDashboard />} />
                 <Route path="/provider/analytics" element={<ProviderAnalytics />} />
+                <Route path="/provider/files"     element={<ProviderVault />} />
                 <Route path="/settings"           element={<Settings />} />
                 <Route path="/admin"              element={<AdminPortal />} />
                 <Route path="*"                   element={<Navigate to="/" replace />} />

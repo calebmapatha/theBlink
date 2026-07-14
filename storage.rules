@@ -34,6 +34,17 @@ service firebase.storage {
         && fileName.matches('^' + request.auth.uid + '\\..+');
     }
 
+    // Encrypted client-file vault blobs (AES-GCM ciphertext with the IV
+    // prepended, uploaded as application/octet-stream). Owner-ONLY — not
+    // even admin — matching the zero-knowledge Firestore vault rules.
+    match /vault/{uid}/{fileName} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if request.auth != null && request.auth.uid == uid
+        && request.resource.size < 11 * 1024 * 1024
+        && request.resource.contentType == 'application/octet-stream';
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
     // Deny everything else.
     match /{allPaths=**} {
       allow read, write: if false;
