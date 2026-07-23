@@ -13,7 +13,7 @@
 :root {
   color-scheme: light;
 
-  --bg: 251 247 238;             /* cream page background  #FBF7EE */
+  --bg: 255 255 255;             /* white page background   #FFFFFF */
   --surface: 255 255 255;        /* cards and modals        #FFFFFF */
   --raised: 245 241 232;         /* hovers, wells           #F5F1E8 */
   --line: 214 211 205;           /* borders                 #D6D3CD */
