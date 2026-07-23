@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { format } from 'date-fns'
 import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Eye, TrendingUp, Camera, Loader, Star, FileText, Trash2, FileSignature, Smile, Zap, Lightbulb, CalendarCheck, LineChart, Wallet, ArrowRight, QrCode, Lock } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
@@ -573,7 +574,7 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
     <Card className="p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex gap-3 flex-1 min-w-0">
-          <Avatar name={appt.patientName} size="md" />
+          <Avatar name={appt.patientName} seed={appt.patientUid} size="md" />
           <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-ink truncate">{appt.patientName}</p>
           <p className="text-xs text-faint truncate">{appt.patientEmail}</p>
@@ -582,7 +583,7 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
             {appt.date} · {appt.timeSlot}
           </p>
           {appt.notes && (
-            <p className="text-xs text-muted mt-1.5 italic bg-raised px-2 py-1 rounded-lg">"{appt.notes}"</p>
+            <p className="text-xs text-muted mt-1.5 italic bg-raised px-2 py-1 rounded-lg">“{appt.notes}”</p>
           )}
           {appt.sharedDataTypes?.length > 0 && (
             <div className="mt-2">
@@ -673,10 +674,24 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
 // Hourly slots shown on the weekly availability grid (07:00–18:00).
 const GRID_TIMES = Array.from({ length: 12 }, (_, i) => `${String(7 + i).padStart(2, '0')}:00`)
 
-function DiaryManager({ providerUid, getDiary, saveDiary }) {
+function DiaryManager({ providerUid, getDiary, saveDiary, bookedSlots }) {
   const [diary, setDiary]               = useState({})
   const [diaryLoading, setDiaryLoading] = useState(true)
   const [saving, setSaving]             = useState(false)
+
+  // The diary itself is a weekly recurring template; the grid is rendered
+  // against the *current* week so it reads as a live calendar — real dates,
+  // today highlighted, past times dimmed, confirmed bookings overlaid.
+  const today = new Date()
+  const monday = new Date(today)
+  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7))
+  const weekDates = DAYS.map((_, i) => {
+    const d = new Date(monday); d.setDate(monday.getDate() + i); return d
+  })
+  const dateKey = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const isToday = d => d.toDateString() === today.toDateString()
+  const isPastDay = d => !isToday(d) && d < today
+  const nowHM = `${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`
 
   useEffect(() => {
     getDiary(providerUid).then(d => { setDiary(d || {}); setDiaryLoading(false) })
@@ -708,21 +723,30 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
 
   return (
     <div className="space-y-4">
-      <p className="text-xs text-faint leading-relaxed">
-        Tap a cell to open or close that time. Weekdays are open <strong className="text-muted">08:00–16:00</strong> by
-        default. Confirmed bookings hide their slot from patients automatically.
-      </p>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-xs text-faint leading-relaxed">
+          Tap a cell to open or close that time. Edits repeat weekly. Weekdays are open <strong className="text-muted">08:00–16:00</strong> by
+          default. Confirmed bookings hide their slot from patients automatically.
+        </p>
+        <p className="eyebrow text-faint flex-shrink-0">
+          Week of {format(monday, 'd MMM')} – {format(weekDates[6], 'd MMM')}
+        </p>
+      </div>
 
       <Card className="p-3 overflow-x-auto">
         <div className="min-w-[460px]">
-          {/* Header: day names */}
-          <div className="grid gap-1 mb-1" style={{ gridTemplateColumns: '2.6rem repeat(7, 1fr)' }}>
+          {/* Header: day names + this week's dates, today ringed */}
+          <div className="grid gap-1 mb-1.5" style={{ gridTemplateColumns: '2.6rem repeat(7, 1fr)' }}>
             <div />
-            {DAYS.map(d => {
+            {DAYS.map((d, i) => {
               const closed = dayMode(diary, d.key) === 'closed'
+              const date = weekDates[i]
               return (
                 <div key={d.key} className="text-center">
                   <p className={`text-[10px] font-bold uppercase ${closed ? 'text-faint' : 'text-muted'}`}>{d.label.slice(0, 3)}</p>
+                  <p className={`text-[11px] timer-nums mt-0.5 mx-auto w-5 h-5 flex items-center justify-center rounded-full ${
+                    isToday(date) ? 'bg-accent text-on-accent font-semibold' : isPastDay(date) ? 'text-faint/60' : 'text-faint'
+                  }`}>{date.getDate()}</p>
                 </div>
               )
             })}
@@ -732,15 +756,25 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
           {GRID_TIMES.map(time => (
             <div key={time} className="grid gap-1 mb-1" style={{ gridTemplateColumns: '2.6rem repeat(7, 1fr)' }}>
               <div className="text-[9px] text-faint flex items-center justify-end pr-1 timer-nums">{time}</div>
-              {DAYS.map(d => {
+              {DAYS.map((d, i) => {
+                const date = weekDates[i]
                 const open = slotsForDay(diary, d.key).includes(time)
+                const booked = (bookedSlots?.[dateKey(date)] || []).includes(time)
+                const past = isPastDay(date) || (isToday(date) && time <= nowHM)
+                if (booked) return (
+                  <button key={d.key + time} disabled
+                    title={`Booked ${format(date, 'EEE d MMM')} ${time} — manage it under Booking requests`}
+                    className="h-6 rounded-md bg-accent-strong flex items-center justify-center cursor-default">
+                    <span className="w-1 h-1 rounded-full bg-on-accent" />
+                  </button>
+                )
                 return (
                   <button key={d.key + time} onClick={() => toggleSlot(d.key, time)} disabled={saving}
-                    title={`${d.label} ${time} — ${open ? 'open' : 'closed'}`}
+                    title={`${d.label} ${time} — ${open ? 'open' : 'closed'}${past ? ' (past this week; edits repeat weekly)' : ''}`}
                     className={`h-6 rounded-md transition-colors ${
                       open
-                        ? 'bg-accent hover:bg-accent-strong'
-                        : 'bg-raised hover:bg-line'
+                        ? past ? 'bg-accent/35 hover:bg-accent/60' : 'bg-accent hover:bg-accent-strong'
+                        : past ? 'bg-raised/50 hover:bg-line/60' : 'bg-raised hover:bg-line'
                     }`} />
                 )
               })}
@@ -750,9 +784,11 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
       </Card>
 
       {/* Legend + per-day quick actions */}
-      <div className="flex items-center gap-3 text-[10px] text-faint">
+      <div className="flex items-center gap-3 text-[10px] text-faint flex-wrap">
         <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-accent inline-block" /> Open</span>
         <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-line inline-block" /> Closed</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-accent-strong inline-flex items-center justify-center"><span className="w-1 h-1 rounded-full bg-on-accent" /></span> Booked</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-accent/35 inline-block" /> Past (still edits every week)</span>
       </div>
       <div className="flex flex-wrap gap-1.5">
         {DAYS.map(d => {
@@ -1150,7 +1186,7 @@ function CheckInModal({ open, onClose, appointments, onCheckIn }) {
         {match && (
           <div className="p-3.5 rounded-2xl bg-success-50 dark:bg-success-500/10 border border-success-200 dark:border-success-500/30">
             <div className="flex items-center gap-3">
-              <Avatar name={match.patientName} size="sm" />
+              <Avatar name={match.patientName} seed={match.patientUid} size="sm" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-ink truncate">{match.patientName}</p>
                 <p className="text-xs text-muted">{match.date} at {match.timeSlot}</p>
@@ -1390,7 +1426,7 @@ export function ProviderDashboard() {
               disabled={photoUploading}
               title="Change photo"
               className="relative rounded-full overflow-hidden flex-shrink-0 group mt-1.5">
-              <Avatar photoUrl={profile?.photoURL} name={profile?.name || 'Your profile'} size="lg" />
+              <Avatar photoUrl={profile?.photoURL} name={profile?.name || 'Your profile'} seed={user?.uid} role="provider" size="lg" />
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
                 {photoUploading ? <Loader size={15} className="text-white animate-spin" /> : <Camera size={15} className="text-white" />}
               </div>
@@ -1622,7 +1658,7 @@ export function ProviderDashboard() {
                   {recentComments.map((r, i) => (
                     <div key={i} className="bg-raised rounded-xl px-3 py-2">
                       <div className="flex items-center gap-1.5 mb-1"><StarDisplay value={r.overall} size={11} /></div>
-                      <p className="text-xs text-muted italic">"{r.comment}"</p>
+                      <p className="text-xs text-muted italic">“{r.comment}”</p>
                     </div>
                   ))}
                 </div>
@@ -1659,7 +1695,7 @@ export function ProviderDashboard() {
 
       <div id="availability" className="mb-12 scroll-mt-6">
         <h2 className="font-serif text-[1.6rem] leading-none tracking-tight text-ink mb-5">Availability</h2>
-        <DiaryManager providerUid={user.uid} getDiary={getDiary} saveDiary={saveDiary} />
+        <DiaryManager providerUid={user.uid} getDiary={getDiary} saveDiary={saveDiary} bookedSlots={profile?.bookedSlots} />
       </div>
 
       <div id="documents" className="mb-6 scroll-mt-6">

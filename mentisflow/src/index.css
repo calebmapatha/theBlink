@@ -16,6 +16,7 @@
   }
   #root {
     height: 100vh;
+    height: 100dvh; /* stable on mobile as browser chrome shows/hides */
     overflow: hidden;
   }
   ::-webkit-scrollbar { width: 5px; height: 5px; }

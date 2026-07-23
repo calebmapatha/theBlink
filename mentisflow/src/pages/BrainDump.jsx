@@ -41,7 +41,7 @@ export function BrainDump() {
           value={text}
           onChange={e => setText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="What's on your mind? Racing thoughts, ideas, worries, reminders... just dump it all here."
+          placeholder="What’s on your mind? Racing thoughts, ideas, worries, reminders… just dump it all here."
           rows={5}
           className="w-full px-4 pt-4 pb-2 bg-transparent text-sm text-ink placeholder-faint focus:outline-none resize-none"
           autoFocus
