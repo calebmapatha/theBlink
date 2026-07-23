@@ -68,7 +68,7 @@ function DataSnapshot({ snapshot }) {
   if (!snapshot || Object.keys(snapshot).length === 0) return null
   return (
     <div className="mt-3 pt-3 border-t border-line space-y-3">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-faint">Last 30 days</p>
+      <p className="eyebrow text-faint">Last 30 days</p>
 
       {snapshot.checkin && (
         <div className="flex gap-4 flex-wrap">
@@ -130,7 +130,7 @@ function DataSnapshot({ snapshot }) {
 
       {snapshot.treatmentPlan && (
         <div className="space-y-2 pt-1">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-faint">Treatment plan</p>
+          <p className="eyebrow text-faint">Treatment plan</p>
           {snapshot.treatmentPlan.goals?.length > 0 && (
             <div>
               <p className="text-[10px] text-faint mb-1">Active goals</p>
@@ -314,7 +314,7 @@ function StatDetailModal({ kind, onClose, stats }) {
           )}
           {sessions.length > 0 && (
             <div className="pt-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-faint mb-2">Sessions</p>
+              <p className="eyebrow text-faint mb-2">Sessions</p>
               <div className="space-y-1.5">
                 {[...sessions].sort(byDateDesc).map((a, i) => (
                   <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl bg-raised">
@@ -1484,7 +1484,7 @@ export function ProviderDashboard() {
       )}
 
       {/* KPI row — tap any tile for the full breakdown. Numbers count up on load. */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-12">
         <StatCard index={0} icon={Eye} value={profileViews} label="Profile views" onClick={() => setStatModal('views')} />
         <StatCard index={1} icon={Users} value={uniquePatients} label="Unique patients" onClick={() => setStatModal('patients')} />
         <StatCard index={2} icon={TrendingUp} value={acceptanceRate !== null ? acceptanceRate : 'N/A'}
