@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo } from 'react'
+import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown, Calendar, Users, Star, Lightbulb, Clock, CalendarCheck } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { PageHeader } from '../components/layout/PageHeader'
 import { Card } from '../components/ui/Card'
+import { CountUp } from '../components/ui/CountUp'
 import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
 import { BarChart, LineChart, HBarList, Funnel, SplitBar } from '../components/ui/charts'
@@ -17,7 +19,7 @@ function KpiCard({ label, value, delta, prefix = '' }) {
   return (
     <Card className="p-3">
       <p className="text-[10px] text-faint mb-1">{label}</p>
-      <p className="text-xl font-bold text-ink">{prefix}{value.toLocaleString()}</p>
+      <p className="text-xl font-bold text-ink">{prefix}<CountUp value={value} /></p>
       <p className={`text-[10px] font-medium flex items-center gap-0.5 mt-0.5 ${
         flat ? 'text-faint' : up ? 'text-success-600 dark:text-success-400' : 'text-danger'}`}>
         {!flat && (up ? <TrendingUp size={10} /> : <TrendingDown size={10} />)}
@@ -127,10 +129,15 @@ export function ProviderAnalytics() {
       <div className="grid grid-cols-2 gap-3 mb-4">
         <Card className="p-3">
           <p className="text-[10px] text-faint mb-1 flex items-center gap-1"><CalendarCheck size={10} /> Next 7 days occupancy</p>
-          <p className="text-xl font-bold text-ink">{occ.pct !== null ? `${occ.pct}%` : 'N/A'}</p>
+          <p className="text-xl font-bold text-ink">
+            {occ.pct !== null ? <><CountUp value={occ.pct} />%</> : 'N/A'}
+          </p>
           <p className="text-[10px] text-faint">{occ.booked} booked of {occ.open} open slots</p>
           <div className="h-1.5 rounded-full bg-raised overflow-hidden mt-1.5">
-            <div className="h-full rounded-full bg-accent" style={{ width: `${occ.pct || 0}%` }} />
+            <motion.div className="h-full rounded-full bg-accent"
+              initial={{ width: 0 }}
+              animate={{ width: `${occ.pct || 0}%` }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.15 }} />
           </div>
         </Card>
         <Card className="p-3">
@@ -153,15 +160,15 @@ export function ProviderAnalytics() {
       <Section title="Attendance" icon={CalendarCheck}>
         <div className="grid grid-cols-3 gap-3 text-center mb-3">
           <div>
-            <p className="text-lg font-bold text-success-600 dark:text-success-400">{att.completed}</p>
+            <p className="text-lg font-bold text-success-600 dark:text-success-400"><CountUp value={att.completed} /></p>
             <p className="text-[10px] text-faint">Completed</p>
           </div>
           <div>
-            <p className="text-lg font-bold text-danger">{att.noShow}</p>
+            <p className="text-lg font-bold text-danger"><CountUp value={att.noShow} /></p>
             <p className="text-[10px] text-faint">No-shows</p>
           </div>
           <div>
-            <p className="text-lg font-bold text-muted">{att.cancelled}</p>
+            <p className="text-lg font-bold text-muted"><CountUp value={att.cancelled} /></p>
             <p className="text-[10px] text-faint">Declined</p>
           </div>
         </div>

@@ -1,5 +1,7 @@
 const variants = {
- primary: 'bg-accent hover:bg-accent-strong active:bg-accent-strong text-on-accent shadow-sm hover:shadow-glow-primary',
+  // Subtle top-to-bottom gradient gives the primary CTA a glossy sheen;
+  // hover brightens the whole surface instead of swapping the fill.
+ primary: 'bg-gradient-to-b from-accent to-accent-strong text-on-accent shadow-sm hover:shadow-glow-primary hover:brightness-105 active:brightness-95',
  ghost: 'bg-transparent hover:bg-raised text-ink',
  danger: 'bg-transparent hover:bg-danger/10 text-danger hover:text-danger',
  success: 'bg-success-500 hover:bg-success-600 active:bg-success-600 text-white shadow-sm hover:shadow-glow-success',
