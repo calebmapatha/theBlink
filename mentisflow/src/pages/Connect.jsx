@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
+import { Skeleton, SkeletonLines, SkeletonCard } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import Avatar from '../components/ui/Avatar'
@@ -69,7 +70,7 @@ function CheckInTicket({ appt, doctor, onClose }) {
           <div className="mx-auto w-fit p-3 rounded-3xl bg-white border border-line">
             {qrUrl
               ? <img src={qrUrl} alt="Check-in QR code" className="w-52 h-52" />
-              : <div className="w-52 h-52 flex items-center justify-center"><Loader size={20} className="animate-spin text-accent" /></div>}
+              : <Skeleton className="w-52 h-52 rounded-xl" />}
           </div>
 
           <p className="mt-4 text-sm font-semibold text-ink">{doctor?.name}</p>
@@ -788,7 +789,7 @@ function SignDocumentsModal({ appt, open, onClose, user, userProfile, onSigned, 
     <>
     <Modal open={open && !viewingDoc} onClose={onClose} title="Sign documents">
       {docs === null ? (
-        <div className="py-8 text-center"><Loader size={18} className="animate-spin text-accent mx-auto" /></div>
+        <SkeletonLines lines={4} className="py-4" />
       ) : docs.length === 0 ? (
         <div className="space-y-3 text-center py-4">
           <p className="text-sm text-ink">
@@ -1150,9 +1151,7 @@ export function Connect() {
 
           {loading ? (
             <div className="space-y-3">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-44 rounded-2xl bg-raised animate-pulse" />
-              ))}
+              {[1, 2, 3].map(i => <SkeletonCard key={i} avatar lines={3} />)}
             </div>
           ) : filtered.length === 0 ? (
             <div className="py-16 text-center">
@@ -1210,7 +1209,7 @@ export function Connect() {
       {tab === 'my-doctor' && (
         <div className="space-y-5">
           {linkLoading ? (
-            <div className="h-28 rounded-2xl bg-raised animate-pulse" />
+            <SkeletonCard avatar lines={1} />
           ) : linkedDoctor ? (
             <>
               <Card className="p-4">
@@ -1393,7 +1392,7 @@ export function Connect() {
               <p className="text-xs text-faint mb-3">Or link a doctor from the directory:</p>
               <div className="space-y-3">
                 {loading ? (
-                  [1, 2].map(i => <div key={i} className="h-36 rounded-2xl bg-raised animate-pulse" />)
+                  [1, 2].map(i => <SkeletonCard key={i} avatar lines={2} />)
                 ) : providers.slice(0, 5).map(p => (
                   <ProviderCard key={p.id} provider={p} onBook={handleBookClick} onLink={handleLink} linked={false} onViewProfile={setViewingProvider} />
                 ))}
