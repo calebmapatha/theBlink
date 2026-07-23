@@ -5,6 +5,7 @@ import { PageWrapper } from '../components/layout/PageWrapper'
 import { PageHeader } from '../components/layout/PageHeader'
 import { DatePicker } from '../components/ui/DatePicker'
 import { Card } from '../components/ui/Card'
+import { SkeletonCard } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import { useApp } from '../context/AppContext'
@@ -496,7 +497,7 @@ function ScriptsTab({ scripts, loading, onAddToMeds }) {
       </p>
 
       {loading ? (
-        <div className="h-24 rounded-2xl bg-raised animate-pulse" />
+        <SkeletonCard lines={1} />
       ) : scripts.length === 0 ? (
         <div className="py-10 text-center">
           <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-raised flex items-center justify-center"><Pill size={22} className="text-faint" /></div>

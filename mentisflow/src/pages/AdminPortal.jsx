@@ -10,6 +10,7 @@ import { ref, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../lib/firebase'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
+import { Skeleton, SkeletonCard } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import Avatar from '../components/ui/Avatar'
@@ -314,7 +315,7 @@ export function AdminPortal() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="h-24 rounded-2xl bg-raised animate-pulse" />)}</div>
+        <div className="space-y-3">{[1, 2, 3].map(i => <SkeletonCard key={i} avatar lines={1} />)}</div>
       ) : (
         <>
           {/* ---------------- OVERVIEW ---------------- */}
@@ -582,7 +583,7 @@ function AnnouncementsTab({ admin }) {
 function LogsTab({ admin }) {
   const [logs, setLogs] = useState(null)
   useEffect(() => { admin.fetchLogs().then(setLogs) }, [])
-  if (!logs) return <div className="h-24 rounded-2xl bg-raised animate-pulse" />
+  if (!logs) return <Skeleton className="h-24 rounded-2xl" />
   return (
     <div className="space-y-2">
       <p className="text-xs text-faint">Every administrative action is recorded here permanently (append-only).</p>
@@ -616,7 +617,7 @@ function ConfigTab({ admin }) {
       pricing: mergePricing(c?.pricing),
     }))
   }, [])
-  if (!cfg) return <div className="h-24 rounded-2xl bg-raised animate-pulse" />
+  if (!cfg) return <Skeleton className="h-24 rounded-2xl" />
 
   const setPricingField = (path, value) => setCfg(c => {
     const p = structuredClone(c.pricing)

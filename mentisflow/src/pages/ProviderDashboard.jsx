@@ -5,6 +5,7 @@ import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, Badg
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
 import { CountUp } from '../components/ui/CountUp'
+import { Skeleton, SkeletonLines, SkeletonCard, SkeletonStat } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import Avatar from '../components/ui/Avatar'
@@ -703,7 +704,7 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
     return persist(updated)
   }
 
-  if (diaryLoading) return <div className="h-40 rounded-2xl bg-raised animate-pulse" />
+  if (diaryLoading) return <Skeleton className="h-40 rounded-2xl" />
 
   return (
     <div className="space-y-4">
@@ -786,7 +787,7 @@ function ConsentsModal({ appt, onClose }) {
   return (
     <Modal open={!!appt} onClose={onClose} title="Signed documents">
       {consents === null ? (
-        <div className="py-8 text-center"><Loader size={18} className="animate-spin text-accent mx-auto" /></div>
+        <SkeletonLines lines={3} className="py-4" />
       ) : consents.length === 0 ? (
         <p className="text-sm text-faint text-center py-6">No signed records found for this appointment.</p>
       ) : (
@@ -876,7 +877,7 @@ function DocumentsManager({ providerUid }) {
     }
   }
 
-  if (docsLoading) return <div className="h-20 rounded-2xl bg-raised animate-pulse" />
+  if (docsLoading) return <Skeleton className="h-20 rounded-2xl" />
 
   return (
     <div className="space-y-3">
@@ -1306,9 +1307,22 @@ export function ProviderDashboard() {
   const goTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
   if (loading) return (
-    <PageWrapper>
-      <div className="space-y-3 mt-6">
-        {[1, 2].map(i => <div key={i} className="h-24 rounded-2xl bg-raised animate-pulse" />)}
+    <PageWrapper wide>
+      <div className="mt-6">
+        <div className="flex items-start gap-5 mb-10">
+          <Skeleton className="w-20 h-20 rounded-full flex-shrink-0" />
+          <div className="flex-1 pt-1">
+            <Skeleton className="h-8 w-64 max-w-full rounded-lg mb-3" />
+            <SkeletonLines lines={2} className="max-w-sm" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10">
+          {[0, 1, 2, 3].map(i => <SkeletonStat key={i} />)}
+        </div>
+        <Skeleton className="h-7 w-52 rounded-lg mb-5" />
+        <div className="space-y-3">
+          {[0, 1].map(i => <SkeletonCard key={i} avatar lines={2} />)}
+        </div>
       </div>
     </PageWrapper>
   )

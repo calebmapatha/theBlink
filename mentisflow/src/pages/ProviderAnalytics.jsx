@@ -5,6 +5,7 @@ import { PageWrapper } from '../components/layout/PageWrapper'
 import { PageHeader } from '../components/layout/PageHeader'
 import { Card } from '../components/ui/Card'
 import { CountUp } from '../components/ui/CountUp'
+import { Skeleton, SkeletonCard, SkeletonStat } from '../components/ui/Skeleton'
 import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
 import { BarChart, LineChart, HBarList, Funnel, SplitBar } from '../components/ui/charts'
@@ -94,8 +95,14 @@ export function ProviderAnalytics() {
 
   if (loading || !stats) return (
     <PageWrapper>
-      <div className="space-y-3 mt-6">
-        {[1, 2, 3].map(i => <div key={i} className="h-28 rounded-2xl bg-raised animate-pulse" />)}
+      <div className="mt-6">
+        <Skeleton className="h-9 w-64 max-w-full rounded-lg mb-2" />
+        <Skeleton className="h-4 w-44 rounded-md mb-6" />
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          {[0, 1, 2].map(i => <SkeletonStat key={i} className="p-4" />)}
+        </div>
+        <SkeletonCard lines={3} className="mb-5" />
+        <SkeletonCard lines={3} />
       </div>
     </PageWrapper>
   )
