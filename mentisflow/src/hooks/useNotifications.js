@@ -69,7 +69,7 @@ export function useNotifications() {
       const id = scheduleForTime(
         prefs.focusReminder.time,
         'MentisFlow: Focus session',
-        "Time to start a focus session. You've got this! 🎯",
+        "Time to start a focus session. You’ve got this! 🎯",
       )
       if (id) timersRef.current.push(id)
     }

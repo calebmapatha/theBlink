@@ -367,7 +367,7 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
           {provider.hideFee ? (
             feeRequested ? (
               <span className="text-xs font-medium text-success-600 dark:text-success-400 flex items-center gap-1">
-                <Check size={12} /> Requested — you'll be notified
+                <Check size={12} /> Requested — you’ll be notified
               </span>
             ) : (
               <Button size="sm" variant="soft" onClick={() => onRequestFee?.(provider)}>
@@ -557,7 +557,7 @@ function RatingModal({ open, onClose, appointment, providerName, onSubmit }) {
               value={comment}
               onChange={e => setComment(e.target.value)}
               rows={3}
-              placeholder="Anything else you'd like to share…"
+              placeholder="Anything else you’d like to share…"
               className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none"
             />
           </div>
@@ -906,7 +906,7 @@ export function Connect() {
         providerUid: provider.id,
         providerName: provider.name,
       })
-      showToast("Fee requested — you'll be notified when they share it")
+      showToast("Fee requested — you’ll be notified when they share it")
     } catch {
       showToast('Could not send the request. Please try again.', { variant: 'error' })
     }
@@ -1365,7 +1365,7 @@ export function Connect() {
                 <div className="flex gap-2">
                   <input value={hpcsaQuery} onChange={e => setHpcsaQuery(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleHpcsaSearch()}
-                    placeholder="HPCSA number or doctor's name"
+                    placeholder="HPCSA number or doctor’s name"
                     className="flex-1 px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
                   <Button size="sm" onClick={handleHpcsaSearch}>Search</Button>
                 </div>

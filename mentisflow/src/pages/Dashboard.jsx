@@ -148,7 +148,7 @@ export function Dashboard() {
               ))}
             </div>
             {checkin.todayCheckin?.intention && (
-              <p className="text-xs text-muted mt-2.5 italic truncate">"{checkin.todayCheckin.intention}"</p>
+              <p className="text-xs text-muted mt-2.5 italic truncate">“{checkin.todayCheckin.intention}”</p>
             )}
           </Card>
         </motion.div>
@@ -287,7 +287,7 @@ export function Dashboard() {
                 value={dumpText}
                 onChange={e => setDumpText(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleQuickDump()}
-                placeholder="What's on your mind? (Enter to save)"
+                placeholder="What’s on your mind? (Enter to save)"
                 className="flex-1 px-3 py-2 rounded-xl border border-line bg-raised text-sm text-ink placeholder-faint focus:outline-none focus:ring-2 focus:ring-accent"
               />
               <Button size="sm" onClick={handleQuickDump} disabled={!dumpText.trim()}>

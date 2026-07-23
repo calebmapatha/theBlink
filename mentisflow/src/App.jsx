@@ -79,7 +79,7 @@ function AppShell({ isProvider }) {
   }, [])
 
   return (
-    <div className="flex h-screen bg-bg text-ink">
+    <div className="flex h-dvh bg-bg text-ink">
       {syncError && (
         <div className="fixed top-0 inset-x-0 z-50 bg-amber-500 text-white text-xs font-medium px-4 py-2 flex items-center justify-center gap-3">
           <span>Some changes couldn’t be saved to the cloud. Check your connection. Your data is safe on this device.</span>
@@ -95,7 +95,7 @@ function AppShell({ isProvider }) {
       <Sidebar isProvider={isProvider} />
       {/* First-run tour for patients; providers get the signup wizard instead. */}
       {!isProvider && <Onboarding />}
-      <main className="flex-1 min-w-0 h-full pb-16 md:pb-0 overflow-y-auto">
+      <main className="flex-1 min-w-0 h-full pb-16 md:pb-0 overflow-y-auto overscroll-contain">
         <Notifications />
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>

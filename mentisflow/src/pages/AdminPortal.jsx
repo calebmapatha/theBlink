@@ -463,7 +463,7 @@ export function AdminPortal() {
                       {r.status}
                     </span>
                   </div>
-                  <p className="text-xs text-muted bg-raised px-3 py-2 rounded-xl">"{r.reason}"</p>
+                  <p className="text-xs text-muted bg-raised px-3 py-2 rounded-xl">“{r.reason}”</p>
                   <p className="text-[10px] text-faint mt-1.5">Reported by {r.reporterEmail || r.reporterUid}</p>
                   {r.resolution && <p className="text-[10px] text-faint mt-0.5">Resolution: {r.resolution}</p>}
                   {r.status === 'open' && (

@@ -156,7 +156,7 @@ export function DailyCheckin() {
               value={intention}
               onChange={e => setIntention(e.target.value.slice(0, 120))}
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-              placeholder="What's one thing you want to accomplish?"
+              placeholder="What’s one thing you want to accomplish?"
               className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm placeholder-faint focus:outline-none focus:ring-2 focus:ring-accent"
             />
             <p className="text-xs text-faint mt-1 text-right">{intention.length}/120</p>

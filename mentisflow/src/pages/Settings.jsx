@@ -10,6 +10,7 @@ import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import { useApp } from '../context/AppContext'
 import { useAuth } from '../context/AuthContext'
+import { CalendarSync } from '../components/CalendarSync'
 import { seedDemoProviders } from '../utils/seedProviders'
 import { isAdminUser } from '../utils/admin'
 import { FOCUSBLINK_TOOLS } from '../hooks/useToolPrefs'
@@ -230,7 +231,7 @@ function RemindersSection({ notifications }) {
             <ReminderRow label="Focus reminder" pref={prefs.focusReminder}
               onToggle={() => updatePref('focusReminder', { enabled: !prefs.focusReminder.enabled })}
               onTimeChange={time => updatePref('focusReminder', { time })}
-              onTest={() => notifyNow('MentisFlow: Focus session', "Test: Time to start a focus session. You've got this! 🎯")} />
+              onTest={() => notifyNow('MentisFlow: Focus session', "Test: Time to start a focus session. You’ve got this! 🎯")} />
             {!isStandalone && (
               <div className="px-4 py-2.5 flex items-start gap-2">
                 <Bell size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
@@ -453,6 +454,10 @@ export function Settings() {
       <ToolsSection tools={tools} />
 
       <RemindersSection notifications={notifications} />
+
+      <Section title="Calendar">
+        <CalendarSync uid={user?.uid} showToast={showToast} />
+      </Section>
 
       <Section title="Account">
         <SettingsRow icon={User} label="Edit profile" onClick={() => setProfileOpen(true)} />

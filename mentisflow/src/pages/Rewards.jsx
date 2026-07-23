@@ -39,7 +39,7 @@ export function Rewards() {
               transition={{ duration: 0.8, ease: 'easeOut' }}
             />
           </div>
-          <p className="text-xs text-faint mt-2">{nextLevel.xpRequired - totalPoints} XP until "{nextLevel.name}"</p>
+          <p className="text-xs text-faint mt-2">{nextLevel.xpRequired - totalPoints} XP until “{nextLevel.name}”</p>
         </Card>
       )}
 

@@ -253,6 +253,14 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Personal calendar-feed tokens (webcal/ICS sync). Strictly owner-only:
+    // the token grants read access to the owner's appointment schedule via
+    // the calendarFeed Cloud Function, so nobody else may ever read it —
+    // deliberately not even a linked doctor or admin.
+    match /calendarTokens/{uid} {
+      allow read, write, delete: if isSignedIn() && request.auth.uid == uid;
+    }
+
     // Outbound email queue (Trigger Email extension). Written exclusively by
     // Cloud Functions via the Admin SDK; clients must never read addresses or
     // forge messages.
