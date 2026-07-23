@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { Edit2, CheckCircle, XCircle, Clock, ExternalLink, Users, Calendar, BadgeCheck, Eye, TrendingUp, Camera, Loader, Star, FileText, Trash2, FileSignature, Smile, Zap, Lightbulb, CalendarCheck, LineChart, Wallet, ArrowRight, QrCode, Lock } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
+import { CountUp } from '../components/ui/CountUp'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import Avatar from '../components/ui/Avatar'
@@ -66,7 +68,7 @@ function DataSnapshot({ snapshot }) {
   if (!snapshot || Object.keys(snapshot).length === 0) return null
   return (
     <div className="mt-3 pt-3 border-t border-line space-y-3">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-faint">Last 30 days</p>
+      <p className="eyebrow text-faint">Last 30 days</p>
 
       {snapshot.checkin && (
         <div className="flex gap-4 flex-wrap">
@@ -128,7 +130,7 @@ function DataSnapshot({ snapshot }) {
 
       {snapshot.treatmentPlan && (
         <div className="space-y-2 pt-1">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-faint">Treatment plan</p>
+          <p className="eyebrow text-faint">Treatment plan</p>
           {snapshot.treatmentPlan.goals?.length > 0 && (
             <div>
               <p className="text-[10px] text-faint mb-1">Active goals</p>
@@ -312,7 +314,7 @@ function StatDetailModal({ kind, onClose, stats }) {
           )}
           {sessions.length > 0 && (
             <div className="pt-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-faint mb-2">Sessions</p>
+              <p className="eyebrow text-faint mb-2">Sessions</p>
               <div className="space-y-1.5">
                 {[...sessions].sort(byDateDesc).map((a, i) => (
                   <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl bg-raised">
@@ -958,17 +960,28 @@ function DocumentsManager({ providerUid }) {
 // A KPI tile — editorial and number-forward: quiet label, ghost icon, an
 // oversized metric. The metric stays in the sans (per the reference, serif is
 // reserved for headlines). Tappable → detail modal.
-function StatCard({ icon: Icon, value, label, onClick }) {
+//
+// Numeric values count up into place on load (CountUp); strings ("N/A")
+// render as-is. `index` staggers the tiles' fade-up entrance left to right.
+function StatCard({ icon: Icon, value, prefix = '', suffix = '', label, onClick, index = 0 }) {
   return (
-    <Card role="button" tabIndex={0} onClick={onClick}
-      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } }}
-      className="p-5 cursor-pointer group hover:-translate-y-0.5 hover:shadow-md">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted">{label}</p>
-        <Icon size={15} className="text-faint group-hover:text-accent transition-colors" />
-      </div>
-      <p className="text-[2.1rem] leading-none font-medium tracking-tight text-ink mt-4">{value}</p>
-    </Card>
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.08 + index * 0.07, ease: 'easeOut' }}
+    >
+      <Card role="button" tabIndex={0} onClick={onClick}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } }}
+        className="h-full p-5 cursor-pointer group hover:-translate-y-0.5 hover:shadow-card-hover">
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted">{label}</p>
+          <Icon size={15} className="text-faint group-hover:text-accent transition-colors" />
+        </div>
+        <p className="text-[2.1rem] leading-none font-medium tracking-tight text-ink mt-4">
+          {prefix}{typeof value === 'number' ? <CountUp value={value} /> : value}{suffix}
+        </p>
+      </Card>
+    </motion.div>
   )
 }
 
@@ -1470,14 +1483,15 @@ export function ProviderDashboard() {
         </Banner>
       )}
 
-      {/* KPI row — tap any tile for the full breakdown. */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-10">
-        <StatCard icon={Eye} value={profileViews} label="Profile views" onClick={() => setStatModal('views')} />
-        <StatCard icon={Users} value={uniquePatients} label="Unique patients" onClick={() => setStatModal('patients')} />
-        <StatCard icon={TrendingUp} value={acceptanceRate !== null ? `${acceptanceRate}%` : 'N/A'} label="Accept rate" onClick={() => setStatModal('acceptRate')} />
+      {/* KPI row — tap any tile for the full breakdown. Numbers count up on load. */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-12">
+        <StatCard index={0} icon={Eye} value={profileViews} label="Profile views" onClick={() => setStatModal('views')} />
+        <StatCard index={1} icon={Users} value={uniquePatients} label="Unique patients" onClick={() => setStatModal('patients')} />
+        <StatCard index={2} icon={TrendingUp} value={acceptanceRate !== null ? acceptanceRate : 'N/A'}
+          suffix={acceptanceRate !== null ? '%' : ''} label="Accept rate" onClick={() => setStatModal('acceptRate')} />
         {hasRevenue
-          ? <StatCard icon={Wallet} value={`R${grossEarnings.toLocaleString()}`} label="Est. earnings" onClick={() => setStatModal('revenue')} />
-          : <StatCard icon={Clock} value={pending.length} label="Pending" onClick={() => setStatModal('pending')} />}
+          ? <StatCard index={3} icon={Wallet} prefix="R" value={grossEarnings} label="Est. earnings" onClick={() => setStatModal('revenue')} />
+          : <StatCard index={3} icon={Clock} value={pending.length} label="Pending" onClick={() => setStatModal('pending')} />}
       </div>
 
       {/* Booking requests (wide) + practice detail rail. */}

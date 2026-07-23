@@ -33,6 +33,12 @@
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
   }
+  /* Editorial small-caps label — the one voice for every eyebrow/kicker.
+     Colour is left to the caller (usually text-faint) so accented eyebrows
+     don't fight specificity. */
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.14em];
+  }
   /* Keyboard-only focus ring for icon buttons and other bare controls. */
   .focus-ring {
     @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface;

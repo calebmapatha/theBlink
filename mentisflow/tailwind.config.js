@@ -96,8 +96,11 @@ export default {
       boxShadow: {
         'glow-primary': '0 0 20px -5px rgba(20,184,166,0.4)',
         'glow-success': '0 0 20px -5px rgba(34,197,94,0.35)',
-        'card':         '0 2px 12px -2px rgba(15,17,23,0.08)',
-        'card-dark':    '0 2px 16px -2px rgba(0,0,0,0.4)',
+        // Layered "glossy" card shadows: a crisp 1px contact shadow plus a
+        // wide, soft ambient one, so cards read as floating just above the page.
+        'card':         '0 1px 2px rgba(15,17,23,0.05), 0 10px 28px -14px rgba(15,17,23,0.14)',
+        'card-dark':    '0 1px 2px rgba(0,0,0,0.35), 0 12px 32px -16px rgba(0,0,0,0.55)',
+        'card-hover':   '0 2px 4px rgba(15,17,23,0.06), 0 18px 44px -16px rgba(15,17,23,0.2)',
       },
       animation: {
         'bounce-in': 'bounceIn 0.35s cubic-bezier(0.34,1.56,0.64,1)',

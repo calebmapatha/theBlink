@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo } from 'react'
+import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown, Calendar, Users, Star, Lightbulb, Clock, CalendarCheck } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { PageHeader } from '../components/layout/PageHeader'
 import { Card } from '../components/ui/Card'
+import { CountUp } from '../components/ui/CountUp'
 import { useAuth } from '../context/AuthContext'
 import { useProviders } from '../hooks/useProviders'
 import { BarChart, LineChart, HBarList, Funnel, SplitBar } from '../components/ui/charts'
@@ -15,10 +17,10 @@ function KpiCard({ label, value, delta, prefix = '' }) {
   const up = delta > 0
   const flat = delta === 0
   return (
-    <Card className="p-3">
-      <p className="text-[10px] text-faint mb-1">{label}</p>
-      <p className="text-xl font-bold text-ink">{prefix}{value.toLocaleString()}</p>
-      <p className={`text-[10px] font-medium flex items-center gap-0.5 mt-0.5 ${
+    <Card className="p-4">
+      <p className="eyebrow text-faint mb-1.5">{label}</p>
+      <p className="text-[1.4rem] leading-none font-semibold tracking-tight text-ink">{prefix}<CountUp value={value} /></p>
+      <p className={`text-[10px] font-medium flex items-center gap-0.5 mt-1.5 ${
         flat ? 'text-faint' : up ? 'text-success-600 dark:text-success-400' : 'text-danger'}`}>
         {!flat && (up ? <TrendingUp size={10} /> : <TrendingDown size={10} />)}
         {flat ? 'no change' : `${up ? '+' : ''}${delta}%`} <span className="text-faint font-normal">vs prev period</span>
@@ -27,13 +29,15 @@ function KpiCard({ label, value, delta, prefix = '' }) {
   )
 }
 
+// Section headers get the serif voice — small caps stay reserved for
+// data labels inside the cards, keeping a clear two-level hierarchy.
 function Section({ title, icon: Icon, children, right }) {
   return (
-    <Card className="p-4 mb-4">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-faint flex items-center gap-1.5">
-          {Icon && <Icon size={12} />} {title}
-        </p>
+    <Card className="p-5 mb-5">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-serif text-[1.15rem] leading-none tracking-tight text-ink flex items-center gap-2">
+          {Icon && <Icon size={14} className="text-faint" />} {title}
+        </h2>
         {right}
       </div>
       {children}
@@ -100,10 +104,10 @@ export function ProviderAnalytics() {
 
   return (
     <PageWrapper>
-      <PageHeader title="Practice Analytics" subtitle="How your practice is performing" className="mb-5" />
+      <PageHeader title="Practice Analytics" subtitle="How your practice is performing" />
 
       {/* Period selector */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-5">
         {WINDOWS.map(w => (
           <button key={w.key} onClick={() => setWin(w.key)}
             className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors ${
@@ -117,28 +121,33 @@ export function ProviderAnalytics() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
+      <div className="grid grid-cols-3 gap-3 mb-5">
         <KpiCard label="Requests" value={kpi.requests.value} delta={kpi.requests.delta} />
         <KpiCard label="Sessions" value={kpi.sessions.value} delta={kpi.sessions.delta} />
         <KpiCard label="Earnings" value={kpi.earnings.value} delta={kpi.earnings.delta} prefix="R" />
       </div>
 
       {/* Occupancy + rating quick row */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <Card className="p-3">
-          <p className="text-[10px] text-faint mb-1 flex items-center gap-1"><CalendarCheck size={10} /> Next 7 days occupancy</p>
-          <p className="text-xl font-bold text-ink">{occ.pct !== null ? `${occ.pct}%` : 'N/A'}</p>
-          <p className="text-[10px] text-faint">{occ.booked} booked of {occ.open} open slots</p>
+      <div className="grid grid-cols-2 gap-3 mb-5">
+        <Card className="p-4">
+          <p className="eyebrow text-faint mb-1.5 flex items-center gap-1"><CalendarCheck size={10} /> Next 7 days occupancy</p>
+          <p className="text-[1.4rem] leading-none font-semibold tracking-tight text-ink">
+            {occ.pct !== null ? <><CountUp value={occ.pct} />%</> : 'N/A'}
+          </p>
+          <p className="text-[10px] text-faint mt-1.5">{occ.booked} booked of {occ.open} open slots</p>
           <div className="h-1.5 rounded-full bg-raised overflow-hidden mt-1.5">
-            <div className="h-full rounded-full bg-accent" style={{ width: `${occ.pct || 0}%` }} />
+            <motion.div className="h-full rounded-full bg-accent"
+              initial={{ width: 0 }}
+              animate={{ width: `${occ.pct || 0}%` }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.15 }} />
           </div>
         </Card>
-        <Card className="p-3">
-          <p className="text-[10px] text-faint mb-1 flex items-center gap-1"><Star size={10} /> Patient satisfaction</p>
-          <p className="text-xl font-bold text-ink">
+        <Card className="p-4">
+          <p className="eyebrow text-faint mb-1.5 flex items-center gap-1"><Star size={10} /> Patient satisfaction</p>
+          <p className="text-[1.4rem] leading-none font-semibold tracking-tight text-ink">
             {stats.ratingAvg?.overall ? `${stats.ratingAvg.overall.toFixed(1)}/5` : 'N/A'}
           </p>
-          <p className="text-[10px] text-faint">{ratings.length || profile?.ratingCount || 0} review{(ratings.length || profile?.ratingCount || 0) !== 1 ? 's' : ''}</p>
+          <p className="text-[10px] text-faint mt-1.5">{ratings.length || profile?.ratingCount || 0} review{(ratings.length || profile?.ratingCount || 0) !== 1 ? 's' : ''}</p>
         </Card>
       </div>
 
@@ -153,15 +162,15 @@ export function ProviderAnalytics() {
       <Section title="Attendance" icon={CalendarCheck}>
         <div className="grid grid-cols-3 gap-3 text-center mb-3">
           <div>
-            <p className="text-lg font-bold text-success-600 dark:text-success-400">{att.completed}</p>
+            <p className="text-lg font-bold text-success-600 dark:text-success-400"><CountUp value={att.completed} /></p>
             <p className="text-[10px] text-faint">Completed</p>
           </div>
           <div>
-            <p className="text-lg font-bold text-danger">{att.noShow}</p>
+            <p className="text-lg font-bold text-danger"><CountUp value={att.noShow} /></p>
             <p className="text-[10px] text-faint">No-shows</p>
           </div>
           <div>
-            <p className="text-lg font-bold text-muted">{att.cancelled}</p>
+            <p className="text-lg font-bold text-muted"><CountUp value={att.cancelled} /></p>
             <p className="text-[10px] text-faint">Declined</p>
           </div>
         </div>
