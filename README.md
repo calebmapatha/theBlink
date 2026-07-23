@@ -21,17 +21,21 @@ MentisFlow is a dual-role web app for patients and mental health providers.
 - Sharpen their focus with the FocusBlink toolkit: Pomodoro-style focus timer, task board, habit tracker, monthly goals, and Brain Dump (each tool can be switched off in Settings)
 - Earn rewards for completing activities
 - View their treatment plan and share a consented progress snapshot with their doctor
+- Sync appointments to Google, Apple, or Outlook Calendar — per-appointment add buttons, or a personal live feed (Settings → Calendar) that keeps their calendar up to date automatically
 - See booking updates in the in-app notification bell
 
 **Providers can:**
 - Sign up and list their practice (HPCSA number required, verification documents uploaded during the trial)
-- Manage their profile (bio, fee with optional hide, consultation type, practice address, all 12 official SA languages), an interactive weekly availability grid, and appointments
+- Manage their profile (bio, fee with optional hide, consultation type, practice address, all 12 official SA languages), a week-aware availability diary (current week's dates, today highlighted, confirmed bookings overlaid), and appointments
 - Check patients in at reception by scanning their QR pass or typing their code
 - Keep an encrypted client-file vault: per-client session notes and documents behind a separate vault password (see below)
 - Write prescriptions for linked patients
 - Upload pre-screening documents for patients to sign when a booking is confirmed
 - Access patient data snapshots shared during bookings, plus practice analytics
 - Disclose their session fee on request; patients are notified automatically
+- Sync their diary to Google, Apple, or Outlook via the same live calendar feed as patients
+
+Both roles get illustrated default avatars — original flat-vector portraits, deterministic per account, with practitioners drawn in the white coat — whenever no photo is uploaded. Content loads show shimmer skeletons that echo the incoming layout, and dashboard numbers count up into place.
 
 ---
 
@@ -67,6 +71,7 @@ theBlink/
 │   └── index.js            # aggregateRating, activateProvider, purgeOldAppointments
 ├── firestore.rules         # Firestore security rules
 ├── storage.rules           # Cloud Storage security rules
+├── docs/                   # Support & error cookbooks
 ├── firestore.indexes.json  # Composite index definitions
 └── firebase.json           # Firebase project config
 ```
@@ -169,6 +174,7 @@ For automated Firebase deploys, add a `FIREBASE_TOKEN` secret (from `firebase lo
 | `notifyProviderModeration` | Firestore `onUpdate` on `providers/{uid}` | Notifies a practitioner when their account is verified, rejected, or suspended |
 | `purgeOldAppointments` | Scheduled (every 24 h) | Deletes appointments older than 2 years — POPIA data retention compliance |
 | `paymentWebhook` | HTTPS Request | Verifies PayFast ITN signatures (MD5) and source IPs, then activates subscriptions on `payment_status=COMPLETE` |
+| `calendarFeed` | HTTPS Request | Token-authenticated webcal/ICS feed of a user's confirmed appointments — lets Google/Apple/Outlook subscribe and auto-refresh (tokens live in owner-only `calendarTokens/{uid}`) |
 
 In-app notifications are written to the `notifications` collection (bell icon in the app; pruned to the newest 30 per user). Booking emails are queued into the `mail` collection in the format used by the official **Trigger Email from Firestore** extension. Install it once with your SMTP credentials (`firebase ext:install firebase/firestore-send-email`, collection `mail`) and the queued emails start sending; until then they sit unsent.
 
@@ -234,6 +240,15 @@ Key measures:
 ## Seeding demo providers
 
 Log in with the admin account (`calebmapatha@gmail.com`), go to **Settings → Admin → Seed 6 doctors**. This creates demo providers across SA provinces for testing the Connect and booking flows.
+
+---
+
+## Support & operations docs
+
+| Doc | Use it for |
+|---|---|
+| [`docs/SUPPORT_COOKBOOK.md`](docs/SUPPORT_COOKBOOK.md) | Customer support: common patient/practitioner questions with ready-to-send responses (logins, vault password, bookings, calendar sync, billing, POPIA requests) |
+| [`docs/ERROR_COOKBOOK.md`](docs/ERROR_COOKBOOK.md) | Engineering: common errors and their real causes — stale PWA cache, Firestore permission errors, function 403s, PayFast ITN rejections, CI quirks |
 
 ---
 

@@ -52,6 +52,12 @@ jobs:
           VITE_FIREBASE_APP_ID:              ${{ secrets.VITE_FIREBASE_APP_ID }}
           VITE_RECAPTCHA_SITE_KEY:           ${{ secrets.VITE_RECAPTCHA_SITE_KEY }}
 
+      # GitHub Pages knows nothing about SPA routes: a full-page load of
+      # /theBlink/practitioners (or /privacy, /terms) would 404 without this.
+      # Serving the app shell as 404.html lets the client router take over.
+      - name: SPA fallback (404.html)
+        run: cp mentisflow/dist/index.html mentisflow/dist/404.html
+
       - uses: actions/configure-pages@v5
         with:
           enablement: true

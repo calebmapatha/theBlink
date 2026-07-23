@@ -6,16 +6,21 @@ import { buildEvent, googleCalendarUrl, outlookCalendarUrl, downloadICS } from '
 export function AddToCalendar({ appt, role = 'patient', className = '' }) {
   const ev = buildEvent(appt, role)
   const btn = 'flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg border border-line text-muted hover:text-accent hover:border-accent/40 transition-colors'
+  // The label and the button group are separate flex items, so on narrow
+  // cards the three buttons wrap together as one aligned row instead of
+  // splitting mid-row at odd offsets.
   return (
-    <div className={`flex items-center gap-1.5 flex-wrap ${className}`}>
-      <span className="text-[10px] text-faint flex items-center gap-1">
+    <div className={`flex items-center gap-x-2 gap-y-1.5 flex-wrap ${className}`}>
+      <span className="text-[10px] text-faint flex items-center gap-1 flex-shrink-0">
         <CalendarPlus size={11} /> Add to calendar:
       </span>
-      <a className={btn} href={googleCalendarUrl(ev)} target="_blank" rel="noopener noreferrer">Google</a>
-      <a className={btn} href={outlookCalendarUrl(ev)} target="_blank" rel="noopener noreferrer">Outlook</a>
-      <button className={btn} onClick={() => downloadICS(ev)}>
-        <Download size={10} /> .ics
-      </button>
+      <span className="flex items-center gap-1.5 flex-shrink-0">
+        <a className={btn} href={googleCalendarUrl(ev)} target="_blank" rel="noopener noreferrer">Google</a>
+        <a className={btn} href={outlookCalendarUrl(ev)} target="_blank" rel="noopener noreferrer">Outlook</a>
+        <button className={btn} onClick={() => downloadICS(ev)}>
+          <Download size={10} /> .ics
+        </button>
+      </span>
     </div>
   )
 }
