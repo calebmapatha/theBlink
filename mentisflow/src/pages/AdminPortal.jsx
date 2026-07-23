@@ -356,7 +356,7 @@ export function AdminPortal() {
                   return (
                     <Card key={p.id} className="p-4">
                       <div className="flex items-start gap-3">
-                        <Avatar photoUrl={p.photoURL} name={p.name} size="sm" />
+                        <Avatar photoUrl={p.photoURL} name={p.name} seed={p.id} role="provider" size="sm" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <p className="text-sm font-semibold text-ink">{p.name}</p>
@@ -430,7 +430,7 @@ export function AdminPortal() {
                 return (
                   <Card key={p.id} className="p-3.5">
                     <div className="flex items-center gap-3">
-                      <Avatar photoUrl={p.photoURL} name={p.id} size="sm" />
+                      <Avatar photoUrl={p.photoURL} name={p.id} seed={p.id} role="provider" size="sm" />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-mono text-muted truncate">{p.id}</p>
                         <p className="text-[10px] text-faint">

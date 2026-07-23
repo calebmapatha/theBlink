@@ -574,7 +574,7 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
     <Card className="p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex gap-3 flex-1 min-w-0">
-          <Avatar name={appt.patientName} size="md" />
+          <Avatar name={appt.patientName} seed={appt.patientUid} size="md" />
           <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-ink truncate">{appt.patientName}</p>
           <p className="text-xs text-faint truncate">{appt.patientEmail}</p>
@@ -1186,7 +1186,7 @@ function CheckInModal({ open, onClose, appointments, onCheckIn }) {
         {match && (
           <div className="p-3.5 rounded-2xl bg-success-50 dark:bg-success-500/10 border border-success-200 dark:border-success-500/30">
             <div className="flex items-center gap-3">
-              <Avatar name={match.patientName} size="sm" />
+              <Avatar name={match.patientName} seed={match.patientUid} size="sm" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-ink truncate">{match.patientName}</p>
                 <p className="text-xs text-muted">{match.date} at {match.timeSlot}</p>
@@ -1426,7 +1426,7 @@ export function ProviderDashboard() {
               disabled={photoUploading}
               title="Change photo"
               className="relative rounded-full overflow-hidden flex-shrink-0 group mt-1.5">
-              <Avatar photoUrl={profile?.photoURL} name={profile?.name || 'Your profile'} size="lg" />
+              <Avatar photoUrl={profile?.photoURL} name={profile?.name || 'Your profile'} seed={user?.uid} role="provider" size="lg" />
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
                 {photoUploading ? <Loader size={15} className="text-white animate-spin" /> : <Camera size={15} className="text-white" />}
               </div>

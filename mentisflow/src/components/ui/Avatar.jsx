@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { IllustratedAvatar } from './IllustratedAvatar'
 
 /**
  * Avatar
@@ -12,8 +13,11 @@ import { useState } from 'react'
  * Rules:
  *   - Always a circle, at every size.
  *   - photoUrl set      -> the photo.
- *   - photoUrl missing  -> the silhouette. No emoji, no initials.
- *   - Broken image URL  -> silhouette (onError), never a broken icon.
+ *   - photoUrl missing  -> an illustrated flat-vector person, deterministic
+ *     from `seed` (uid preferred, falls back to name) so each user keeps the
+ *     same face everywhere. `role="provider"` adds the white coat and
+ *     stethoscope. No emoji, no initials.
+ *   - Broken image URL  -> the illustration (onError), never a broken icon.
  *
  * Source of truth: the photoURL field on providers/{uid} or
  * patients/{uid}. See src/services/profilePhoto.js for the write side.
@@ -30,6 +34,8 @@ const SIZES = {
 export default function Avatar({
   photoUrl,
   name,
+  seed,
+  role = 'patient',
   size = 'md',
   ring = false,
   className = '',
@@ -51,13 +57,8 @@ export default function Avatar({
           onError={() => setFailed(true)}
         />
       ) : (
-        <span
-          aria-hidden="true"
-          className="flex h-full w-full items-center justify-center bg-accent-soft text-accent-soft-text/70"
-        >
-          <svg viewBox="0 0 24 24" fill="currentColor" className="h-3/5 w-3/5">
-            <path d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm0 2.25c-4.97 0-9 2.77-9 6.19 0 .31.25.56.56.56h16.88c.31 0 .56-.25.56-.56 0-3.42-4.03-6.19-9-6.19Z" />
-          </svg>
+        <span aria-hidden="true" className="block h-full w-full">
+          <IllustratedAvatar seed={seed || name || ''} role={role} />
         </span>
       )}
     </span>

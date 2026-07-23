@@ -249,7 +249,7 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
       <div className="space-y-5 -mt-1">
         {/* Header */}
         <div className="flex items-start gap-4">
-          <Avatar photoUrl={provider.photoURL} name={provider.name} size="lg" />
+          <Avatar photoUrl={provider.photoURL} name={provider.name} seed={provider.id} role="provider" size="lg" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               <p className="font-bold text-ink">{provider.name}</p>
@@ -417,7 +417,7 @@ function ProviderCard({ provider, onBook, onLink, linked, onViewProfile }) {
       {/* Tappable profile area */}
       <button className="w-full text-left" onClick={() => onViewProfile?.(provider)}>
         <div className="flex items-start gap-3">
-          <Avatar photoUrl={provider.photoURL} name={provider.name} size="md" />
+          <Avatar photoUrl={provider.photoURL} name={provider.name} seed={provider.id} role="provider" size="md" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               <p className="font-semibold text-ink text-sm">{provider.name}</p>
@@ -1214,7 +1214,7 @@ export function Connect() {
             <>
               <Card className="p-4">
                 <div className="flex items-start gap-3">
-                  <Avatar photoUrl={linkedDoctor.photoURL} name={linkedDoctor.name} size="md" />
+                  <Avatar photoUrl={linkedDoctor.photoURL} name={linkedDoctor.name} seed={linkedDoctor.id} role="provider" size="md" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <p className="font-semibold text-ink text-sm">{linkedDoctor.name}</p>
@@ -1373,7 +1373,7 @@ export function Connect() {
                 {searchResult && (
                   <div className="mt-3 p-3 rounded-xl bg-raised border border-line">
                     <div className="flex items-center gap-3">
-                      <Avatar photoUrl={searchResult.photoURL} name={searchResult.name} size="sm" />
+                      <Avatar photoUrl={searchResult.photoURL} name={searchResult.name} seed={searchResult.id} role="provider" size="sm" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1">
                           <p className="text-sm font-semibold text-ink">{searchResult.name}</p>
