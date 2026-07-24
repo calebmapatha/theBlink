@@ -115,7 +115,7 @@ const PAYFAST_PASSPHRASE   = process.env.PAYFAST_PASSPHRASE || ''
 const PAYFAST_MODE = process.env.PAYFAST_MODE === 'live' ? 'live' : 'sandbox'
 const PAYFAST_HOST = PAYFAST_MODE === 'live' ? 'www.payfast.co.za' : 'sandbox.payfast.co.za'
 // Where PayFast sends the customer after checkout (the deployed web app).
-const PAYMENT_CALLBACK_URL = process.env.PAYMENT_CALLBACK_URL || 'https://calebmapatha.github.io/theBlink/'
+const PAYMENT_CALLBACK_URL = process.env.PAYMENT_CALLBACK_URL || 'https://calebmapatha.github.io/Mentisflow/'
 // This function's own deployed URL — PayFast POSTs ITNs here directly.
 const PAYFAST_NOTIFY_URL = process.env.PAYFAST_NOTIFY_URL ||
   `https://${REGION}-focusblink-2c1e9.cloudfunctions.net/paymentWebhook`

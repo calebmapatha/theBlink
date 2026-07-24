@@ -3,6 +3,10 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// Deploy base path (set by CI from the repo name); everything that needs an
+// absolute path derives from this one value.
+const BASE = process.env.VITE_BASE_URL || '/'
+
 export default defineConfig({
   plugins: [
     react(),
@@ -13,12 +17,12 @@ export default defineConfig({
         name: 'MentisFlow',
         short_name: 'MentisFlow',
         description: 'Mental health care, connected. South Africa\'s platform for psychiatrists & psychologists.',
-        theme_color: '#14b8a6',
-        background_color: '#f0fdfa',
+        theme_color: '#F3F3F7',
+        background_color: '#F3F3F7',
         display: 'standalone',
         orientation: 'portrait',
-        scope: '/theBlink/',
-        start_url: '/theBlink/',
+        scope: BASE,
+        start_url: BASE,
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
@@ -31,7 +35,7 @@ export default defineConfig({
       },
     }),
   ],
-  base: process.env.VITE_BASE_URL || '/',
+  base: BASE,
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },
   },

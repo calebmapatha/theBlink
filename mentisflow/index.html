@@ -20,14 +20,15 @@
     <meta name="description" content="Connect with HPCSA-registered psychiatrists and psychologists. Book appointments, share your mental health data, and manage your wellbeing with FocusBlink." />
     <meta name="theme-color" content="#F3F3F7" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <link rel="manifest" href="/theBlink/manifest.webmanifest" />
-    <link rel="icon" type="image/svg+xml" href="/theBlink/favicon.svg" />
+    <!-- The web app manifest link is injected by vite-plugin-pwa with the
+         correct base path. %BASE_URL% is substituted by Vite at build time. -->
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
 
     <!-- iOS PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="MentisFlow" />
-    <link rel="apple-touch-icon" href="/theBlink/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" href="%BASE_URL%apple-touch-icon.png" />
 
     <!-- Fonts. Inter is the UI/body sans; Fraunces is the editorial display
          serif used for headlines (kept at weight 400, with a true italic for

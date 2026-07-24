@@ -2,7 +2,7 @@
 
 South Africa's mental health care platform. Find and book HPCSA-registered psychiatrists and psychologists, track your wellbeing every day, sharpen your focus with FocusBlink tools, and share your progress with your doctor, all in one secure app. Built as a Progressive Web App (PWA) optimised for mobile.
 
-**Live app:** [calebmapatha.github.io/theBlink](https://calebmapatha.github.io/theBlink)
+**Live app:** [calebmapatha.github.io/Mentisflow](https://calebmapatha.github.io/Mentisflow)
 
 ---
 
@@ -52,7 +52,7 @@ MentisFlow is a dual-role web app for patients and mental health providers.
 ## Project structure
 
 ```
-theBlink/
+Mentisflow/
 ├── mentisflow/               # React PWA
 │   ├── src/
 │   │   ├── pages/          # Route-level components
@@ -84,8 +84,8 @@ theBlink/
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/calebmapatha/theBlink.git
-cd theBlink/mentisflow
+git clone https://github.com/calebmapatha/Mentisflow.git
+cd Mentisflow/mentisflow
 npm install
 ```
 
@@ -218,7 +218,7 @@ Confirmed in-person appointments carry a check-in pass (on the patient's appoint
 
 ## Privacy and compliance
 
-MentisFlow handles special personal information (mental health data) and operates under the **Protection of Personal Information Act (POPIA)**. The in-app privacy policy is accessible at `/theBlink/privacy` without requiring a login.
+MentisFlow handles special personal information (mental health data) and operates under the **Protection of Personal Information Act (POPIA)**. The in-app privacy policy is accessible at `/Mentisflow/privacy` without requiring a login.
 
 Key measures:
 - Patient records are readable only by the patient and their linked provider

@@ -36,6 +36,6 @@ src/
 
 - **Design language:** editorial serif headlines (Fraunces) with Inter for UI, teal as the single accent, white cards on a light canvas. Dark mode is class-based (`dark:` variants everywhere).
 - **PWA:** the service worker caches aggressively — after deploying, hard-refresh to see changes.
-- **Base path:** the app deploys under `/theBlink/`; use `import.meta.env.BASE_URL` when building public URLs.
+- **Base path:** the app deploys under `/<repo-name>/` (currently `/Mentisflow/`); use `import.meta.env.BASE_URL` when building public URLs.
 - **Public pages** (`/privacy`, `/terms`, `/practitioners`) are matched by path suffix in `App.jsx`, not router routes, so they survive the GitHub Pages base path.
 - **Encrypted vault:** `utils/vault.js` composes Web Crypto primitives only — do not replace it with a custom cipher or move key material off-device.
