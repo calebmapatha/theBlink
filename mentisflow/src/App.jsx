@@ -158,7 +158,7 @@ function LoadingScreen() {
 
 // Public front door for logged-out visitors: marketing landing page with a
 // switch into the sign-in flow. Plain state (no router) keeps this robust to
-// the GitHub Pages base path (/theBlink/), same as the /privacy check below.
+// the GitHub Pages base path (the GitHub Pages base path), same as the /privacy check below.
 // The landing page is ALWAYS the default; the login form only appears after
 // an explicit tap on a sign-in / get-started button.
 function PublicSite() {
@@ -200,7 +200,7 @@ function AuthGate() {
   }, [user?.uid])
 
   // Legal pages are public — viewable without authentication. Robust to the
-  // deploy base path (/theBlink/) since we match on the path suffix.
+  // deploy base path (the GitHub Pages base path) since we match on the path suffix.
   const publicPath = window.location.pathname.replace(/\/$/, '')
   if (publicPath.endsWith('/privacy')) return <Privacy />
   if (publicPath.endsWith('/terms')) return <Terms />
