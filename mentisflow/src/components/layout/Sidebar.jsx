@@ -58,7 +58,7 @@ function NavItem({ to, icon: Icon, label, end }) {
       className={({ isActive }) =>
         `group flex items-center gap-3 px-3 py-2.5  text-sm transition-all duration-150 ${
           isActive
-            ? 'bg-accent-soft text-accent-soft-text font-semibold shadow-sm shadow-accent/5'
+            ? 'bg-accent-soft text-accent-soft-text font-semibold shadow-sm'
             : 'font-medium text-muted hover:bg-raised hover:text-ink'
         }`
       }

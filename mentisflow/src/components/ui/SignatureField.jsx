@@ -12,7 +12,8 @@ export function SignatureField({ onChange, className = '' }) {
   useEffect(() => {
     const canvas = canvasRef.current
     const pad = new SignaturePad(canvas, {
-      penColor: '#1e293b',
+      // Canvas cannot resolve CSS variables; this hex mirrors --ink (light).
+      penColor: '#2B2933',
       backgroundColor: 'rgb(255,255,255)',
     })
     padRef.current = pad

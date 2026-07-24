@@ -70,7 +70,7 @@ export function ThemeProvider({ children }) {
     root.classList.toggle('dark', resolved === 'dark')
 
     const meta = document.querySelector('meta[name="theme-color"]')
-    if (meta) meta.content = resolved === 'dark' ? '#121110' : '#FBF7EE'
+    if (meta) meta.content = resolved === 'dark' ? '#15141A' : '#F3F3F7'
   }, [resolved])
 
   const setMode = useCallback((next) => {

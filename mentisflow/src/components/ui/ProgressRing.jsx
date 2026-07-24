@@ -4,7 +4,7 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
 export function ProgressRing({ progress, mode, size = 220 }) {
   const offset = CIRCUMFERENCE * (1 - Math.max(0, Math.min(1, progress)))
-  const strokeColor = mode === 'work' ? '#6366f1' : '#22c55e'
+  const strokeColor = mode === 'work' ? 'rgb(var(--accent))' : 'rgb(var(--tint-mint-text))'
   const center = size / 2
   const scale = size / (RADIUS * 2 + STROKE * 2)
   const viewBoxSize = RADIUS * 2 + STROKE * 2

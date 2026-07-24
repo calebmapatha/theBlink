@@ -614,7 +614,7 @@ export function TreatmentPlan() {
           <button key={key} onClick={() => setTab(key)}
             className={`p-3  text-center transition-all ${
               tab === key
-                ? 'bg-accent text-on-accent shadow-md shadow-accent/20'
+                ? 'bg-accent text-on-accent shadow-card dark:shadow-card-dark'
                 : 'bg-surface border border-line text-faint hover:border-accent/40'
             }`}>
             <Icon size={16} className="mx-auto mb-1" />

@@ -1047,7 +1047,7 @@ export function Connect() {
 
   return (
     <PageWrapper>
-      <div className="relative mb-5 p-4  bg-gradient-to-br from-accent to-accent-strong text-white overflow-hidden shadow-md shadow-accent/20">
+      <div className="relative mb-5 p-4  bg-gradient-to-br from-accent to-accent-strong text-white overflow-hidden shadow-card dark:shadow-card-dark">
         <div className="absolute -top-8 -right-6 w-28 h-28 bg-white/10  blur-2xl" aria-hidden="true" />
         <div className="relative">
           <div className="flex items-center gap-2 mb-1">

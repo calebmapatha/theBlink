@@ -147,10 +147,10 @@ function LoadingScreen() {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-12 h-12  bg-teal-500 flex items-center justify-center animate-pulse">
+        <div className="w-12 h-12  bg-accent flex items-center justify-center animate-pulse">
           <HeartHandshake size={22} className="text-white" />
         </div>
-        <p className="text-sm text-slate-400">Loading MentisFlow…</p>
+        <p className="text-sm text-faint">Loading MentisFlow…</p>
       </div>
     </div>
   )

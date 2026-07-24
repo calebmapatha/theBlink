@@ -962,7 +962,7 @@ function StatCard({ icon: Icon, value, label, onClick }) {
   return (
     <Card role="button" tabIndex={0} onClick={onClick}
       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } }}
-      className="p-5 cursor-pointer group hover:-translate-y-0.5 hover:shadow-md">
+      className="p-5 cursor-pointer group hover:-translate-y-0.5">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted">{label}</p>
         <Icon size={15} className="text-faint group-hover:text-accent transition-colors" />

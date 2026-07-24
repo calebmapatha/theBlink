@@ -15,7 +15,7 @@ const FREQ_OPTIONS  = [
   { value: 'weekly', label: 'Times per week' },
 ]
 
-function ProgressRing({ progress, size = 80, strokeWidth = 8, color = '#14b8a6', children }) {
+function ProgressRing({ progress, size = 80, strokeWidth = 8, color = 'rgb(var(--accent))', children }) {
   const radius        = (size - strokeWidth) / 2
   const circumference = 2 * Math.PI * radius
   const dashOffset    = circumference * (1 - Math.min(Math.max(progress, 0), 1))
@@ -42,7 +42,7 @@ function SummaryRing({ checked, total }) {
   const allDone  = checked === total && total > 0
   return (
     <div className="flex flex-col items-center py-6">
-      <ProgressRing progress={progress} size={156} strokeWidth={15} color="#14b8a6">
+      <ProgressRing progress={progress} size={156} strokeWidth={15} color="rgb(var(--accent))">
         <div className="text-center">
           <p className="text-4xl font-bold text-ink leading-none">{checked}</p>
           <p className="text-sm text-faint mt-1">of {total}</p>

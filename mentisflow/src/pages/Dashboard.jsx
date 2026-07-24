@@ -185,7 +185,7 @@ export function Dashboard() {
           <motion.div variants={itemVariants}>
             <button
               onClick={() => navigate('/connect')}
-              className="relative w-full text-left p-5  bg-gradient-to-br from-accent to-accent-strong text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 transition-shadow overflow-hidden"
+              className="relative w-full text-left p-5  bg-gradient-to-br from-accent to-accent-strong text-white shadow-card dark:shadow-card-dark overflow-hidden"
             >
               <div className="absolute -top-10 -right-8 w-36 h-36 bg-white/10  blur-2xl" aria-hidden="true" />
               <div className="relative flex items-start justify-between gap-3">

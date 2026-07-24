@@ -25,7 +25,7 @@ function DiaryMock() {
             <p className="text-xs text-slate-400">Your diary · Tuesday</p>
             <p className="text-sm font-bold text-slate-900">3 appointments today</p>
           </div>
-          <div className="w-8 h-8  bg-teal-500 flex items-center justify-center">
+          <div className="w-8 h-8  bg-primary-500 flex items-center justify-center">
             <CalendarCheck size={15} className="text-white" />
           </div>
         </div>
@@ -33,7 +33,7 @@ function DiaryMock() {
         <div className="space-y-2">
           {DIARY_ROWS.map(({ time, name, kind, status }) => (
             <div key={time} className="flex items-center gap-3  border border-slate-100 p-3">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-teal-700 bg-teal-50  px-2 py-1 flex-shrink-0">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-primary-700 bg-primary-50  px-2 py-1 flex-shrink-0">
                 <Clock size={11} />
                 {time}
               </div>
@@ -42,7 +42,7 @@ function DiaryMock() {
                 <p className="text-xs text-slate-400 truncate">{kind}</p>
               </div>
               <span className={`text-[10px] font-semibold px-1.5 py-0.5  flex-shrink-0 ${
-                status === 'Confirmed' ? 'bg-teal-500 text-white' : 'bg-slate-100 text-slate-500'
+                status === 'Confirmed' ? 'bg-primary-500 text-white' : 'bg-slate-100 text-slate-500'
               }`}>
                 {status}
               </span>
@@ -77,7 +77,7 @@ export function Practitioners() {
       <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
           <a href={home} className="flex items-center gap-2.5">
-            <div className="w-9 h-9  bg-teal-500 flex items-center justify-center shadow-sm">
+            <div className="w-9 h-9  bg-primary-500 flex items-center justify-center shadow-sm">
               <HeartHandshake size={18} className="text-white" />
             </div>
             <span className="text-lg font-bold tracking-tight">MentisFlow</span>
@@ -86,7 +86,7 @@ export function Practitioners() {
             <a href={home} className="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors px-2 py-2">
               Back to home
             </a>
-            <a href={startUrl} className="text-sm font-semibold bg-teal-500 hover:bg-teal-600 text-white px-4 py-2  transition-colors">
+            <a href={startUrl} className="text-sm font-semibold bg-primary-500 hover:bg-primary-600 text-white px-4 py-2  transition-colors">
               List your practice
             </a>
           </div>
@@ -94,10 +94,10 @@ export function Practitioners() {
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-teal-50/80 via-white to-white">
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary-50/80 via-white to-white">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 pt-14 pb-16 lg:pt-20 lg:pb-20 grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
           <div>
-            <p className="text-sm font-bold text-teal-600 uppercase tracking-wide">For practitioners</p>
+            <p className="text-sm font-bold text-primary-600 uppercase tracking-wide">For practitioners</p>
             <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mt-2 leading-[1.08] [text-wrap:balance]">
               Grow your practice. Focus on your patients.
             </h1>
@@ -106,7 +106,7 @@ export function Practitioners() {
               habit and check-in trends they choose to share. Less phone tag and paperwork, more time for care.
             </p>
             <a href={startUrl}
-              className="inline-flex items-center justify-center gap-2 mt-8 bg-teal-500 hover:bg-teal-600 active:bg-teal-700 text-white font-semibold px-6 py-3.5  transition-colors shadow-lg shadow-teal-500/25">
+              className="inline-flex items-center justify-center gap-2 mt-8 bg-primary-500 hover:bg-primary-600 active:bg-primary-700 text-white font-semibold px-6 py-3.5  transition-colors shadow-lg shadow-primary-500/25">
               List your practice
               <ArrowRight size={17} />
             </a>
@@ -130,7 +130,7 @@ export function Practitioners() {
             {POINTS.map(({ icon: Icon, title, desc }) => (
               <div key={title} className="flex items-start gap-4">
                 <div className="w-11 h-11  bg-white border border-slate-200 shadow-sm flex items-center justify-center flex-shrink-0">
-                  <Icon size={19} className="text-teal-600" />
+                  <Icon size={19} className="text-primary-600" />
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900">{title}</h3>
@@ -144,17 +144,17 @@ export function Practitioners() {
 
       {/* Trial callout */}
       <section className="max-w-6xl mx-auto px-5 sm:px-8 py-14 lg:py-20">
-        <div className="relative overflow-hidden  bg-gradient-to-br from-teal-500 to-teal-700 text-white px-7 py-14 sm:px-14 text-center">
-          <p className="text-sm font-bold text-teal-100 uppercase tracking-wide">Start with a 2-month free trial</p>
+        <div className="relative overflow-hidden  bg-gradient-to-br from-primary-500 to-primary-700 text-white px-7 py-14 sm:px-14 text-center">
+          <p className="text-sm font-bold text-primary-100 uppercase tracking-wide">Start with a 2-month free trial</p>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mt-2 [text-wrap:balance]">
             Try everything, commitment-free.
           </h2>
-          <p className="text-teal-50/90 mt-4 max-w-xl mx-auto leading-relaxed">
+          <p className="text-primary-50/90 mt-4 max-w-xl mx-auto leading-relaxed">
             Every new practice starts with a full 2-month ({trialDays}-day) free trial, no card
             required. Set up your profile, open your diary, and start meeting patients right away.
           </p>
           <a href={startUrl}
-            className="inline-flex items-center justify-center gap-2 mt-8 bg-white text-teal-700 hover:bg-teal-50 font-semibold px-7 py-3.5  transition-colors">
+            className="inline-flex items-center justify-center gap-2 mt-8 bg-white text-primary-700 hover:bg-primary-50 font-semibold px-7 py-3.5  transition-colors">
             Start your free trial
             <ArrowRight size={16} />
           </a>
@@ -165,7 +165,7 @@ export function Practitioners() {
       <footer className="border-t border-slate-100">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <a href={home} className="flex items-center gap-2">
-            <div className="w-8 h-8  bg-teal-500 flex items-center justify-center">
+            <div className="w-8 h-8  bg-primary-500 flex items-center justify-center">
               <HeartHandshake size={16} className="text-white" />
             </div>
             <span className="font-semibold text-slate-500">MentisFlow</span>
