@@ -13,7 +13,7 @@ import {
   encryptJSON, decryptJSON, encryptBytes, decryptBytes,
 } from '../utils/vault'
 
-const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent'
+const inputCls = 'w-full px-3 py-2.5  border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent'
 const MAX_FILE_BYTES = 10 * 1024 * 1024
 
 const ts = (t) => t?.seconds || 0
@@ -55,7 +55,7 @@ function VaultGate({ meta, onUnlocked, onCreated }) {
   return (
     <div className="max-w-sm mx-auto mt-10">
       <Card className="p-7 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-accent-soft flex items-center justify-center mx-auto mb-4">
+        <div className="w-14 h-14  bg-accent-soft flex items-center justify-center mx-auto mb-4">
           <Lock size={24} className="text-accent-soft-text" />
         </div>
         <h1 className="font-serif text-2xl tracking-tight text-ink">
@@ -83,7 +83,7 @@ function VaultGate({ meta, onUnlocked, onCreated }) {
         </form>
 
         {isNew ? (
-          <div className="mt-5 p-3 rounded-xl bg-warm-50 dark:bg-warm-500/10 border border-warm-200 dark:border-warm-500/30 text-left">
+          <div className="mt-5 p-3  bg-warm-50 dark:bg-warm-500/10 border border-warm-200 dark:border-warm-500/30 text-left">
             <p className="text-[11px] text-warm-700 dark:text-warm-500 leading-relaxed">
               <strong>There is no reset.</strong> Because files are encrypted with this password,
               a forgotten vault password cannot be recovered — by anyone. Store it in a password manager.
@@ -279,7 +279,7 @@ export function ProviderVault() {
 
   if (meta === undefined) return (
     <PageWrapper wide>
-      <div className="h-40 rounded-3xl bg-raised animate-pulse mt-6" />
+      <div className="h-40  bg-raised animate-pulse mt-6" />
     </PageWrapper>
   )
 
@@ -308,10 +308,10 @@ export function ProviderVault() {
       </header>
 
       {loadingDocs ? (
-        <div className="h-40 rounded-3xl bg-raised animate-pulse" />
+        <div className="h-40  bg-raised animate-pulse" />
       ) : clients.length === 0 ? (
         <Card className="p-12 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-accent-soft flex items-center justify-center mx-auto mb-3">
+          <div className="w-12 h-12  bg-accent-soft flex items-center justify-center mx-auto mb-3">
             <Users size={20} className="text-accent-soft-text" />
           </div>
           <p className="text-sm font-medium text-muted">No clients in your vault yet</p>
@@ -328,7 +328,7 @@ export function ProviderVault() {
               const count = notesFor(c.id).length + filesFor(c.id).length
               return (
                 <button key={c.id} onClick={() => setSelected(c.id)}
-                  className={`w-full text-left px-4 py-3 rounded-2xl border transition-colors ${
+                  className={`w-full text-left px-4 py-3  border transition-colors ${
                     selected === c.id
                       ? 'border-accent/40 bg-accent-soft'
                       : 'border-line/60 bg-surface hover:border-faint'
@@ -376,7 +376,7 @@ export function ProviderVault() {
                             {n.plain.body && <p className="text-xs text-muted mt-1 line-clamp-2 whitespace-pre-wrap">{n.plain.body}</p>}
                           </button>
                           <button onClick={() => deleteNote(n)} title="Delete note"
-                            className="p-1.5 rounded-lg text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex-shrink-0">
+                            className="p-1.5  text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex-shrink-0">
                             <Trash2 size={14} />
                           </button>
                         </div>
@@ -390,7 +390,7 @@ export function ProviderVault() {
                     <p className="text-[13px] font-medium text-faint">Files · {filesFor(client.id).length}</p>
                     {filesFor(client.id).map(f => (
                       <Card key={f.id} className="p-3.5 flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-accent-soft flex items-center justify-center flex-shrink-0">
+                        <div className="w-9 h-9  bg-accent-soft flex items-center justify-center flex-shrink-0">
                           <FileText size={16} className="text-accent-soft-text" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -398,11 +398,11 @@ export function ProviderVault() {
                           <p className="text-[11px] text-faint">{fmtSize(f.plain.size)} · encrypted</p>
                         </div>
                         <button onClick={() => openFile(f)} disabled={busyFile === f.id} title="Decrypt and download"
-                          className="p-1.5 rounded-lg text-faint hover:text-accent-strong hover:bg-accent-soft transition-colors flex-shrink-0">
+                          className="p-1.5  text-faint hover:text-accent-strong hover:bg-accent-soft transition-colors flex-shrink-0">
                           {busyFile === f.id ? <Loader size={15} className="animate-spin" /> : <Download size={15} />}
                         </button>
                         <button onClick={() => deleteFile(f)} title="Delete file"
-                          className="p-1.5 rounded-lg text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex-shrink-0">
+                          className="p-1.5  text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex-shrink-0">
                           <Trash2 size={14} />
                         </button>
                       </Card>

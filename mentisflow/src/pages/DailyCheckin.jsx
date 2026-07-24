@@ -21,7 +21,7 @@ function MoodPicker({ value, onChange }) {
           <button
             key={i}
             onClick={() => onChange(i + 1)}
-            className={`flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 transition-all
+            className={`flex-1 flex flex-col items-center gap-1.5 py-3  border-2 transition-all
               ${value === i + 1
                 ? 'border-accent bg-accent-soft'
                 : 'border-line hover:border-faint'
@@ -45,13 +45,13 @@ function EnergyPicker({ value, onChange }) {
           <button
             key={level}
             onClick={() => onChange(level)}
-            className="flex-1 flex flex-col items-center gap-2 py-3 rounded-xl transition-all"
+            className="flex-1 flex flex-col items-center gap-2 py-3  transition-all"
           >
             <div className="flex flex-col gap-0.5">
               {[5, 4, 3, 2, 1].map(bar => (
                 <div
                   key={bar}
-                  className={`w-6 rounded-sm transition-colors ${
+                  className={`w-6  transition-colors ${
                     bar <= level && value >= level
                       ? 'bg-accent'
                       : bar <= level
@@ -79,22 +79,22 @@ function CheckinSummary({ checkin, onEdit }) {
       <div className="flex items-center gap-2 mb-4">
         <CheckCircle size={18} className="text-success-500" />
         <span className="font-medium text-ink">Check-in complete</span>
-        <button onClick={onEdit} className="ml-auto p-1.5 rounded-lg hover:bg-raised text-faint">
+        <button onClick={onEdit} className="ml-auto p-1.5  hover:bg-raised text-faint">
           <Edit3 size={14} />
         </button>
       </div>
       <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="text-center p-3 rounded-xl bg-raised">
+        <div className="text-center p-3  bg-raised">
           <p className="text-3xl mb-1">{MOODS[checkin.mood - 1]}</p>
           <p className="text-xs text-faint">{MOOD_LABELS[checkin.mood - 1]}</p>
         </div>
-        <div className="text-center p-3 rounded-xl bg-raised">
+        <div className="text-center p-3  bg-raised">
           <p className="text-2xl font-semibold text-accent mb-1">{checkin.energy}/5</p>
           <p className="text-xs text-faint">{ENERGY_LABELS[checkin.energy - 1]}</p>
         </div>
       </div>
       {checkin.intention && (
-        <div className="p-3 rounded-xl bg-accent-soft border border-accent/20">
+        <div className="p-3  bg-accent-soft border border-accent/20">
           <p className="text-xs text-accent-soft-text font-medium mb-1">Today's intention</p>
           <p className="text-sm text-ink">{checkin.intention}</p>
         </div>
@@ -157,7 +157,7 @@ export function DailyCheckin() {
               onChange={e => setIntention(e.target.value.slice(0, 120))}
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
               placeholder="What's one thing you want to accomplish?"
-              className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm placeholder-faint focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3 py-2.5  border border-line bg-raised text-ink text-sm placeholder-faint focus:outline-none focus:ring-2 focus:ring-accent"
             />
             <p className="text-xs text-faint mt-1 text-right">{intention.length}/120</p>
           </Card>

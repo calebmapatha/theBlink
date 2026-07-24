@@ -66,7 +66,7 @@ function CheckInTicket({ appt, doctor, onClose }) {
     <Modal open={!!appt} onClose={onClose} title="Check-in pass">
       {appt && (
         <div className="text-center">
-          <div className="mx-auto w-fit p-3 rounded-3xl bg-white border border-line">
+          <div className="mx-auto w-fit p-3  bg-white border border-line">
             {qrUrl
               ? <img src={qrUrl} alt="Check-in QR code" className="w-52 h-52" />
               : <div className="w-52 h-52 flex items-center justify-center"><Loader size={20} className="animate-spin text-accent" /></div>}
@@ -77,7 +77,7 @@ function CheckInTicket({ appt, doctor, onClose }) {
             {appt.patientName ? `${appt.patientName} · ` : ''}{appt.date} at {appt.timeSlot}
           </p>
 
-          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-raised">
+          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2  bg-raised">
             <span className="text-xs text-faint">Code</span>
             <span className="text-base font-bold tracking-[0.15em] text-ink timer-nums">
               {formatCode(shortCodeFor(appt.id))}
@@ -224,7 +224,7 @@ function ReportModal({ provider, open, onClose, user }) {
           </p>
           <textarea value={reason} onChange={e => setReason(e.target.value)} rows={4}
             placeholder="What happened?"
-            className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-sm text-ink focus:outline-none focus:ring-2 focus:ring-red-400 resize-none" />
+            className="w-full px-3 py-2.5  border border-line bg-raised text-sm text-ink focus:outline-none focus:ring-2 focus:ring-red-400 resize-none" />
           <div className="flex gap-2">
             <Button variant="ghost" className="flex-1" onClick={close}>Cancel</Button>
             <Button className="flex-1 bg-red-500 hover:bg-red-600" disabled={!reason.trim() || busy} onClick={send}>
@@ -263,13 +263,13 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
 
         {/* Rating breakdown */}
         {ratingCnt > 0 && rating && (
-          <div className="p-3 rounded-xl bg-raised space-y-2">
+          <div className="p-3  bg-raised space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wider text-faint">Patient ratings</p>
             {RATING_METRICS.map(({ key, label }) => (
               <div key={key} className="flex items-center gap-2">
                 <span className="text-[10px] text-muted w-28 flex-shrink-0">{label}</span>
-                <div className="flex-1 h-1.5 rounded-full bg-line overflow-hidden">
-                  <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${((rating[key] || 0) / 5) * 100}%` }} />
+                <div className="flex-1 h-1.5  bg-line overflow-hidden">
+                  <div className="h-full  bg-accent transition-all" style={{ width: `${((rating[key] || 0) / 5) * 100}%` }} />
                 </div>
                 <span className="text-[10px] font-semibold text-muted w-6 text-right">{(rating[key] || 0).toFixed(1)}</span>
               </div>
@@ -291,7 +291,7 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
             <p className="text-xs font-semibold uppercase tracking-wider text-faint mb-1.5">Specialties</p>
             <div className="flex flex-wrap gap-1.5">
               {provider.specialties.map(s => (
-                <span key={s} className="text-xs px-2.5 py-1 rounded-full bg-accent-soft text-accent-soft-text">{s}</span>
+                <span key={s} className="text-xs px-2.5 py-1  bg-accent-soft text-accent-soft-text">{s}</span>
               ))}
             </div>
           </div>
@@ -345,7 +345,7 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
                 <p className="text-xs text-faint pl-6">{provider.address}</p>
               )}
               {inPerson && mapQuery && (
-                <div className="rounded-2xl overflow-hidden border border-line">
+                <div className=" overflow-hidden border border-line">
                   <iframe
                     title={`Map of ${mapQuery}`}
                     src={`https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`}
@@ -361,7 +361,7 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
         })()}
 
         {/* Fee */}
-        <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-raised">
+        <div className="flex items-center justify-between px-4 py-3  bg-raised">
           <span className="text-sm text-muted">Session fee</span>
           {provider.hideFee ? (
             feeRequested ? (
@@ -389,7 +389,7 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
             </Button>
           )}
           {linked && (
-            <span className="flex-1 flex items-center justify-center text-xs px-2 py-1.5 rounded-xl bg-success-100 dark:bg-success-500/20 text-success-700 dark:text-success-400 font-medium">Linked</span>
+            <span className="flex-1 flex items-center justify-center text-xs px-2 py-1.5  bg-success-100 dark:bg-success-500/20 text-success-700 dark:text-success-400 font-medium">Linked</span>
           )}
           <Button className="flex-1" onClick={() => { onBook(provider); onClose() }}>
             <Calendar size={13} /> Book appointment
@@ -427,10 +427,10 @@ function ProviderCard({ provider, onBook, onLink, linked, onViewProfile }) {
             {ratingCnt > 0 && <StarDisplay value={rating} count={ratingCnt} />}
             <div className="flex flex-wrap gap-1 mt-1.5">
               {(provider.specialties || []).slice(0, 3).map(s => (
-                <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-md bg-accent-soft text-accent-soft-text">{s}</span>
+                <span key={s} className="text-[10px] px-1.5 py-0.5  bg-accent-soft text-accent-soft-text">{s}</span>
               ))}
               {(provider.specialties || []).length > 3 && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-raised text-faint">+{(provider.specialties || []).length - 3} more</span>
+                <span className="text-[10px] px-1.5 py-0.5  bg-raised text-faint">+{(provider.specialties || []).length - 3} more</span>
               )}
             </div>
           </div>
@@ -472,7 +472,7 @@ function ProviderCard({ provider, onBook, onLink, linked, onViewProfile }) {
             </Button>
           )}
           {linked && (
-            <span className="text-xs px-2 py-1 rounded-full bg-success-100 dark:bg-success-500/20 text-success-700 dark:text-success-400 font-medium">Linked</span>
+            <span className="text-xs px-2 py-1  bg-success-100 dark:bg-success-500/20 text-success-700 dark:text-success-400 font-medium">Linked</span>
           )}
           <Button size="sm" onClick={() => onBook(provider)}>
             <Calendar size={13} /> Book
@@ -557,7 +557,7 @@ function RatingModal({ open, onClose, appointment, providerName, onSubmit }) {
               onChange={e => setComment(e.target.value)}
               rows={3}
               placeholder="Anything else you'd like to share…"
-              className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+              className="w-full px-3 py-2.5  border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none"
             />
           </div>
 
@@ -672,7 +672,7 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
             <label className="block text-xs font-medium text-faint mb-1">Notes (optional)</label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3}
               placeholder="What would you like to discuss?"
-              className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none" />
+              className="w-full px-3 py-2.5  border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none" />
           </div>
 
           <div>
@@ -680,7 +680,7 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
             <div className="grid grid-cols-2 gap-2">
               {DATA_TYPES.map(t => (
                 <button key={t.id} onClick={() => toggleType(t.id)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs border transition-colors ${
+                  className={`flex items-center gap-2 px-3 py-2  text-xs border transition-colors ${
                     sharedTypes.includes(t.id)
                       ? 'border-accent bg-accent-soft text-accent-soft-text'
                       : 'border-line text-faint hover:border-faint'
@@ -692,9 +692,9 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
               ))}
             </div>
             {sharedTypes.length > 0 && (
-              <label className="flex items-start gap-2.5 mt-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 cursor-pointer">
+              <label className="flex items-start gap-2.5 mt-3 p-3  bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 cursor-pointer">
                 <input type="checkbox" checked={consentGiven} onChange={() => setConsentGiven(v => !v)}
-                  className="mt-0.5 w-4 h-4 rounded accent-accent flex-shrink-0" />
+                  className="mt-0.5 w-4 h-4  accent-accent flex-shrink-0" />
                 <span className="text-[11px] text-ink leading-relaxed">
                   I consent to sharing the selected health data with {provider.name} for the purpose of my
                   mental health consultation. I understand I can withdraw this consent at any time. See our{' '}
@@ -706,7 +706,7 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
           </div>
 
           {screeningDocs.length > 0 && (
-            <div className="px-3 py-2.5 rounded-xl border border-accent/30 bg-accent-soft/60 flex items-start gap-2">
+            <div className="px-3 py-2.5  border border-accent/30 bg-accent-soft/60 flex items-start gap-2">
               <FileSignature size={13} className="text-accent flex-shrink-0 mt-0.5" />
               <p className="text-[11px] text-ink leading-relaxed">
                 If {provider.name} accepts your request, you'll be asked to digitally sign{' '}
@@ -716,7 +716,7 @@ function BookingModal({ provider, open, onClose, bookAppointment, user, userProf
             </div>
           )}
 
-          <div className="px-3 py-2 rounded-xl bg-raised text-xs text-faint">
+          <div className="px-3 py-2  bg-raised text-xs text-faint">
             {provider.hideFee ? (
               <>Session fee: <strong className="text-ink">on request</strong> · Payment arranged directly with the provider after confirmation.</>
             ) : (
@@ -806,9 +806,9 @@ function SignDocumentsModal({ appt, open, onClose, user, userProfile, onSigned, 
 
           <div className="space-y-2">
             {docs.map(d => (
-              <div key={d.id} className="p-3 rounded-xl border border-line flex items-start gap-2.5">
+              <div key={d.id} className="p-3  border border-line flex items-start gap-2.5">
                 <input type="checkbox" checked={agreed.includes(d.id)} onChange={() => toggleAgreed(d.id)}
-                  className="mt-0.5 w-4 h-4 rounded accent-accent flex-shrink-0" />
+                  className="mt-0.5 w-4 h-4  accent-accent flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium text-ink">{d.title}</p>
                   <button
@@ -832,7 +832,7 @@ function SignDocumentsModal({ appt, open, onClose, user, userProfile, onSigned, 
             <label className="block text-xs font-medium text-faint mb-1">Full legal name</label>
             <input value={sigName} onChange={e => setSigName(e.target.value)}
               placeholder="Type your full name"
-              className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+              className="w-full px-3 py-2.5  border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
           </div>
 
           <p className="text-[10px] text-faint leading-relaxed">
@@ -1047,8 +1047,8 @@ export function Connect() {
 
   return (
     <PageWrapper>
-      <div className="relative mb-5 p-4 rounded-3xl bg-gradient-to-br from-accent to-accent-strong text-white overflow-hidden shadow-md shadow-accent/20">
-        <div className="absolute -top-8 -right-6 w-28 h-28 bg-white/10 rounded-full blur-2xl" aria-hidden="true" />
+      <div className="relative mb-5 p-4  bg-gradient-to-br from-accent to-accent-strong text-white overflow-hidden shadow-md shadow-accent/20">
+        <div className="absolute -top-8 -right-6 w-28 h-28 bg-white/10  blur-2xl" aria-hidden="true" />
         <div className="relative">
           <div className="flex items-center gap-2 mb-1">
             <HeartHandshake size={16} className="opacity-80" />
@@ -1065,7 +1065,7 @@ export function Connect() {
           { key: 'my-doctor', label: 'My Doctor' },
         ].map(t => (
           <button key={t.key} onClick={() => setChosenTab(t.key)}
-            className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+            className={`flex-1 py-2.5  text-sm font-medium transition-colors ${
               tab === t.key
                 ? 'bg-accent text-on-accent'
                 : 'bg-raised text-faint hover:text-ink'
@@ -1081,7 +1081,7 @@ export function Connect() {
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-faint pointer-events-none" />
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Search by name, HPCSA number or specialty…"
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-line bg-surface text-sm text-ink placeholder-faint focus:outline-none focus:ring-2 focus:ring-accent" />
+              className="w-full pl-9 pr-4 py-2.5  border border-line bg-surface text-sm text-ink placeholder-faint focus:outline-none focus:ring-2 focus:ring-accent" />
             {search && (
               <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-faint hover:text-ink">
                 <X size={14} />
@@ -1092,7 +1092,7 @@ export function Connect() {
           <div className="flex gap-2 mb-3 flex-wrap">
             {['All', 'Psychiatrist', 'Psychologist'].map(t => (
               <button key={t} onClick={() => setTypeFilter(t)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                className={`px-3 py-1.5  text-xs font-medium transition-colors ${
                   typeFilter === t
                     ? 'bg-accent text-on-accent'
                     : 'bg-raised text-faint hover:text-ink'
@@ -1106,14 +1106,14 @@ export function Connect() {
           <div className="flex items-center gap-2 mb-3">
             <div className="flex gap-1.5 overflow-x-auto flex-1 pb-0.5" style={{ scrollbarWidth: 'none' }}>
               <button onClick={() => setProvinceFilter('')}
-                className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                className={`flex-shrink-0 px-3 py-1  text-xs font-medium transition-colors ${
                   !provinceFilter ? 'bg-accent text-on-accent' : 'bg-raised text-faint hover:text-ink'
                 }`}>
                 All provinces
               </button>
               {SA_PROVINCES.map(prov => (
                 <button key={prov} onClick={() => setProvinceFilter(prov === provinceFilter ? '' : prov)}
-                  className={`flex-shrink-0 flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                  className={`flex-shrink-0 flex items-center gap-1 px-3 py-1  text-xs font-medium transition-colors ${
                     provinceFilter === prov
                       ? 'bg-accent text-on-accent'
                       : 'bg-raised text-faint hover:text-ink'
@@ -1127,7 +1127,7 @@ export function Connect() {
               onClick={handleNearMe}
               disabled={locationLoading}
               title="Use my location"
-              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-line text-faint hover:text-accent hover:border-accent/40 transition-colors disabled:opacity-50">
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5  text-xs font-medium border border-line text-faint hover:text-accent hover:border-accent/40 transition-colors disabled:opacity-50">
               {locationLoading
                 ? <Loader size={12} className="animate-spin" />
                 : <MapPin size={12} />}
@@ -1138,7 +1138,7 @@ export function Connect() {
           <div className="flex gap-2 mb-5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
             {['', ...SPECIALTIES].map((s, i) => (
               <button key={i} onClick={() => setSpecFilter(s === specFilter ? '' : s)}
-                className={`flex-shrink-0 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                className={`flex-shrink-0 px-3 py-1  text-xs font-medium transition-colors ${
                   specFilter === s && s !== ''
                     ? 'bg-warm-400 text-white'
                     : 'bg-raised text-faint hover:text-ink'
@@ -1151,12 +1151,12 @@ export function Connect() {
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3].map(i => (
-                <div key={i} className="h-44 rounded-2xl bg-raised animate-pulse" />
+                <div key={i} className="h-44  bg-raised animate-pulse" />
               ))}
             </div>
           ) : filtered.length === 0 ? (
             <div className="py-16 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-raised flex items-center justify-center">{providers.length === 0 ? <Sprout size={22} className="text-faint" /> : <Search size={22} className="text-faint" />}</div>
+              <div className="w-12 h-12 mx-auto mb-3  bg-raised flex items-center justify-center">{providers.length === 0 ? <Sprout size={22} className="text-faint" /> : <Search size={22} className="text-faint" />}</div>
               <p className="text-sm text-faint">
                 {providers.length === 0
                   ? 'No providers have joined yet. Check back soon.'
@@ -1197,7 +1197,7 @@ export function Connect() {
             </div>
           )}
 
-          <div className="mt-10 p-4 rounded-2xl border border-dashed border-accent/30 bg-accent-soft/60">
+          <div className="mt-10 p-4  border border-dashed border-accent/30 bg-accent-soft/60">
             <p className="text-sm font-semibold text-ink mb-1">Are you a psychiatrist or psychologist?</p>
             <p className="text-xs text-faint mb-3">List your practice and connect with mental health clients who need your expertise.</p>
             <Button variant="soft" size="sm" onClick={() => navigate('/provider/signup')}>
@@ -1210,7 +1210,7 @@ export function Connect() {
       {tab === 'my-doctor' && (
         <div className="space-y-5">
           {linkLoading ? (
-            <div className="h-28 rounded-2xl bg-raised animate-pulse" />
+            <div className="h-28  bg-raised animate-pulse" />
           ) : linkedDoctor ? (
             <>
               <Card className="p-4">
@@ -1238,7 +1238,7 @@ export function Connect() {
                     <Calendar size={13} /> Book session
                   </Button>
                   <button onClick={handleUnlink}
-                    className="px-3 py-1.5 rounded-xl text-xs text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 border border-line transition-colors flex items-center gap-1.5">
+                    className="px-3 py-1.5  text-xs text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 border border-line transition-colors flex items-center gap-1.5">
                     <Unlink size={12} /> Unlink
                   </button>
                 </div>
@@ -1269,7 +1269,7 @@ export function Connect() {
                                 {a.sharedDataTypes.map(t => {
                                   const dt = DATA_TYPES.find(d => d.id === t)
                                   return dt ? (
-                                    <span key={t} className="text-[10px] px-1.5 py-0.5 rounded-md bg-accent-soft text-accent-soft-text">
+                                    <span key={t} className="text-[10px] px-1.5 py-0.5  bg-accent-soft text-accent-soft-text">
                                       {dt.emoji} {dt.label}
                                     </span>
                                   ) : null
@@ -1278,7 +1278,7 @@ export function Connect() {
                             )}
                           </div>
                           <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                            <span className={`text-xs px-2 py-1  font-medium ${
                               a.status === 'confirmed' ? 'bg-success-100 dark:bg-success-500/20 text-success-700 dark:text-success-400'
                               : a.status === 'completed' ? 'bg-accent-soft text-accent-soft-text'
                               : a.status === 'pending' ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400'
@@ -1303,7 +1303,7 @@ export function Connect() {
                         </div>
                         {a.status === 'confirmed' && a.screeningRequired && !a.screeningSigned && (
                           <button onClick={() => setSigningAppt(a)}
-                            className="mt-2.5 w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/40 text-amber-700 dark:text-amber-400 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors">
+                            className="mt-2.5 w-full flex items-center justify-center gap-1.5 px-3 py-2.5  bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/40 text-amber-700 dark:text-amber-400 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors">
                             <FileSignature size={14} className="flex-shrink-0" />
                             Documents ready to sign. Tap to review &amp; sign
                           </button>
@@ -1330,7 +1330,7 @@ export function Connect() {
                             </p>
                           ) : (
                             <button onClick={() => setTicketAppt(a)}
-                              className="mt-2.5 w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-accent-soft border border-accent/30 text-accent-soft-text text-xs font-semibold hover:bg-accent-soft transition-colors">
+                              className="mt-2.5 w-full flex items-center justify-center gap-1.5 px-3 py-2.5  bg-accent-soft border border-accent/30 text-accent-soft-text text-xs font-semibold hover:bg-accent-soft transition-colors">
                               <QrCode size={14} className="flex-shrink-0" />
                               Going in person? Show your check-in pass
                             </button>
@@ -1338,7 +1338,7 @@ export function Connect() {
                         )}
                         {['pending', 'confirmed'].includes(a.status) && !sessionHasPassed(a) && (
                           <button onClick={() => handleCancelAppt(a)} disabled={cancelling === a.id}
-                            className="mt-2.5 w-full text-xs font-medium text-danger hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 py-2 rounded-xl transition-colors disabled:opacity-50">
+                            className="mt-2.5 w-full text-xs font-medium text-danger hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 py-2  transition-colors disabled:opacity-50">
                             {cancelling === a.id ? 'Cancelling…' : a.status === 'pending' ? 'Cancel request' : 'Cancel appointment'}
                           </button>
                         )}
@@ -1350,7 +1350,7 @@ export function Connect() {
 
               {upcomingAppts.length === 0 && (
                 <div className="py-8 text-center">
-                  <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-raised flex items-center justify-center"><Calendar size={22} className="text-faint" /></div>
+                  <div className="w-12 h-12 mx-auto mb-3  bg-raised flex items-center justify-center"><Calendar size={22} className="text-faint" /></div>
                   <p className="text-sm text-faint">No upcoming appointments.</p>
                   <p className="text-xs text-faint mt-1">Book a session with {linkedDoctor.name} to get started.</p>
                 </div>
@@ -1367,12 +1367,12 @@ export function Connect() {
                   <input value={hpcsaQuery} onChange={e => setHpcsaQuery(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleHpcsaSearch()}
                     placeholder="HPCSA number or doctor's name"
-                    className="flex-1 px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+                    className="flex-1 px-3 py-2.5  border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
                   <Button size="sm" onClick={handleHpcsaSearch}>Search</Button>
                 </div>
                 {searchError && <p className="text-xs text-danger mt-2">{searchError}</p>}
                 {searchResult && (
-                  <div className="mt-3 p-3 rounded-xl bg-raised border border-line">
+                  <div className="mt-3 p-3  bg-raised border border-line">
                     <div className="flex items-center gap-3">
                       <Avatar photoUrl={searchResult.photoURL} name={searchResult.name} size="sm" />
                       <div className="flex-1 min-w-0">
@@ -1393,13 +1393,13 @@ export function Connect() {
               <p className="text-xs text-faint mb-3">Or link a doctor from the directory:</p>
               <div className="space-y-3">
                 {loading ? (
-                  [1, 2].map(i => <div key={i} className="h-36 rounded-2xl bg-raised animate-pulse" />)
+                  [1, 2].map(i => <div key={i} className="h-36  bg-raised animate-pulse" />)
                 ) : providers.slice(0, 5).map(p => (
                   <ProviderCard key={p.id} provider={p} onBook={handleBookClick} onLink={handleLink} linked={false} onViewProfile={setViewingProvider} />
                 ))}
                 {!loading && providers.length === 0 && (
                   <div className="py-10 text-center">
-                    <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-raised flex items-center justify-center"><Sprout size={22} className="text-faint" /></div>
+                    <div className="w-12 h-12 mx-auto mb-3  bg-raised flex items-center justify-center"><Sprout size={22} className="text-faint" /></div>
                     <p className="text-sm text-faint">No providers yet. Check back soon.</p>
                   </div>
                 )}

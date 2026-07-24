@@ -3,38 +3,38 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-  * {
-    box-sizing: border-box;
-  }
-  body {
-    margin: 0;
-    font-family: 'Inter', system-ui, sans-serif;
-  }
-  #root {
-    height: 100vh;
-    overflow: hidden;
-  }
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-line rounded-full;
-  }
-  input[type="range"] {
-    @apply w-full accent-accent;
-  }
+ html {
+ -webkit-font-smoothing: antialiased;
+ -moz-osx-font-smoothing: grayscale;
+ }
+ * {
+ box-sizing: border-box;
+ }
+ body {
+ margin: 0;
+ font-family: 'Inter', system-ui, sans-serif;
+ }
+ #root {
+ height: 100vh;
+ overflow: hidden;
+ }
+ ::-webkit-scrollbar { width: 5px; height: 5px; }
+ ::-webkit-scrollbar-track { background: transparent; }
+ ::-webkit-scrollbar-thumb {
+ @apply bg-line ;
+ }
+ input[type="range"] {
+ @apply w-full accent-accent;
+ }
 }
 
 @layer utilities {
-  .timer-nums {
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum";
-  }
-  /* Keyboard-only focus ring for icon buttons and other bare controls. */
-  .focus-ring {
-    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface;
-  }
+ .timer-nums {
+ font-variant-numeric: tabular-nums;
+ font-feature-settings: "tnum";
+ }
+ /* Keyboard-only focus ring for icon buttons and other bare controls. */
+ .focus-ring {
+ @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface;
+ }
 }

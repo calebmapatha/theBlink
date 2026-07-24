@@ -38,7 +38,7 @@ function DayCell({ day, completed, total, isCurrentMonth }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`relative aspect-square rounded-xl flex flex-col items-center justify-center ${bg} ${isToday(date) ? 'ring-2 ring-accent' : ''}`}
+      className={`relative aspect-square  flex flex-col items-center justify-center ${bg} ${isToday(date) ? 'ring-2 ring-accent' : ''}`}
     >
       <span className={`text-xs font-semibold ${textColor}`}>{format(date, 'd')}</span>
       {!future && total > 0 && (
@@ -80,13 +80,13 @@ export function MonthlyTracker() {
       <PageHeader title="Monthly Tracker" subtitle="Habit performance over time" />
 
       <div className="flex items-center justify-between mb-4">
-        <button onClick={goBack} className="p-2 rounded-xl hover:bg-raised text-ink transition-colors">
+        <button onClick={goBack} className="p-2  hover:bg-raised text-ink transition-colors">
           <ChevronLeft size={20} />
         </button>
         <h2 className="text-base font-semibold text-ink">
           {MONTH_NAMES[viewMonth]} {viewYear}
         </h2>
-        <button onClick={goForward} className="p-2 rounded-xl hover:bg-raised text-ink transition-colors">
+        <button onClick={goForward} className="p-2  hover:bg-raised text-ink transition-colors">
           <ChevronRight size={20} />
         </button>
       </div>
@@ -99,7 +99,7 @@ export function MonthlyTracker() {
           { color: 'bg-raised', label: 'None' },
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1.5">
-            <div className={`w-3 h-3 rounded-sm ${color}`} />
+            <div className={`w-3 h-3  ${color}`} />
             <span className="text-xs text-faint">{label}</span>
           </div>
         ))}
@@ -137,9 +137,9 @@ export function MonthlyTracker() {
                   </div>
                   <span className="text-sm font-bold tabular-nums" style={{ color: h.color }}>{h.rate}%</span>
                 </div>
-                <div className="h-1.5 rounded-full bg-raised overflow-hidden">
+                <div className="h-1.5  bg-raised overflow-hidden">
                   <motion.div
-                    className="h-full rounded-full"
+                    className="h-full "
                     style={{ backgroundColor: h.color }}
                     animate={{ width: `${h.rate}%` }}
                     transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}

@@ -47,7 +47,7 @@ export function DatePicker({ value, onChange, min, clearable, placeholder = 'Pic
       <button
         type="button"
         onClick={openTo}
-        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-sm text-left transition-colors ${
+        className={`w-full flex items-center gap-2.5 px-3 py-2.5  border text-sm text-left transition-colors ${
           open
             ? 'border-accent ring-2 ring-accent/30 bg-raised'
             : 'border-line bg-raised hover:border-faint'
@@ -64,7 +64,7 @@ export function DatePicker({ value, onChange, min, clearable, placeholder = 'Pic
             aria-label="Clear date"
             onClick={e => { e.stopPropagation(); onChange(''); setOpen(false) }}
             onKeyDown={e => { if (e.key === 'Enter') { e.stopPropagation(); onChange(''); setOpen(false) } }}
-            className="p-0.5 rounded text-faint hover:text-danger transition-colors"
+            className="p-0.5  text-faint hover:text-danger transition-colors"
           >
             <X size={13} />
           </span>
@@ -80,15 +80,15 @@ export function DatePicker({ value, onChange, min, clearable, placeholder = 'Pic
             transition={{ duration: 0.18, ease: 'easeOut' }}
             className="overflow-hidden"
           >
-            <div className="mt-2 p-3 rounded-2xl border border-line bg-surface">
+            <div className="mt-2 p-3  border border-line bg-surface">
               <div className="flex items-center justify-between mb-2">
                 <button type="button" onClick={() => shift(-1)}
-                  className="p-1.5 rounded-lg text-faint hover:text-ink hover:bg-raised transition-colors">
+                  className="p-1.5  text-faint hover:text-ink hover:bg-raised transition-colors">
                   <ChevronLeft size={16} />
                 </button>
                 <p className="text-sm font-semibold text-ink">{MONTHS[view.m]} {view.y}</p>
                 <button type="button" onClick={() => shift(1)}
-                  className="p-1.5 rounded-lg text-faint hover:text-ink hover:bg-raised transition-colors">
+                  className="p-1.5  text-faint hover:text-ink hover:bg-raised transition-colors">
                   <ChevronRight size={16} />
                 </button>
               </div>
@@ -112,7 +112,7 @@ export function DatePicker({ value, onChange, min, clearable, placeholder = 'Pic
                       type="button"
                       disabled={disabled}
                       onClick={() => pick(day)}
-                      className={`aspect-square rounded-lg text-xs font-medium transition-colors ${
+                      className={`aspect-square  text-xs font-medium transition-colors ${
                         isSelected
                           ? 'bg-accent text-on-accent shadow-sm'
                           : disabled

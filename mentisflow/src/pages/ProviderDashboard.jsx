@@ -17,7 +17,7 @@ import { trialDaysLeft } from '../utils/pricing'
 import { getScreeningDocs, addScreeningDocPDF, addScreeningDocText, deleteScreeningDoc, openScreeningPDF, getConsentsForAppointment, MAX_PDF_BYTES, MAX_DOCS } from '../utils/screeningDocs'
 import { shortCodeFor, normalizeCode, parseCheckInPayload, formatCode } from '../utils/checkin'
 
-const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent'
+const inputCls = 'w-full px-3 py-2.5  border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent'
 
 const PLATFORMS = [
   { value: 'zoom',    label: 'Zoom' },
@@ -102,8 +102,8 @@ function DataSnapshot({ snapshot }) {
               {snapshot.tasks.completed}/{snapshot.tasks.total} tasks · {snapshot.tasks.rate}%
             </p>
           </div>
-          <div className="h-1.5 rounded-full bg-raised overflow-hidden">
-            <div className="h-full rounded-full bg-accent" style={{ width: `${snapshot.tasks.rate}%` }} />
+          <div className="h-1.5  bg-raised overflow-hidden">
+            <div className="h-full  bg-accent" style={{ width: `${snapshot.tasks.rate}%` }} />
           </div>
         </div>
       )}
@@ -117,8 +117,8 @@ function DataSnapshot({ snapshot }) {
               <p className="text-[10px] font-semibold text-ink flex-shrink-0">
                 {h.completed}/{h.total}d
               </p>
-              <div className="w-16 h-1 rounded-full bg-raised overflow-hidden flex-shrink-0">
-                <div className="h-full rounded-full bg-success-500"
+              <div className="w-16 h-1  bg-raised overflow-hidden flex-shrink-0">
+                <div className="h-full  bg-success-500"
                   style={{ width: `${Math.round(h.completed / h.total * 100)}%` }} />
               </div>
             </div>
@@ -138,8 +138,8 @@ function DataSnapshot({ snapshot }) {
                     <p className="text-[10px] text-ink truncate">{g.text}</p>
                   </div>
                   <span className="text-[10px] text-accent font-semibold flex-shrink-0">{g.progress}%</span>
-                  <div className="w-12 h-1 rounded-full bg-raised overflow-hidden flex-shrink-0">
-                    <div className="h-full rounded-full bg-accent" style={{ width: `${g.progress}%` }} />
+                  <div className="w-12 h-1  bg-raised overflow-hidden flex-shrink-0">
+                    <div className="h-full  bg-accent" style={{ width: `${g.progress}%` }} />
                   </div>
                 </div>
               ))}
@@ -150,7 +150,7 @@ function DataSnapshot({ snapshot }) {
               <p className="text-[10px] text-faint mb-1">Medications</p>
               <div className="flex flex-wrap gap-1">
                 {snapshot.treatmentPlan.medications.map((m, i) => (
-                  <span key={i} className="text-[10px] px-1.5 py-0.5 rounded-md bg-raised text-muted">
+                  <span key={i} className="text-[10px] px-1.5 py-0.5  bg-raised text-muted">
                     {m.name} {m.dosage}
                   </span>
                 ))}
@@ -162,7 +162,7 @@ function DataSnapshot({ snapshot }) {
               <p className="text-[10px] text-faint mb-1">Reported symptoms</p>
               <div className="flex flex-wrap gap-1">
                 {snapshot.treatmentPlan.symptoms.map((s, i) => (
-                  <span key={i} className="text-[10px] px-1.5 py-0.5 rounded-md bg-red-50 dark:bg-red-500/10 text-danger dark:text-red-400">
+                  <span key={i} className="text-[10px] px-1.5 py-0.5  bg-red-50 dark:bg-red-500/10 text-danger dark:text-red-400">
                     {s.name} ({s.severity}/5)
                   </span>
                 ))}
@@ -186,7 +186,7 @@ const STATUS_LABELS = { pending: 'Pending', confirmed: 'Confirmed', completed: '
 
 function StatusBadge({ status }) {
   return (
-    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md flex-shrink-0 ${STATUS_STYLES[status] || STATUS_STYLES.cancelled}`}>
+    <span className={`text-[10px] font-medium px-1.5 py-0.5  flex-shrink-0 ${STATUS_STYLES[status] || STATUS_STYLES.cancelled}`}>
       {STATUS_LABELS[status] || status}
     </span>
   )
@@ -194,7 +194,7 @@ function StatusBadge({ status }) {
 
 function ApptRow({ appt }) {
   return (
-    <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-raised">
+    <div className="flex items-center gap-3 px-3 py-2.5  bg-raised">
       <div className="flex-1 min-w-0">
         <p className="text-xs font-medium text-ink truncate">{appt.patientName}</p>
         <p className="text-[10px] text-faint flex items-center gap-1 mt-0.5">
@@ -208,7 +208,7 @@ function ApptRow({ appt }) {
 
 function MetricRow({ label, value, sub }) {
   return (
-    <div className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-raised">
+    <div className="flex items-center justify-between px-3 py-2.5  bg-raised">
       <div>
         <p className="text-xs font-medium text-ink">{label}</p>
         {sub && <p className="text-[10px] text-faint mt-0.5">{sub}</p>}
@@ -253,7 +253,7 @@ function StatDetailModal({ kind, onClose, stats }) {
       ) : (
         <div className="space-y-2">
           {patientList.map((p, i) => (
-            <div key={i} className="px-3 py-2.5 rounded-xl bg-raised">
+            <div key={i} className="px-3 py-2.5  bg-raised">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs font-medium text-ink truncate">{p.name}</p>
                 <p className="text-[10px] text-faint flex-shrink-0">
@@ -262,9 +262,9 @@ function StatDetailModal({ kind, onClose, stats }) {
               </div>
               <p className="text-[10px] text-faint truncate">{p.email}</p>
               <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                {p.confirmed > 0 && <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${STATUS_STYLES.confirmed}`}>{p.confirmed} confirmed</span>}
-                {p.pending > 0 && <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${STATUS_STYLES.pending}`}>{p.pending} pending</span>}
-                {p.cancelled > 0 && <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${STATUS_STYLES.cancelled}`}>{p.cancelled} declined</span>}
+                {p.confirmed > 0 && <span className={`text-[10px] px-1.5 py-0.5  ${STATUS_STYLES.confirmed}`}>{p.confirmed} confirmed</span>}
+                {p.pending > 0 && <span className={`text-[10px] px-1.5 py-0.5  ${STATUS_STYLES.pending}`}>{p.pending} pending</span>}
+                {p.cancelled > 0 && <span className={`text-[10px] px-1.5 py-0.5  ${STATUS_STYLES.cancelled}`}>{p.cancelled} declined</span>}
                 {p.lastDate && <span className="text-[10px] text-faint ml-auto">Last: {p.lastDate}</span>}
               </div>
             </div>
@@ -284,7 +284,7 @@ function StatDetailModal({ kind, onClose, stats }) {
           <MetricRow label="Awaiting your response" value={pending.length} />
           {(confirmed.length + declined.length) > 0 && (
             <div className="pt-1">
-              <div className="h-2 rounded-full bg-raised overflow-hidden flex">
+              <div className="h-2  bg-raised overflow-hidden flex">
                 <div className="h-full bg-success-500" style={{ width: `${acceptanceRate}%` }} />
                 <div className="h-full bg-line flex-1" />
               </div>
@@ -315,7 +315,7 @@ function StatDetailModal({ kind, onClose, stats }) {
               <p className="text-[10px] font-semibold uppercase tracking-wider text-faint mb-2">Sessions</p>
               <div className="space-y-1.5">
                 {[...sessions].sort(byDateDesc).map((a, i) => (
-                  <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl bg-raised">
+                  <div key={i} className="flex items-center justify-between px-3 py-2  bg-raised">
                     <div className="min-w-0">
                       <p className="text-xs text-ink truncate">{a.patientName}</p>
                       <p className="text-[10px] text-faint">{a.date} · {a.timeSlot}</p>
@@ -464,7 +464,7 @@ function PrescriptionModal({ open, onClose, appt, onSubmit }) {
         </p>
 
         {items.map((it, i) => (
-          <div key={i} className="rounded-2xl border border-line p-3 space-y-2.5">
+          <div key={i} className=" border border-line p-3 space-y-2.5">
             <div className="flex items-center justify-between">
               <p className="text-xs font-semibold text-muted">Medication {i + 1}</p>
               {items.length > 1 && (
@@ -547,7 +547,7 @@ function VerificationSection({ uid, upload, getMeta, getUrl, showToast }) {
         {VERIFICATION_DOCS.map(d => {
           const uploaded = !!meta[d.key]?.path
           return (
-            <div key={d.key} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-surface border border-line">
+            <div key={d.key} className="flex items-center gap-2.5 px-3 py-2.5  bg-surface border border-line">
               <FileText size={15} className={uploaded ? 'text-success-500' : 'text-faint'} />
               <span className="flex-1 text-sm text-ink min-w-0 truncate">{d.label}</span>
               {uploaded && <button onClick={() => view(meta[d.key].path)} className="text-[10px] font-semibold text-accent hover:underline flex-shrink-0">View</button>}
@@ -579,14 +579,14 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
             {appt.date} · {appt.timeSlot}
           </p>
           {appt.notes && (
-            <p className="text-xs text-muted mt-1.5 italic bg-raised px-2 py-1 rounded-lg">"{appt.notes}"</p>
+            <p className="text-xs text-muted mt-1.5 italic bg-raised px-2 py-1 ">"{appt.notes}"</p>
           )}
           {appt.sharedDataTypes?.length > 0 && (
             <div className="mt-2">
               <p className="text-[10px] text-faint mb-1">Patient shared:</p>
               <div className="flex flex-wrap gap-1">
                 {appt.sharedDataTypes.map(t => DATA_LABELS[t] ? (
-                  <span key={t} className="text-[10px] px-1.5 py-0.5 rounded-md bg-accent-soft text-accent-soft-text">
+                  <span key={t} className="text-[10px] px-1.5 py-0.5  bg-accent-soft text-accent-soft-text">
                     {DATA_LABELS[t]}
                   </span>
                 ) : null)}
@@ -626,11 +626,11 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
         {appt.status === 'pending' && (
           <div className="flex gap-1.5 flex-shrink-0">
             <button onClick={() => onDecline(appt.id)}
-              className="p-1.5 rounded-lg text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title="Decline">
+              className="p-1.5  text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title="Decline">
               <XCircle size={20} />
             </button>
             <button onClick={() => onConfirm(appt.id)}
-              className="p-1.5 rounded-lg text-faint hover:text-success-500 hover:bg-success-50 dark:hover:bg-success-500/10 transition-colors" title="Confirm">
+              className="p-1.5  text-faint hover:text-success-500 hover:bg-success-50 dark:hover:bg-success-500/10 transition-colors" title="Confirm">
               <CheckCircle size={20} />
             </button>
           </div>
@@ -648,17 +648,17 @@ function AppointmentCard({ appt, onConfirm, onDecline, onOutcome, meetingLink, o
           // attendance analytics.
           <div className="flex flex-col gap-1.5 flex-shrink-0">
             <button onClick={() => onOutcome(appt.id, 'completed')}
-              className="text-[10px] font-medium px-2 py-1 rounded-lg bg-success-50 dark:bg-success-500/10 text-success-600 dark:text-success-400 hover:bg-success-100 transition-colors">
+              className="text-[10px] font-medium px-2 py-1  bg-success-50 dark:bg-success-500/10 text-success-600 dark:text-success-400 hover:bg-success-100 transition-colors">
               ✓ Completed
             </button>
             <button onClick={() => onOutcome(appt.id, 'no-show')}
-              className="text-[10px] font-medium px-2 py-1 rounded-lg bg-red-50 dark:bg-red-500/10 text-danger hover:bg-red-100 transition-colors">
+              className="text-[10px] font-medium px-2 py-1  bg-red-50 dark:bg-red-500/10 text-danger hover:bg-red-100 transition-colors">
               No-show
             </button>
           </div>
         )}
         {['completed', 'no-show', 'cancelled'].includes(appt.status) && (
-          <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md flex-shrink-0 ${STATUS_STYLES[appt.status]}`}>
+          <span className={`text-[10px] font-medium px-1.5 py-0.5  flex-shrink-0 ${STATUS_STYLES[appt.status]}`}>
             {STATUS_LABELS[appt.status]}
           </span>
         )}
@@ -701,7 +701,7 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
     return persist(updated)
   }
 
-  if (diaryLoading) return <div className="h-40 rounded-2xl bg-raised animate-pulse" />
+  if (diaryLoading) return <div className="h-40  bg-raised animate-pulse" />
 
   return (
     <div className="space-y-4">
@@ -734,7 +734,7 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
                 return (
                   <button key={d.key + time} onClick={() => toggleSlot(d.key, time)} disabled={saving}
                     title={`${d.label} ${time} — ${open ? 'open' : 'closed'}`}
-                    className={`h-6 rounded-md transition-colors ${
+                    className={`h-6  transition-colors ${
                       open
                         ? 'bg-accent hover:bg-accent-strong'
                         : 'bg-raised hover:bg-line'
@@ -748,15 +748,15 @@ function DiaryManager({ providerUid, getDiary, saveDiary }) {
 
       {/* Legend + per-day quick actions */}
       <div className="flex items-center gap-3 text-[10px] text-faint">
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-accent inline-block" /> Open</span>
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-line inline-block" /> Closed</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3  bg-accent inline-block" /> Open</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-3  bg-line inline-block" /> Closed</span>
       </div>
       <div className="flex flex-wrap gap-1.5">
         {DAYS.map(d => {
           const closed = dayMode(diary, d.key) === 'closed'
           const custom = dayMode(diary, d.key) === 'custom'
           return (
-            <div key={d.key} className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg bg-raised">
+            <div key={d.key} className="flex items-center gap-1 text-[10px] px-2 py-1  bg-raised">
               <span className="font-semibold text-muted">{d.label.slice(0, 3)}</span>
               {closed
                 ? <button onClick={() => resetDay(d.key)} disabled={saving} className="text-accent hover:underline">reopen</button>
@@ -794,7 +794,7 @@ function ConsentsModal({ appt, onClose }) {
             the session on {appt?.date} at {appt?.timeSlot}.
           </p>
           {consents.map(c => (
-            <div key={c.id} className="p-3 rounded-xl border border-line space-y-2">
+            <div key={c.id} className="p-3  border border-line space-y-2">
               <div className="flex items-center gap-2">
                 <FileText size={13} className="text-accent flex-shrink-0" />
                 <p className="text-xs font-medium text-ink flex-1">{c.docTitle}</p>
@@ -805,7 +805,7 @@ function ConsentsModal({ appt, onClose }) {
               </p>
               {c.signatureImage && (
                 <img src={c.signatureImage} alt={`Signature of ${c.signatureName}`}
-                  className="h-16 rounded-lg border border-line bg-white" />
+                  className="h-16  border border-line bg-white" />
               )}
             </div>
           ))}
@@ -874,7 +874,7 @@ function DocumentsManager({ providerUid }) {
     }
   }
 
-  if (docsLoading) return <div className="h-20 rounded-2xl bg-raised animate-pulse" />
+  if (docsLoading) return <div className="h-20  bg-raised animate-pulse" />
 
   return (
     <div className="space-y-3">
@@ -907,7 +907,7 @@ function DocumentsManager({ providerUid }) {
                 View
               </button>
               <button onClick={() => handleDelete(d.id)} disabled={busy}
-                className="p-1 rounded-lg text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex-shrink-0" title="Remove">
+                className="p-1  text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex-shrink-0" title="Remove">
                 <Trash2 size={13} />
               </button>
             </Card>
@@ -978,13 +978,13 @@ function ToolCard({ icon: Icon, title, desc, badge, onClick }) {
   return (
     <Card as="button" flat interactive type="button" onClick={onClick}
       className="group text-left w-full p-6 hover:border-faint">
-      <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-4 bg-accent-soft">
+      <div className="w-11 h-11  flex items-center justify-center mb-4 bg-accent-soft">
         <Icon size={20} className="text-accent-soft-text" />
       </div>
       <div className="flex items-center gap-2">
         <p className="font-semibold text-ink text-[15px]">{title}</p>
         {badge > 0 && (
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-accent-soft text-accent-soft-text">{badge}</span>
+          <span className="text-[10px] font-bold px-1.5 py-0.5  bg-accent-soft text-accent-soft-text">{badge}</span>
         )}
       </div>
       <p className="text-sm text-muted mt-1.5 leading-relaxed">{desc}</p>
@@ -1003,7 +1003,7 @@ function Banner({ tone = 'amber', icon: Icon, title, children, action }) {
     teal:  'bg-accent-soft border-accent/30 text-accent-soft-text',
   }
   return (
-    <div className={`mb-5 rounded-2xl border p-4 flex items-start gap-3 ${tones[tone]}`}>
+    <div className={`mb-5  border p-4 flex items-start gap-3 ${tones[tone]}`}>
       {Icon && <Icon size={18} className="flex-shrink-0 mt-0.5" />}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold">{title}</p>
@@ -1051,7 +1051,7 @@ function CameraScanner({ onPayload, onUnavailable }) {
     }
   }, [])
 
-  return <video ref={videoRef} muted playsInline className="w-full aspect-video object-cover rounded-2xl bg-black" />
+  return <video ref={videoRef} muted playsInline className="w-full aspect-video object-cover  bg-black" />
 }
 
 // Reception check-in: scan the patient's QR pass (where supported) or type
@@ -1121,7 +1121,7 @@ function CheckInModal({ open, onClose, appointments, onCheckIn }) {
               placeholder="e.g. K7M-PQ4"
               autoFocus
               maxLength={8}
-              className="w-full px-4 py-3 rounded-xl border border-line bg-raised text-ink text-center text-lg font-bold tracking-[0.2em] uppercase placeholder:tracking-normal placeholder:font-normal placeholder:text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-4 py-3  border border-line bg-raised text-ink text-center text-lg font-bold tracking-[0.2em] uppercase placeholder:tracking-normal placeholder:font-normal placeholder:text-sm focus:outline-none focus:ring-2 focus:ring-accent"
             />
             {canScan && (
               <Button variant="soft" size="sm" className="w-full" onClick={() => { setScanError(''); setScanning(true) }}>
@@ -1134,7 +1134,7 @@ function CheckInModal({ open, onClose, appointments, onCheckIn }) {
         {scanError && <p className="text-xs text-danger">{scanError}</p>}
 
         {match && (
-          <div className="p-3.5 rounded-2xl bg-success-50 dark:bg-success-500/10 border border-success-200 dark:border-success-500/30">
+          <div className="p-3.5  bg-success-50 dark:bg-success-500/10 border border-success-200 dark:border-success-500/30">
             <div className="flex items-center gap-3">
               <Avatar name={match.patientName} size="sm" />
               <div className="flex-1 min-w-0">
@@ -1295,7 +1295,7 @@ export function ProviderDashboard() {
   if (loading) return (
     <PageWrapper>
       <div className="space-y-3 mt-6">
-        {[1, 2].map(i => <div key={i} className="h-24 rounded-2xl bg-raised animate-pulse" />)}
+        {[1, 2].map(i => <div key={i} className="h-24  bg-raised animate-pulse" />)}
       </div>
     </PageWrapper>
   )
@@ -1362,9 +1362,9 @@ export function ProviderDashboard() {
               onClick={() => fileRef.current.click()}
               disabled={photoUploading}
               title="Change photo"
-              className="relative rounded-full overflow-hidden flex-shrink-0 group mt-1.5">
+              className="relative  overflow-hidden flex-shrink-0 group mt-1.5">
               <Avatar photoUrl={profile?.photoURL} name={profile?.name || 'Your profile'} size="lg" />
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ">
                 {photoUploading ? <Loader size={15} className="text-white animate-spin" /> : <Camera size={15} className="text-white" />}
               </div>
             </button>
@@ -1415,7 +1415,7 @@ export function ProviderDashboard() {
               {(profile?.specialties || []).length > 0 && (
                 <ul className="mt-2.5 flex flex-wrap gap-1.5" aria-label="Specialisations">
                   {(profile?.specialties || []).map(s => (
-                    <li key={s} className="rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent-soft-text">{s}</li>
+                    <li key={s} className=" bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent-soft-text">{s}</li>
                   ))}
                 </ul>
               )}
@@ -1550,7 +1550,7 @@ export function ProviderDashboard() {
               <p className="text-xs text-faint mb-3">Patients asking you to share your session fee. Disclosing notifies them of your R{profile?.sessionFee || '—'} fee.</p>
               <div className="space-y-2">
                 {feeRequests.filter(r => r.status === 'pending').map(r => (
-                  <div key={r.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-raised">
+                  <div key={r.id} className="flex items-center gap-3 px-3 py-2.5  bg-raised">
                     <span className="flex-1 text-sm text-ink truncate">{r.patientName || 'A patient'}</span>
                     <Button size="sm" variant="soft" onClick={() => handleDiscloseFee(r)}>Disclose fee</Button>
                   </div>
@@ -1579,8 +1579,8 @@ export function ProviderDashboard() {
                       </div>
                       <span className="text-xs font-semibold text-ink">{val.toFixed(1)}</span>
                     </div>
-                    <div className="h-1.5 rounded-full bg-raised overflow-hidden">
-                      <div className="h-full rounded-full bg-accent transition-all duration-500" style={{ width: `${(val / 5) * 100}%` }} />
+                    <div className="h-1.5  bg-raised overflow-hidden">
+                      <div className="h-full  bg-accent transition-all duration-500" style={{ width: `${(val / 5) * 100}%` }} />
                     </div>
                   </div>
                 )
@@ -1592,7 +1592,7 @@ export function ProviderDashboard() {
                 <p className="text-[13px] font-medium text-faint mb-2">Recent feedback</p>
                 <div className="grid sm:grid-cols-2 gap-2">
                   {recentComments.map((r, i) => (
-                    <div key={i} className="bg-raised rounded-xl px-3 py-2">
+                    <div key={i} className="bg-raised  px-3 py-2">
                       <div className="flex items-center gap-1.5 mb-1"><StarDisplay value={r.overall} size={11} /></div>
                       <p className="text-xs text-muted italic">"{r.comment}"</p>
                     </div>

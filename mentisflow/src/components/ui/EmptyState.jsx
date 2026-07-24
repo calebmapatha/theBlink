@@ -4,7 +4,7 @@
 export function EmptyState({ icon: Icon, title, hint, action, className = '' }) {
   return (
     <div className={`py-10 text-center ${className}`}>
-      <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-raised flex items-center justify-center">
+      <div className="w-12 h-12 mx-auto mb-3  bg-raised flex items-center justify-center">
         <Icon size={22} className="text-faint" />
       </div>
       <p className="text-sm text-faint">{title}</p>

@@ -8,12 +8,12 @@ const variants = {
 }
 
 const sizes = {
- sm: 'px-3 py-1.5 text-sm rounded-lg',
- md: 'px-4 py-2.5 text-sm rounded-xl',
- lg: 'px-6 py-3 text-base rounded-xl',
- icon: 'p-2.5 rounded-xl',
-  // Steep-style fully-rounded lozenge for editorial CTAs.
- pill: 'px-5 py-2.5 text-sm rounded-full',
+ sm: 'px-3 py-1.5 text-sm ',
+ md: 'px-4 py-2.5 text-sm ',
+ lg: 'px-6 py-3 text-base ',
+ icon: 'p-2.5 ',
+  // Steep-style fully- lozenge for editorial CTAs.
+ pill: 'px-5 py-2.5 text-sm ',
 }
 
 export function Button({ variant = 'primary', size = 'md', className = '', children, ...props }) {

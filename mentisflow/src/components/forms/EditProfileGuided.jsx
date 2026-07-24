@@ -19,7 +19,7 @@ import { detectLocation } from '../../utils/geolocate'
  * them to GuidedFlow.
  */
 
-const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent'
+const inputCls = 'w-full px-3 py-2.5  border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent'
 
 const PLATFORMS = [
   { value: 'zoom',    label: 'Zoom' },
@@ -44,7 +44,7 @@ function Chip({ label, selected, onClick }) {
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`rounded-full border px-4 py-2 text-sm transition-colors motion-reduce:transition-none ${
+      className={` border px-4 py-2 text-sm transition-colors motion-reduce:transition-none ${
         selected
           ? 'border-accent bg-accent-soft font-medium text-accent-soft-text'
           : 'border-line bg-raised text-muted hover:border-faint'
@@ -151,7 +151,7 @@ const steps = [
             type="checkbox"
             checked={!!values.hideFee}
             onChange={e => setValues({ hideFee: e.target.checked })}
-            className="mt-0.5 h-4 w-4 rounded accent-accent flex-shrink-0"
+            className="mt-0.5 h-4 w-4  accent-accent flex-shrink-0"
           />
           <span className="text-xs leading-relaxed">
             Hide my session fee from patients. Your profile will show

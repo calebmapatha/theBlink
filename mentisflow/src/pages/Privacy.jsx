@@ -18,7 +18,7 @@ export function Privacy() {
       <div className="max-w-2xl mx-auto px-5 py-10 space-y-8">
         <header className="space-y-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-primary-500 flex items-center justify-center">
+            <div className="w-8 h-8  bg-primary-500 flex items-center justify-center">
               <HeartHandshake size={16} className="text-white" />
             </div>
             <span className="font-semibold">MentisFlow</span>

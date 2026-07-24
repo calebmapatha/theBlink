@@ -65,7 +65,7 @@ function HabitCard({ habit, checked, onToggle, streak, weeklyCount }) {
       layout
       whileTap={{ scale: 0.93 }}
       onClick={() => onToggle(habit.id)}
-      className={`flex flex-col items-center gap-2.5 p-4 rounded-2xl border transition-colors w-full ${
+      className={`flex flex-col items-center gap-2.5 p-4  border transition-colors w-full ${
         checked || weeklyMet
           ? 'bg-raised/60 border-line'
           : 'bg-surface border-line'
@@ -120,7 +120,7 @@ function HabitFormModal({ open, onClose, onSave, initial }) {
           <div className="flex flex-wrap gap-2.5">
             {HABIT_COLORS.map(c => (
               <button key={c} onClick={() => setColor(c)}
-                className={`w-8 h-8 rounded-full transition-all ${color === c ? 'scale-125 ring-2 ring-offset-2 ring-offset-surface ring-faint' : 'hover:scale-110'}`}
+                className={`w-8 h-8  transition-all ${color === c ? 'scale-125 ring-2 ring-offset-2 ring-offset-surface ring-faint' : 'hover:scale-110'}`}
                 style={{ backgroundColor: c }} />
             ))}
           </div>
@@ -128,10 +128,10 @@ function HabitFormModal({ open, onClose, onSave, initial }) {
 
         <div>
           <label className="block text-xs font-medium text-faint mb-2">Icon</label>
-          <div className="flex flex-wrap gap-1.5 p-2.5 rounded-xl bg-raised max-h-24 overflow-y-auto">
+          <div className="flex flex-wrap gap-1.5 p-2.5  bg-raised max-h-24 overflow-y-auto">
             {EMOJI_OPTIONS.map(e => (
               <button key={e} onClick={() => setEmoji(e)}
-                className={`text-lg p-1 rounded-lg transition-colors ${emoji === e ? 'bg-accent-soft ring-1 ring-accent' : 'hover:bg-raised'}`}>
+                className={`text-lg p-1  transition-colors ${emoji === e ? 'bg-accent-soft ring-1 ring-accent' : 'hover:bg-raised'}`}>
                 {e}
               </button>
             ))}
@@ -143,7 +143,7 @@ function HabitFormModal({ open, onClose, onSave, initial }) {
           <input value={name} onChange={e => setName(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSave()}
             placeholder="e.g. Go to gym"
-            className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+            className="w-full px-3 py-2.5  border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
         </div>
 
         <div>
@@ -151,7 +151,7 @@ function HabitFormModal({ open, onClose, onSave, initial }) {
           <div className="flex gap-2">
             {FREQ_OPTIONS.map(f => (
               <button key={f.value} onClick={() => setFrequency(f.value)}
-                className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-all ${
+                className={`flex-1 py-2  text-sm font-medium border transition-all ${
                   frequency === f.value
                     ? 'bg-accent-soft border-accent text-accent-soft-text'
                     : 'border-line text-faint hover:border-faint'
@@ -170,7 +170,7 @@ function HabitFormModal({ open, onClose, onSave, initial }) {
             <div className="flex gap-1.5">
               {[1,2,3,4,5,6,7].map(n => (
                 <button key={n} onClick={() => setTarget(n)}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex-1 py-2  text-sm font-medium transition-all ${
                     target === n ? 'text-white' : 'bg-raised text-ink hover:bg-line'
                   }`}
                   style={target === n ? { backgroundColor: color } : {}}>
@@ -201,8 +201,8 @@ function ManageModal({ open, onClose, habits, onAdd, onEdit, onRemove }) {
       <Modal open={open} onClose={onClose} title="Manage Habits">
         <div className="space-y-3">
           {habits.map(habit => (
-            <div key={habit.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-raised">
-              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: habit.color }} />
+            <div key={habit.id} className="flex items-center gap-3 px-3 py-2.5  bg-raised">
+              <div className="w-3 h-3  flex-shrink-0" style={{ backgroundColor: habit.color }} />
               <span className="text-lg">{habit.emoji}</span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-ink">{habit.name}</p>
@@ -210,10 +210,10 @@ function ManageModal({ open, onClose, habits, onAdd, onEdit, onRemove }) {
                   {habit.frequency === 'weekly' ? `${habit.weeklyTarget}× per week` : 'Daily'}
                 </p>
               </div>
-              <button onClick={() => setEditTarget(habit)} className="p-1.5 rounded-lg text-faint hover:text-accent transition-colors">
+              <button onClick={() => setEditTarget(habit)} className="p-1.5  text-faint hover:text-accent transition-colors">
                 <Edit2 size={13} />
               </button>
-              <button onClick={() => onRemove(habit.id)} className="p-1.5 rounded-lg text-faint hover:text-danger transition-colors">
+              <button onClick={() => onRemove(habit.id)} className="p-1.5  text-faint hover:text-danger transition-colors">
                 <Trash2 size={13} />
               </button>
             </div>
@@ -285,7 +285,7 @@ export function HabitTracker() {
 
       {habits.habits.length === 0 ? (
         <div className="py-12 text-center">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-raised flex items-center justify-center"><Sprout size={22} className="text-faint" /></div>
+          <div className="w-12 h-12 mx-auto mb-3  bg-raised flex items-center justify-center"><Sprout size={22} className="text-faint" /></div>
           <p className="text-sm text-faint mb-4">No habits yet.</p>
           <Button onClick={() => setManageOpen(true)}><Plus size={15} /> Add habits</Button>
         </div>

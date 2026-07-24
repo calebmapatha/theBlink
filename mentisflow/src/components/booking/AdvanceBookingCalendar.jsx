@@ -90,7 +90,7 @@ export default function AdvanceBookingCalendar({
           onClick={() => canGoBack && setMonthOffset(o => o - 1)}
           disabled={!canGoBack}
           aria-label="Previous month"
-          className="rounded-full px-2.5 py-1 text-muted hover:bg-raised disabled:opacity-30"
+          className=" px-2.5 py-1 text-muted hover:bg-raised disabled:opacity-30"
         >
           ‹
         </button>
@@ -102,7 +102,7 @@ export default function AdvanceBookingCalendar({
           onClick={() => canGoForward && setMonthOffset(o => o + 1)}
           disabled={!canGoForward}
           aria-label="Next month"
-          className="rounded-full px-2.5 py-1 text-muted hover:bg-raised disabled:opacity-30"
+          className=" px-2.5 py-1 text-muted hover:bg-raised disabled:opacity-30"
         >
           ›
         </button>
@@ -135,7 +135,7 @@ export default function AdvanceBookingCalendar({
               disabled={disabled}
               onClick={() => onSelectDate(key)}
               aria-pressed={isSelected}
-              className={`relative aspect-square rounded-xl text-sm transition-colors motion-reduce:transition-none ${
+              className={`relative aspect-square  text-sm transition-colors motion-reduce:transition-none ${
                 isSelected
                   ? 'bg-accent font-medium text-white'
                   : disabled
@@ -145,7 +145,7 @@ export default function AdvanceBookingCalendar({
             >
               {d.getDate()}
               {hasSlots && !isSelected && (
-                <span className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-accent" />
+                <span className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2  bg-accent" />
               )}
             </button>
           )
@@ -170,7 +170,7 @@ export default function AdvanceBookingCalendar({
                   type="button"
                   onClick={() => onSelectSlot(slot)}
                   aria-pressed={selectedSlot === slot}
-                  className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                  className={` border px-4 py-2 text-sm transition-colors ${
                     selectedSlot === slot
                       ? 'border-accent bg-accent-soft font-medium text-accent-soft-text'
                       : 'border-line bg-raised text-ink hover:border-accent/40'

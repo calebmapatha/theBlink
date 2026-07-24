@@ -110,12 +110,12 @@ export default function GuidedFlow({
         role="switch"
         aria-checked={guided}
         onClick={toggleGuide}
-        className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 overflow-hidden ${
+        className={`relative w-11 h-6  transition-colors duration-200 flex-shrink-0 overflow-hidden ${
           guided ? 'bg-accent' : 'bg-line'
         }`}
       >
         <span
-          className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+          className={`absolute top-0.5 left-0.5 w-5 h-5  bg-white shadow-sm transition-transform duration-200 ${
             guided ? 'translate-x-5' : 'translate-x-0'
           }`}
         />
@@ -165,21 +165,21 @@ export default function GuidedFlow({
         {guideToggle}
       </div>
       <div
-        className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-line"
+        className="mt-2 h-1.5 w-full overflow-hidden  bg-line"
         role="progressbar"
         aria-valuenow={onReview ? 100 : progress}
         aria-valuemin={0}
         aria-valuemax={100}
       >
         <div
-          className="h-full rounded-full bg-accent transition-all motion-reduce:transition-none"
+          className="h-full  bg-accent transition-all motion-reduce:transition-none"
           style={{ width: `${onReview ? 100 : progress}%` }}
         />
       </div>
 
       {onReview ? (
         <div className="mt-5">
-          <ul className="divide-y divide-line rounded-2xl border border-line bg-raised">
+          <ul className="divide-y divide-line  border border-line bg-raised">
             {steps.map((step, i) => (
               <li key={step.id} className="flex items-start justify-between gap-4 px-4 py-3">
                 <div className="min-w-0">
@@ -215,11 +215,11 @@ export default function GuidedFlow({
             <div className="mb-4 flex items-start gap-2.5">
               <span
                 aria-hidden="true"
-                className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent-soft-text"
+                className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center  bg-accent-soft text-xs font-semibold text-accent-soft-text"
               >
                 ?
               </span>
-              <p className="rounded-2xl rounded-tl-sm bg-accent-soft px-4 py-2.5 text-sm leading-relaxed text-accent-soft-text">
+              <p className="  bg-accent-soft px-4 py-2.5 text-sm leading-relaxed text-accent-soft-text">
                 {current.guide}
               </p>
             </div>

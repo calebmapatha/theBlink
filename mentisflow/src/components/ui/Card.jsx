@@ -4,7 +4,7 @@
 export function Card({ className = '', glow, interactive, flat, as: Tag = 'div', children, ...props }) {
   return (
     <Tag
-      className={`rounded-3xl bg-surface border transition-all duration-200
+      className={` bg-surface border transition-all duration-200
         ${flat
           ? 'border-line/60'
           : 'border-line shadow-card dark:shadow-card-dark'}

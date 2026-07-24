@@ -24,7 +24,7 @@ import { BarChart } from './ui/charts'
 
 function Card({ title, action, children }) {
   return (
-    <section className="rounded-2xl border border-line bg-surface p-5">
+    <section className=" border border-line bg-surface p-5">
       {(title || action) && (
         <header className="mb-4 flex items-center justify-between">
           {title && (
@@ -75,7 +75,7 @@ export default function SuperAdminDashboard({
                 <button
                   type="button"
                   onClick={item.onOpen}
-                  className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left text-sm transition-colors motion-reduce:transition-none ${
+                  className={`flex w-full items-center justify-between  border px-4 py-3 text-left text-sm transition-colors motion-reduce:transition-none ${
                     item.urgent
                       ? 'border-danger/40 text-danger hover:bg-danger/10'
                       : 'border-warn/40 text-warn hover:bg-warn-soft'
@@ -83,7 +83,7 @@ export default function SuperAdminDashboard({
                 >
                   <span className="pr-3">{item.label}</span>
                   <span
-                    className={`flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-xs font-semibold ${
+                    className={`flex h-6 min-w-6 items-center justify-center  px-1.5 text-xs font-semibold ${
                       item.urgent ? 'bg-danger/15 text-danger' : 'bg-warn-soft text-warn'
                     }`}
                   >
@@ -99,7 +99,7 @@ export default function SuperAdminDashboard({
       {/* 2. KPI grid with deltas */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {kpis.map(kpi => (
-          <div key={kpi.label} className="rounded-2xl border border-line bg-surface p-4">
+          <div key={kpi.label} className=" border border-line bg-surface p-4">
             <p className="text-xs text-faint">{kpi.label}</p>
             <p className="mt-1 text-2xl font-semibold text-ink">{kpi.value}</p>
             <div className="mt-1 flex flex-col gap-0.5">
@@ -134,14 +134,14 @@ export default function SuperAdminDashboard({
                     <button
                       type="button"
                       onClick={() => onApprove(request.id)}
-                      className="rounded-full bg-accent px-3.5 py-1.5 text-xs font-medium text-on-accent hover:bg-accent-strong"
+                      className=" bg-accent px-3.5 py-1.5 text-xs font-medium text-on-accent hover:bg-accent-strong"
                     >
                       Approve
                     </button>
                     <button
                       type="button"
                       onClick={() => onReject(request.id)}
-                      className="rounded-full border border-line px-3.5 py-1.5 text-xs font-medium text-muted hover:text-danger"
+                      className=" border border-line px-3.5 py-1.5 text-xs font-medium text-muted hover:text-danger"
                     >
                       Reject
                     </button>
@@ -223,14 +223,14 @@ export default function SuperAdminDashboard({
         <button
           type="button"
           onClick={onExportBookings}
-          className="rounded-full bg-accent-soft px-5 py-2.5 text-sm font-medium text-accent-soft-text hover:opacity-90"
+          className=" bg-accent-soft px-5 py-2.5 text-sm font-medium text-accent-soft-text hover:opacity-90"
         >
           Export bookings CSV
         </button>
         <button
           type="button"
           onClick={onExportDoctors}
-          className="rounded-full bg-accent-soft px-5 py-2.5 text-sm font-medium text-accent-soft-text hover:opacity-90"
+          className=" bg-accent-soft px-5 py-2.5 text-sm font-medium text-accent-soft-text hover:opacity-90"
         >
           Export doctors CSV
         </button>

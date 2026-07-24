@@ -112,7 +112,7 @@ export function ThemeToggle() {
     <div
       role="radiogroup"
       aria-label="Appearance"
-      className="inline-flex rounded-full border border-line bg-surface p-1"
+      className="inline-flex  border border-line bg-surface p-1"
     >
       {OPTIONS.map((option) => {
         const selected = mode === option.value
@@ -123,7 +123,7 @@ export function ThemeToggle() {
             role="radio"
             aria-checked={selected}
             onClick={() => setMode(option.value)}
-            className={`rounded-full px-3.5 py-1.5 text-sm transition-colors motion-reduce:transition-none ${
+            className={` px-3.5 py-1.5 text-sm transition-colors motion-reduce:transition-none ${
               selected
                 ? 'bg-accent font-medium text-on-accent'
                 : 'text-muted hover:bg-raised'

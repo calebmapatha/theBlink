@@ -5,7 +5,7 @@ import { buildEvent, googleCalendarUrl, outlookCalendarUrl, downloadICS } from '
 // role: 'patient' | 'provider' — controls whose name appears in the event.
 export function AddToCalendar({ appt, role = 'patient', className = '' }) {
   const ev = buildEvent(appt, role)
-  const btn = 'flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg border border-line text-muted hover:text-accent hover:border-accent/40 transition-colors'
+  const btn = 'flex items-center gap-1 text-[10px] font-medium px-2 py-1  border border-line text-muted hover:text-accent hover:border-accent/40 transition-colors'
   return (
     <div className={`flex items-center gap-1.5 flex-wrap ${className}`}>
       <span className="text-[10px] text-faint flex items-center gap-1">

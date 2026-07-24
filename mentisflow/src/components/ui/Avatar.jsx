@@ -39,7 +39,7 @@ export default function Avatar({
 
   return (
     <span
-      className={`inline-block shrink-0 overflow-hidden rounded-full ${SIZES[size]} ${
+      className={`inline-block shrink-0 overflow-hidden  ${SIZES[size]} ${
         ring ? 'ring-2 ring-accent/30 ring-offset-2 ring-offset-surface' : ''
       } ${className}`}
     >

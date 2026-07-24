@@ -56,7 +56,7 @@ function NavItem({ to, icon: Icon, label, end }) {
       to={to}
       end={end}
       className={({ isActive }) =>
-        `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 ${
+        `group flex items-center gap-3 px-3 py-2.5  text-sm transition-all duration-150 ${
           isActive
             ? 'bg-accent-soft text-accent-soft-text font-semibold shadow-sm shadow-accent/5'
             : 'font-medium text-muted hover:bg-raised hover:text-ink'
@@ -102,14 +102,14 @@ export function Sidebar({ isProvider }) {
       <aside className="hidden md:flex flex-col w-60 flex-shrink-0 h-full bg-surface border-r border-line">
         <div className="px-5 pt-6 pb-4">
           <div className="flex items-center gap-2.5 mb-4">
-            <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shadow-sm">
+            <div className="w-9 h-9  bg-accent flex items-center justify-center shadow-sm">
               <HeartHandshake size={18} className="text-white" />
             </div>
             <span className="text-lg font-bold tracking-tight text-ink">MentisFlow</span>
           </div>
           {user && (
             <NavLink to="/settings"
-              className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl bg-raised border border-line hover:border-accent/40 transition-colors group"
+              className="flex items-center gap-2.5 px-3 py-2.5  bg-raised border border-line hover:border-accent/40 transition-colors group"
               title="View your profile">
               <Avatar photoUrl={photoURL} name={name} size="sm" />
               <div className="min-w-0 flex-1">
@@ -168,7 +168,7 @@ export function Sidebar({ isProvider }) {
 
         <div className="px-4 py-4 border-t border-line space-y-2">
           {!isProvider && (
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-2xl bg-gradient-to-r from-accent to-accent-strong text-white shadow-sm">
+            <div className="flex items-center gap-2 px-3 py-2.5  bg-gradient-to-r from-accent to-accent-strong text-white shadow-sm">
               <Zap size={14} />
               <span className="text-xs font-bold">{rewards.totalPoints} XP</span>
               <span className="text-[11px] text-white/80 ml-auto font-medium">Level {rewards.currentLevel.level}</span>
@@ -179,7 +179,7 @@ export function Sidebar({ isProvider }) {
           </div>
           <button
             onClick={signOut}
-            className="focus-ring flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-sm text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+            className="focus-ring flex items-center gap-2.5 w-full px-3 py-2  text-sm text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
           >
             <LogOut size={15} />Sign out
           </button>
@@ -197,7 +197,7 @@ export function Sidebar({ isProvider }) {
           >
             {({ isActive }) => (
               <>
-                <span className={`px-3.5 py-1 rounded-full transition-colors ${isActive ? 'bg-accent-soft' : ''}`}>
+                <span className={`px-3.5 py-1  transition-colors ${isActive ? 'bg-accent-soft' : ''}`}>
                   <Icon size={19} />
                 </span>
                 <span className="leading-none">{label}</span>
@@ -217,11 +217,11 @@ export function Sidebar({ isProvider }) {
       {moreOpen && moreItems.length > 0 && (
         <>
           <div className="md:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" onClick={() => setMoreOpen(false)} />
-          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface rounded-t-3xl border-t border-line">
-            <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-line" />
+          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-surface  border-t border-line">
+            <div className="mx-auto mt-2.5 h-1 w-10  bg-line" />
             <div className="flex items-center justify-between px-5 pt-2.5 pb-2">
               <p className="text-xs font-bold uppercase tracking-widest text-faint">More</p>
-              <button onClick={() => setMoreOpen(false)} className="p-1 rounded-lg text-faint hover:text-ink">
+              <button onClick={() => setMoreOpen(false)} className="p-1  text-faint hover:text-ink">
                 <X size={16} />
               </button>
             </div>
@@ -229,7 +229,7 @@ export function Sidebar({ isProvider }) {
               {moreItems.map(({ to, icon: Icon, label }) => (
                 <NavLink key={to} to={to} onClick={() => setMoreOpen(false)}
                   className={({ isActive }) =>
-                    `flex flex-col items-center gap-1.5 py-3.5 px-2 rounded-2xl text-xs font-medium transition-colors ${
+                    `flex flex-col items-center gap-1.5 py-3.5 px-2  text-xs font-medium transition-colors ${
                       isActive
                         ? 'bg-accent-soft text-accent-soft-text'
                         : 'bg-raised text-muted'
