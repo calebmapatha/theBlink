@@ -976,7 +976,7 @@ function StatCard({ icon: Icon, value, label, onClick }) {
 // keeps the accent disciplined; the title stays in the sans.
 function ToolCard({ icon: Icon, title, desc, badge, onClick }) {
   return (
-    <Card as="button" flat interactive type="button" onClick={onClick}
+    <Card as="button" interactive type="button" onClick={onClick}
       className="group text-left w-full p-6 hover:border-faint">
       <div className="w-11 h-11  flex items-center justify-center mb-4 bg-accent-soft">
         <Icon size={20} className="text-accent-soft-text" />

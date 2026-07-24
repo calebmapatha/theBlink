@@ -16,7 +16,7 @@ export function Rewards() {
       <PageHeader title="Rewards" subtitle="Your progress and achievements" />
 
       {/* Level card */}
-      <Card glow className="p-6 mb-4 text-center">
+      <Card className="p-6 mb-4 text-center">
         <div className="w-16 h-16  bg-accent flex items-center justify-center mx-auto mb-3">
           <Trophy size={28} className="text-white" />
         </div>

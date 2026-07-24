@@ -2,10 +2,10 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Zap, Check, AlertCircle, Info } from 'lucide-react'
 
 const VARIANTS = {
-  reward:  { cls: 'bg-success-500 text-white shadow-glow-success',                 icon: Zap },
-  success: { cls: 'bg-success-500 text-white shadow-glow-success',                 icon: Check },
-  error:   { cls: 'bg-red-500 text-white shadow-lg shadow-red-500/30',             icon: AlertCircle },
-  info:    { cls: 'bg-ink-900 dark:bg-surface-700 text-white shadow-lg',           icon: Info },
+  reward:  { cls: 'bg-success-600 text-white shadow-card dark:shadow-card-dark',   icon: Zap },
+  success: { cls: 'bg-success-600 text-white shadow-card dark:shadow-card-dark',   icon: Check },
+  error:   { cls: 'bg-danger text-white shadow-card dark:shadow-card-dark',        icon: AlertCircle },
+  info:    { cls: 'bg-ink-900 dark:bg-surface-700 text-white shadow-card dark:shadow-card-dark', icon: Info },
 }
 
 export function Toast({ toast, onDismiss }) {
