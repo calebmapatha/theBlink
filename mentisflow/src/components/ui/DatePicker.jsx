@@ -93,13 +93,14 @@ export function DatePicker({ value, onChange, min, clearable, placeholder = 'Pic
                 </button>
               </div>
 
-              <div className="grid grid-cols-7 gap-0.5 mb-1">
+              <div className="grid grid-cols-7 mb-1">
                 {WEEKDAYS.map(d => (
                   <div key={d} className="text-center text-[10px] font-semibold text-faint py-1">{d}</div>
                 ))}
               </div>
-              <div className="grid grid-cols-7 gap-0.5">
-                {Array.from({ length: startPad }).map((_, i) => <div key={`p-${i}`} />)}
+              {/* Hairline gridlines: gap-px over the line colour, paper cells on top */}
+              <div className="grid grid-cols-7 gap-px bg-line border border-line">
+                {Array.from({ length: startPad }).map((_, i) => <div key={`p-${i}`} className="bg-surface" />)}
                 {Array.from({ length: daysInMonth }).map((_, i) => {
                   const day = i + 1
                   const iso = toISO(view.y, view.m, day)
@@ -112,13 +113,13 @@ export function DatePicker({ value, onChange, min, clearable, placeholder = 'Pic
                       type="button"
                       disabled={disabled}
                       onClick={() => pick(day)}
-                      className={`aspect-square  text-xs font-medium transition-colors ${
+                      className={`aspect-square text-xs font-medium transition-colors motion-reduce:transition-none ${
                         isSelected
-                          ? 'bg-accent text-on-accent shadow-sm'
+                          ? 'bg-accent text-on-accent'
                           : disabled
-                          ? 'text-faint/35 cursor-not-allowed'
-                          : `text-ink hover:bg-accent-soft ${
-                              isToday ? 'ring-1 ring-accent text-accent-soft-text' : ''
+                          ? 'bg-surface text-faint/35 cursor-not-allowed'
+                          : `bg-surface text-muted hover:bg-accent-soft ${
+                              isToday ? 'ring-1 ring-inset ring-accent text-accent-soft-text' : ''
                             }`
                       }`}
                     >

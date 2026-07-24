@@ -23,22 +23,22 @@ function DayCell({ day, completed, total, isCurrentMonth }) {
   const ratio = getRatio(completed, total)
 
   const bg = future
-    ? 'bg-raised/40'
+    ? 'bg-surface'
     : ratio === 0
     ? 'bg-raised'
     : ratio < 0.5
-    ? 'bg-warm-100 dark:bg-warm-500/20'
+    ? 'bg-tint-peach'
     : ratio < 1
     ? 'bg-accent-soft'
-    : 'bg-success-100 dark:bg-success-500/20'
+    : 'bg-tint-mint'
 
-  const textColor = future ? 'text-faint/40' : 'text-ink'
+  const textColor = future ? 'text-faint/40' : 'text-muted'
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`relative aspect-square  flex flex-col items-center justify-center ${bg} ${isToday(date) ? 'ring-2 ring-accent' : ''}`}
+      className={`relative aspect-square flex flex-col items-center justify-center ${bg} ${isToday(date) ? 'ring-1 ring-inset ring-accent' : ''}`}
     >
       <span className={`text-xs font-semibold ${textColor}`}>{format(date, 'd')}</span>
       {!future && total > 0 && (
@@ -93,9 +93,9 @@ export function MonthlyTracker() {
 
       <div className="flex items-center gap-3 mb-4 flex-wrap">
         {[
-          { color: 'bg-success-100 dark:bg-success-500/20', label: 'All done' },
+          { color: 'bg-tint-mint', label: 'All done' },
           { color: 'bg-accent-soft', label: '50%+' },
-          { color: 'bg-warm-100 dark:bg-warm-500/20', label: 'Some' },
+          { color: 'bg-tint-peach', label: 'Some' },
           { color: 'bg-raised', label: 'None' },
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1.5">
@@ -106,13 +106,14 @@ export function MonthlyTracker() {
       </div>
 
       <Card className="p-4 mb-6">
-        <div className="grid grid-cols-7 gap-1 mb-2">
+        <div className="grid grid-cols-7 mb-2">
           {WEEKDAYS.map(d => (
             <div key={d} className="text-center text-xs font-medium text-faint py-1">{d}</div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-1">
-          {Array.from({ length: startPad }).map((_, i) => <div key={`pad-${i}`} />)}
+        {/* Hairline gridlines: gap-px over the line colour, paper cells on top */}
+        <div className="grid grid-cols-7 gap-px bg-line border border-line">
+          {Array.from({ length: startPad }).map((_, i) => <div key={`pad-${i}`} className="bg-surface" />)}
           {monthData.map((day, i) => (
             <DayCell key={i} day={day} completed={day.completed} total={day.total} isCurrentMonth />
           ))}
