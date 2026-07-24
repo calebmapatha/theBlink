@@ -7,6 +7,7 @@
 //   border-line
 //   bg-accent, hover:bg-accent-strong, text-on-accent
 //   bg-accent-soft, text-accent-soft-text
+//   bg-tint-blush / -mint / -peach / -powder (+ matching -text tokens)
 //   text-danger, text-warn, bg-warn-soft
 const v = (name) => `rgb(var(${name}) / <alpha-value>)`
 
@@ -15,6 +16,19 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   darkMode: 'class',
   theme: {
+    // Sharp edges everywhere: the whole radius scale is zeroed so any
+    // rounded-* class that slips in renders square. Do not add radii back.
+    borderRadius: {
+      none: '0',
+      sm: '0',
+      DEFAULT: '0',
+      md: '0',
+      lg: '0',
+      xl: '0',
+      '2xl': '0',
+      '3xl': '0',
+      full: '0',
+    },
     extend: {
       colors: {
         bg: v('--bg'),
@@ -32,61 +46,75 @@ export default {
           soft: v('--accent-soft'),
           'soft-text': v('--accent-soft-text'),
         },
-        // Legacy scales kept for screens not yet migrated to the tokens.
-        // The bare names (bg-surface, text-ink) resolve to the DEFAULT token.
+        // Pastel tints — category and data cards only.
+        tint: {
+          blush: v('--tint-blush'),
+          'blush-text': v('--tint-blush-text'),
+          mint: v('--tint-mint'),
+          'mint-text': v('--tint-mint-text'),
+          peach: v('--tint-peach'),
+          'peach-text': v('--tint-peach-text'),
+          powder: v('--tint-powder'),
+          'powder-text': v('--tint-powder-text'),
+        },
+        // Legacy scales kept for screens not yet migrated to the tokens,
+        // re-skinned to the lavender-paper families so no teal, emerald or
+        // brownish tone renders anywhere. Migrate usages to tokens over time.
         surface: {
           DEFAULT: v('--surface'),
-          50:  '#f8f9ff',
-          100: '#f1f3fb',
-          200: '#e4e7f5',
-          300: '#cdd2e4',
-          400: '#a3aac2',
-          500: '#646c88',
-          600: '#4b5266',
-          700: '#374151',
-          800: '#1e2235',
-          900: '#141726',
-          950: '#0d0f1a',
+          50:  '#fafafc',
+          100: '#f3f3f7',
+          200: '#e6e6ee',
+          300: '#d0d0dd',
+          400: '#a5a5ba',
+          500: '#686576',
+          600: '#4e4b5c',
+          700: '#3a3847',
+          800: '#232230',
+          900: '#171622',
+          950: '#0e0d16',
         },
         ink: {
           DEFAULT: v('--ink'),
-          900: '#0f1117',
-          800: '#1f2430',
-          700: '#374151',
-          600: '#4b5563',
-          500: '#6b7280',
-          400: '#9ca3af',
-          300: '#d1d5db',
-          200: '#e5e7eb',
-          100: '#f3f4f6',
+          900: '#15141a',
+          800: '#2b2933',
+          700: '#3a3847',
+          600: '#565364',
+          500: '#686576',
+          400: '#a19eae',
+          300: '#c9c7d3',
+          200: '#e0dfe7',
+          100: '#f0eff3',
         },
         primary: {
-          50:  '#f0fdfa',
-          100: '#ccfbf1',
-          200: '#99f6e4',
-          300: '#5eead4',
-          400: '#2dd4bf',
-          500: '#14b8a6',
-          600: '#0d9488',
-          700: '#0f766e',
-          800: '#115e59',
-          900: '#134e4a',
+          50:  '#f2f2fb',
+          100: '#e8e8f8',
+          200: '#d2d2f1',
+          300: '#b3b3e9',
+          400: '#9a9aeb',
+          500: '#7a7ada',
+          600: '#6262c4',
+          700: '#5252a8',
+          800: '#42428a',
+          900: '#37376f',
         },
         success: {
-          50:  '#f0fdf4',
-          100: '#dcfce7',
-          200: '#bbf7d0',
-          400: '#4ade80',
-          500: '#22c55e',
-          600: '#16a34a',
-          700: '#15803d',
+          50:  '#f0f8f3',
+          100: '#e1f0e6',
+          200: '#c4e2cf',
+          400: '#6bbf90',
+          500: '#48a874',
+          600: '#38905f',
+          700: '#2f6f4e',
         },
         warm: {
-          50:  '#fefce8',
-          100: '#fef9c3',
-          400: '#facc15',
-          500: '#eab308',
-          600: '#ca8a04',
+          50:  '#fdf6ee',
+          100: '#fae9db',
+          200: '#f4d6bb',
+          400: '#e0a367',
+          500: '#c9853f',
+          600: '#a56a15',
+          700: '#84550f',
         },
       },
       fontFamily: {
@@ -94,10 +122,10 @@ export default {
         serif: ['Fraunces', 'ui-serif', 'Georgia', 'Cambria', 'serif'],
       },
       boxShadow: {
-        'glow-primary': '0 0 20px -5px rgba(20,184,166,0.4)',
-        'glow-success': '0 0 20px -5px rgba(34,197,94,0.35)',
-        'card':         '0 2px 12px -2px rgba(15,17,23,0.08)',
-        'card-dark':    '0 2px 16px -2px rgba(0,0,0,0.4)',
+        // The one soft, low card shadow. A card gets this OR a hairline
+        // border, never both.
+        'card':      '0 2px 10px -4px rgba(43,41,51,0.10)',
+        'card-dark': '0 2px 14px -4px rgba(0,0,0,0.45)',
       },
       animation: {
         'bounce-in': 'bounceIn 0.35s cubic-bezier(0.34,1.56,0.64,1)',
