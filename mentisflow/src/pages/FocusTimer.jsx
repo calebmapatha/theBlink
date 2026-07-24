@@ -45,7 +45,7 @@ function SettingsModal({ open, onClose, settings, onSave }) {
           <div key={key}>
             <label className="block text-sm font-medium text-ink mb-1">{label}</label>
             <input type="number" min="1"
-              className="w-full px-3 py-2 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3 py-2  border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent"
               {...field(key)} />
           </div>
         ))}
@@ -77,10 +77,10 @@ export function FocusTimer() {
         className="mb-8"
       />
 
-      <div className="flex gap-2 mb-10 p-1 bg-raised/60 rounded-xl">
+      <div className="flex gap-2 mb-10 p-1 bg-raised/60 ">
         {Object.entries(MODE_LABELS).map(([mode, label]) => (
           <button key={mode} onClick={() => timer.setMode(mode)}
-            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`flex-1 py-2  text-sm font-medium transition-all ${
               timer.mode === mode
                 ? 'bg-surface dark:bg-line text-ink shadow-sm'
                 : 'text-faint hover:text-ink'
@@ -122,7 +122,7 @@ export function FocusTimer() {
         <div className="flex gap-2">
           {SOUNDS.filter(s => s.id !== 'none').map(s => (
             <button key={s.id} onClick={() => play(active === s.id ? 'none' : s.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5  text-xs font-medium border transition-all ${
                 active === s.id
                   ? 'bg-accent-soft border-accent text-accent-soft-text'
                   : 'border-line text-faint hover:border-faint'

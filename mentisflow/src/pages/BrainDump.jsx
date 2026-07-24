@@ -35,7 +35,7 @@ export function BrainDump() {
       <PageHeader title="Brain Dump" subtitle="Clear your head, get it out of your brain" />
 
       {/* Editor */}
-      <div className="mb-8 rounded-2xl border border-line bg-surface overflow-hidden focus-within:border-accent focus-within:ring-1 focus-within:ring-accent transition-all">
+      <div className="mb-8  border border-line bg-surface overflow-hidden focus-within:border-accent focus-within:ring-1 focus-within:ring-accent transition-all">
         <textarea
           ref={textareaRef}
           value={text}
@@ -74,7 +74,7 @@ export function BrainDump() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.2 }}
-                className="group p-4 rounded-2xl bg-surface border border-line"
+                className="group p-4  bg-surface border border-line"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -87,7 +87,7 @@ export function BrainDump() {
                   </div>
                   <button
                     onClick={() => handleDelete(entry)}
-                    className="focus-ring p-1.5 rounded-lg text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-all flex-shrink-0"
+                    className="focus-ring p-1.5  text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-all flex-shrink-0"
                   >
                     <Trash2 size={14} />
                   </button>

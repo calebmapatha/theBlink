@@ -12,7 +12,8 @@ export function SignatureField({ onChange, className = '' }) {
   useEffect(() => {
     const canvas = canvasRef.current
     const pad = new SignaturePad(canvas, {
-      penColor: '#1e293b',
+      // Canvas cannot resolve CSS variables; this hex mirrors --ink (light).
+      penColor: '#2B2933',
       backgroundColor: 'rgb(255,255,255)',
     })
     padRef.current = pad
@@ -47,13 +48,13 @@ export function SignatureField({ onChange, className = '' }) {
 
   return (
     <div className={className}>
-      <div className="relative rounded-xl border-2 border-dashed border-line overflow-hidden bg-white">
+      <div className="relative  border-2 border-dashed border-line overflow-hidden bg-white">
         <canvas ref={canvasRef} className="w-full h-32 touch-none block" />
         <span className="absolute bottom-1.5 left-3 text-[10px] text-faint pointer-events-none select-none">
           Draw your signature here
         </span>
         <button type="button" onClick={clear}
-          className="absolute top-1.5 right-1.5 p-1.5 rounded-lg bg-raised text-muted hover:text-danger hover:bg-red-50 transition-colors"
+          className="absolute top-1.5 right-1.5 p-1.5  bg-raised text-muted hover:text-danger hover:bg-red-50 transition-colors"
           title="Clear signature">
           <Eraser size={13} />
         </button>

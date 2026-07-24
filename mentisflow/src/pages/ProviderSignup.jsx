@@ -39,7 +39,7 @@ function SpecialtyChips({ selected, onToggle, items }) {
     <div className="flex flex-wrap gap-2">
       {items.map(s => (
         <button key={s} type="button" onClick={() => onToggle(s)}
-          className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+          className={`px-2.5 py-1  text-xs font-medium transition-colors ${
             selected.includes(s)
               ? 'bg-accent text-on-accent'
               : 'bg-raised text-muted hover:bg-line'
@@ -51,7 +51,7 @@ function SpecialtyChips({ selected, onToggle, items }) {
   )
 }
 
-const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent'
+const inputCls = 'w-full px-3 py-2.5  border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent'
 
 export function ProviderSignup() {
   const { user }                      = useAuth()
@@ -209,7 +209,7 @@ export function ProviderSignup() {
       <div className="flex items-center gap-1 mb-8">
         {STEPS.map((s, i) => (
           <div key={s} className="flex items-center gap-1 flex-1">
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 transition-colors ${
+            <div className={`w-7 h-7  flex items-center justify-center text-xs font-semibold flex-shrink-0 transition-colors ${
               step > i + 1 ? 'bg-success-500 text-white' : step === i + 1 ? 'bg-accent text-on-accent' : 'bg-raised text-faint'
             }`}>
               {step > i + 1 ? <Check size={12} /> : i + 1}
@@ -232,7 +232,7 @@ export function ProviderSignup() {
               <div className="flex gap-2">
                 {['Psychiatrist', 'Psychologist'].map(t => (
                   <button key={t} onClick={() => set('type', t)}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                    className={`flex-1 py-2.5  text-sm font-medium border transition-colors ${
                       form.type === t
                         ? 'border-accent bg-accent-soft text-accent-soft-text'
                         : 'border-line text-faint'
@@ -319,7 +319,7 @@ export function ProviderSignup() {
                   min="0" className={`${inputCls} pl-7`} placeholder="800" />
               </div>
               {form.sessionFee && Number(form.sessionFee) > 0 && (
-                <div className="mt-2 rounded-xl bg-accent-soft px-3 py-2.5 text-xs space-y-0.5">
+                <div className="mt-2  bg-accent-soft px-3 py-2.5 text-xs space-y-0.5">
                   <p className="font-semibold text-accent-soft-text">No per-session commission</p>
                   <p className="text-muted">
                     You keep 100% of your R{Number(form.sessionFee).toLocaleString()} session fee. MentisFlow charges only your monthly plan.
@@ -328,7 +328,7 @@ export function ProviderSignup() {
               )}
               <label className="flex items-start gap-2.5 mt-3 cursor-pointer">
                 <input type="checkbox" checked={!!form.hideFee} onChange={e => set('hideFee', e.target.checked)}
-                  className="mt-0.5 w-4 h-4 rounded accent-accent flex-shrink-0" />
+                  className="mt-0.5 w-4 h-4  accent-accent flex-shrink-0" />
                 <span className="text-xs text-muted leading-relaxed">
                   <span className="font-medium text-ink">Hide my session fee from patients.</span>{' '}
                   Your profile will show "Fee on request" instead of the amount. You can change this any time.
@@ -351,7 +351,7 @@ export function ProviderSignup() {
               <div className="grid grid-cols-3 gap-2">
                 {[['remote', 'Online only'], ['in-person', 'In person'], ['both', 'Both']].map(([v, label]) => (
                   <button key={v} type="button" onClick={() => set('consultationType', v)}
-                    className={`py-2 px-2 rounded-xl text-xs font-medium border transition-colors ${
+                    className={`py-2 px-2  text-xs font-medium border transition-colors ${
                       form.consultationType === v
                         ? 'border-accent bg-accent-soft text-accent-soft-text'
                         : 'border-line text-faint hover:border-faint'
@@ -378,7 +378,7 @@ export function ProviderSignup() {
                   <div className="grid grid-cols-3 gap-2">
                     {PLATFORMS.map(p => (
                       <button key={p.value} type="button" onClick={() => set('meetingPlatform', p.value)}
-                        className={`py-2 px-2 rounded-xl text-xs font-medium border transition-colors ${
+                        className={`py-2 px-2  text-xs font-medium border transition-colors ${
                           form.meetingPlatform === p.value
                             ? 'border-accent bg-accent-soft text-accent-soft-text'
                             : 'border-line text-faint hover:border-faint'
@@ -406,7 +406,7 @@ export function ProviderSignup() {
       {step === 3 && (
         <div className="space-y-4">
           {pendingPayment && (
-            <div className="rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 px-3 py-2.5 text-xs text-amber-700 dark:text-amber-400">
+            <div className=" bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 px-3 py-2.5 text-xs text-amber-700 dark:text-amber-400">
               We're waiting for your payment to be confirmed. This usually takes a few
               seconds. Refresh this page once you've completed checkout, or choose a plan
               again to restart payment.
@@ -416,20 +416,20 @@ export function ProviderSignup() {
 
           {!trialUsed && (
             <button onClick={() => setPlan('trial')}
-              className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${
+              className={`w-full text-left p-4  border-2 transition-all ${
                 plan === 'trial'
                   ? 'border-accent bg-accent-soft/60'
                   : 'border-line hover:border-faint'
               }`}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  <div className={`w-4 h-4  border-2 flex items-center justify-center flex-shrink-0 ${
                     plan === 'trial' ? 'border-accent bg-accent' : 'border-line'
                   }`}>
-                    {plan === 'trial' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    {plan === 'trial' && <div className="w-1.5 h-1.5  bg-white" />}
                   </div>
                   <span className="font-semibold text-ink text-sm">Free trial</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-success-500 text-white font-medium">Recommended</span>
+                  <span className="text-[10px] px-1.5 py-0.5  bg-success-500 text-white font-medium">Recommended</span>
                 </div>
                 <span className="font-bold text-ink text-base">{pricing.currency}0<span className="text-xs font-normal text-faint"> · {pricing.trialDays} days</span></span>
               </div>
@@ -443,16 +443,16 @@ export function ProviderSignup() {
             </button>
           )}
           {trialUsed && hasProfile && (
-            <div className="rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 px-3 py-2.5 text-xs text-amber-700 dark:text-amber-400">
+            <div className=" bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 px-3 py-2.5 text-xs text-amber-700 dark:text-amber-400">
               Your {pricing.trialDays}-day free trial has been used. Choose a plan to keep your profile live.
             </div>
           )}
 
           {/* Billing cycle for the paid plans */}
-          <div className="flex p-1 bg-raised/60 rounded-xl">
+          <div className="flex p-1 bg-raised/60 ">
             {[['monthly', 'Monthly'], ['annual', 'Annual · 2 months free']].map(([c, label]) => (
               <button key={c} onClick={() => setCycle(c)}
-                className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+                className={`flex-1 py-2  text-xs font-semibold transition-all ${
                   cycle === c
                     ? 'bg-surface dark:bg-line text-ink shadow-sm'
                     : 'text-faint hover:text-ink'
@@ -464,21 +464,21 @@ export function ProviderSignup() {
 
           {PLANS.map(p => (
             <button key={p.id} onClick={() => setPlan(p.id)}
-              className={`w-full text-left p-4 rounded-2xl border-2 transition-all ${
+              className={`w-full text-left p-4  border-2 transition-all ${
                 plan === p.id
                   ? 'border-accent bg-accent-soft/60'
                   : 'border-line hover:border-faint'
               }`}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                  <div className={`w-4 h-4  border-2 flex items-center justify-center flex-shrink-0 ${
                     plan === p.id ? 'border-accent bg-accent' : 'border-line'
                   }`}>
-                    {plan === p.id && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    {plan === p.id && <div className="w-1.5 h-1.5  bg-white" />}
                   </div>
                   <span className="font-semibold text-ink text-sm">{p.label}</span>
                   {p.id === 'featured' && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-warm-400 text-white font-medium">Popular</span>
+                    <span className="text-[10px] px-1.5 py-0.5  bg-warm-400 text-white font-medium">Popular</span>
                   )}
                 </div>
                 <div className="text-right">
@@ -500,12 +500,12 @@ export function ProviderSignup() {
             </button>
           ))}
 
-          <div className="rounded-xl bg-raised px-3 py-2.5 text-xs text-muted">
+          <div className=" bg-raised px-3 py-2.5 text-xs text-muted">
             <span className="font-semibold text-ink">No per-session commission.</span> You keep 100% of your session fees. Your subscription is MentisFlow's only charge.
           </div>
 
           {plan !== 'trial' && (
-            <div className="rounded-xl bg-raised px-3.5 py-3 flex items-start gap-2.5">
+            <div className=" bg-raised px-3.5 py-3 flex items-start gap-2.5">
               <CreditCard size={15} className="text-accent flex-shrink-0 mt-0.5" />
               <p className="text-xs text-muted leading-relaxed">
                 <span className="font-semibold text-ink">Secure checkout with PayFast.</span>{' '}

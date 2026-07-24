@@ -96,8 +96,8 @@ export function ProviderAnalytics() {
   if (loading || !stats) return (
     <PageWrapper>
       <div className="mt-6">
-        <Skeleton className="h-9 w-64 max-w-full rounded-lg mb-2" />
-        <Skeleton className="h-4 w-44 rounded-md mb-6" />
+        <Skeleton className="h-9 w-64 max-w-full mb-2" />
+        <Skeleton className="h-4 w-44 mb-6" />
         <div className="grid grid-cols-3 gap-3 mb-5">
           {[0, 1, 2].map(i => <SkeletonStat key={i} className="p-4" />)}
         </div>
@@ -117,7 +117,7 @@ export function ProviderAnalytics() {
       <div className="flex gap-2 mb-5">
         {WINDOWS.map(w => (
           <button key={w.key} onClick={() => setWin(w.key)}
-            className={`flex-1 py-2 rounded-xl text-xs font-medium transition-colors ${
+            className={`flex-1 py-2  text-xs font-medium transition-colors ${
               win === w.key
                 ? 'bg-accent text-on-accent'
                 : 'bg-raised text-faint hover:text-ink'
@@ -142,8 +142,8 @@ export function ProviderAnalytics() {
             {occ.pct !== null ? <><CountUp value={occ.pct} />%</> : 'N/A'}
           </p>
           <p className="text-[10px] text-faint mt-1.5">{occ.booked} booked of {occ.open} open slots</p>
-          <div className="h-1.5 rounded-full bg-raised overflow-hidden mt-1.5">
-            <motion.div className="h-full rounded-full bg-accent"
+          <div className="h-1.5 bg-raised overflow-hidden mt-1.5">
+            <motion.div className="h-full bg-accent"
               initial={{ width: 0 }}
               animate={{ width: `${occ.pct || 0}%` }}
               transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.15 }} />
@@ -216,7 +216,7 @@ export function ProviderAnalytics() {
         <Section title="Upcoming sessions" icon={Calendar}>
           <div className="space-y-2">
             {stats.next.map((a, i) => (
-              <div key={i} className="flex items-center justify-between px-3 py-2 rounded-xl bg-raised">
+              <div key={i} className="flex items-center justify-between px-3 py-2  bg-raised">
                 <div className="min-w-0">
                   <p className="text-xs font-medium text-ink truncate">{a.patientName}</p>
                   <p className="text-[10px] text-faint">{a.date} · {a.timeSlot}</p>
@@ -231,7 +231,7 @@ export function ProviderAnalytics() {
       <Section title="Recommendations" icon={Lightbulb}>
         <div className="space-y-2">
           {stats.tips.map((t, i) => (
-            <p key={i} className="text-xs text-ink leading-relaxed bg-raised px-3 py-2.5 rounded-xl">{t}</p>
+            <p key={i} className="text-xs text-ink leading-relaxed bg-raised px-3 py-2.5 ">{t}</p>
           ))}
         </div>
       </Section>

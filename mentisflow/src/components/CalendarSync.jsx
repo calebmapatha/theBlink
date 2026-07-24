@@ -66,7 +66,7 @@ export function CalendarSync({ uid, showToast }) {
     }
   }
 
-  if (token === undefined) return <div className="px-4 py-3.5"><Skeleton className="h-14 rounded-xl" /></div>
+  if (token === undefined) return <div className="px-4 py-3.5"><Skeleton className="h-14" /></div>
 
   if (!token) return (
     <div className="flex flex-wrap items-center gap-3 px-4 py-3.5">
@@ -95,7 +95,7 @@ export function CalendarSync({ uid, showToast }) {
       </div>
 
       <div className="flex items-center gap-2">
-        <code className="flex-1 min-w-0 truncate text-[10px] text-muted bg-raised rounded-lg px-2.5 py-2">{httpsUrl}</code>
+        <code className="flex-1 min-w-0 truncate text-[10px] text-muted bg-raised px-2.5 py-2">{httpsUrl}</code>
         <Button size="sm" variant="soft" onClick={copy} className="flex-shrink-0">
           {copied ? <><Check size={13} /> Copied</> : <><Copy size={13} /> Copy</>}
         </Button>
@@ -103,17 +103,17 @@ export function CalendarSync({ uid, showToast }) {
 
       <div className="grid sm:grid-cols-3 gap-2 text-[11px]">
         <a href={webcalUrl}
-          className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg bg-raised text-muted hover:text-accent transition-colors">
+          className="flex items-center gap-1.5 px-2.5 py-2 bg-raised text-muted hover:text-accent transition-colors">
           <ExternalLink size={11} className="flex-shrink-0" />
           <span><strong className="text-ink font-medium">Apple</strong> — opens Calendar and subscribes</span>
         </a>
         <a href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl" target="_blank" rel="noopener noreferrer"
-          className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg bg-raised text-muted hover:text-accent transition-colors">
+          className="flex items-center gap-1.5 px-2.5 py-2 bg-raised text-muted hover:text-accent transition-colors">
           <ExternalLink size={11} className="flex-shrink-0" />
           <span><strong className="text-ink font-medium">Google</strong> — paste the copied link under “From URL”</span>
         </a>
         <a href="https://outlook.live.com/calendar/0/addcalendar" target="_blank" rel="noopener noreferrer"
-          className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg bg-raised text-muted hover:text-accent transition-colors">
+          className="flex items-center gap-1.5 px-2.5 py-2 bg-raised text-muted hover:text-accent transition-colors">
           <ExternalLink size={11} className="flex-shrink-0" />
           <span><strong className="text-ink font-medium">Outlook</strong> — “Subscribe from web”, paste the link</span>
         </a>

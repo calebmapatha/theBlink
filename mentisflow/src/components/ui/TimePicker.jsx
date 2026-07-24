@@ -24,7 +24,7 @@ export function TimePicker({ value, onChange, placeholder = 'Pick a time' }) {
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border text-sm text-left transition-colors ${
+        className={`w-full flex items-center gap-2.5 px-3 py-2.5  border text-sm text-left transition-colors ${
           open
             ? 'border-accent ring-2 ring-accent/30 bg-raised'
             : 'border-line bg-raised hover:border-faint'
@@ -45,7 +45,7 @@ export function TimePicker({ value, onChange, placeholder = 'Pick a time' }) {
             transition={{ duration: 0.18, ease: 'easeOut' }}
             className="overflow-hidden"
           >
-            <div className="mt-2 p-3 rounded-2xl border border-line bg-surface space-y-3">
+            <div className="mt-2 p-3  border border-line bg-surface space-y-3">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-faint mb-1.5">Hour</p>
                 <div className="grid grid-cols-6 gap-1">
@@ -54,7 +54,7 @@ export function TimePicker({ value, onChange, placeholder = 'Pick a time' }) {
                       key={hh}
                       type="button"
                       onClick={() => pickHour(hh)}
-                      className={`py-1.5 rounded-lg text-xs font-medium timer-nums transition-colors ${
+                      className={`py-1.5  text-xs font-medium timer-nums transition-colors ${
                         hour === pad(hh)
                           ? 'bg-accent text-on-accent shadow-sm'
                           : 'text-ink hover:bg-accent-soft'
@@ -73,7 +73,7 @@ export function TimePicker({ value, onChange, placeholder = 'Pick a time' }) {
                       key={mm}
                       type="button"
                       onClick={() => pickMinute(mm)}
-                      className={`py-1.5 rounded-lg text-xs font-medium timer-nums transition-colors ${
+                      className={`py-1.5  text-xs font-medium timer-nums transition-colors ${
                         minute === mm
                           ? 'bg-accent text-on-accent shadow-sm'
                           : 'bg-raised text-ink hover:bg-accent-soft'

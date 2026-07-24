@@ -46,12 +46,12 @@ function PhotoAvatar({ photoURL, name, seed, size = 'md', onClick, uploading }) 
   return (
     <button
       onClick={onClick}
-      className="relative flex-shrink-0 overflow-hidden rounded-full group"
+      className="relative flex-shrink-0 overflow-hidden  group"
       disabled={uploading}
       title="Change photo"
     >
       <Avatar photoUrl={photoURL} name={name} seed={seed} size={size} />
-      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
         {uploading
           ? <Loader size={16} className="text-white animate-spin" />
           : <Camera size={16} className="text-white" />
@@ -99,15 +99,15 @@ function ProfileModal({ open, onClose, profile, onSave, authUser, photoURL, onPh
         <div>
           <label className="block text-xs font-medium text-faint mb-1">Display name</label>
           <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name"
-            className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+            className="w-full px-3 py-2.5  border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
         </div>
         <div>
           <label className="block text-xs font-medium text-faint mb-1">Preferred pharmacy <span className="font-normal">(optional)</span></label>
           <input value={pharmacy} onChange={e => setPharmacy(e.target.value)} placeholder="e.g. Clicks Rosebank, or your local pharmacy"
-            className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+            className="w-full px-3 py-2.5  border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
           <p className="text-[10px] text-faint mt-1">Where you'd like prescriptions sent. You can share this with your doctor.</p>
         </div>
-        <div className="px-3 py-2.5 rounded-xl bg-raised">
+        <div className="px-3 py-2.5  bg-raised">
           <p className="text-xs text-faint mb-0.5">Email (from account)</p>
           <p className="text-sm text-ink">{authUser?.email || 'N/A'}</p>
         </div>
@@ -151,7 +151,7 @@ function ClearDataModal({ open, onClose, onConfirm }) {
         <div>
           <label className="block text-xs font-medium text-faint mb-1">Type <strong>DELETE</strong> to confirm</label>
           <input value={typed} onChange={e => setTyped(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
+            className="w-full px-3 py-2.5  border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
         </div>
         <div className="flex gap-2">
           <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
@@ -170,14 +170,14 @@ function ReminderRow({ label, pref, onToggle, onTimeChange, onTest }) {
         <span className="flex-1 text-sm font-medium text-ink">{label}</span>
         {pref.enabled && (
           <button onClick={onTest} title="Send test notification"
-            className="p-1.5 rounded-lg text-faint hover:text-accent hover:bg-accent-soft transition-colors flex-shrink-0">
+            className="p-1.5  text-faint hover:text-accent hover:bg-accent-soft transition-colors flex-shrink-0">
             <Send size={14} />
           </button>
         )}
         {/* Toggle — overflow-hidden clips the nub so it never bleeds past the track */}
         <button onClick={onToggle} aria-pressed={pref.enabled}
-          className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 overflow-hidden ${pref.enabled ? 'bg-accent' : 'bg-line'}`}>
-          <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${pref.enabled ? 'translate-x-5' : 'translate-x-0'}`} />
+          className={`relative w-11 h-6  transition-colors duration-200 flex-shrink-0 overflow-hidden ${pref.enabled ? 'bg-accent' : 'bg-line'}`}>
+          <span className={`absolute top-0.5 left-0.5 w-5 h-5  bg-white shadow-sm transition-transform duration-200 ${pref.enabled ? 'translate-x-5' : 'translate-x-0'}`} />
         </button>
       </div>
       {pref.enabled && (
@@ -247,7 +247,7 @@ function RemindersSection({ notifications }) {
   )
 }
 
-const pwInputCls = 'w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm placeholder-faint focus:outline-none focus:ring-2 focus:ring-accent'
+const pwInputCls = 'w-full px-3 py-2.5  border border-line bg-raised text-ink text-sm placeholder-faint focus:outline-none focus:ring-2 focus:ring-accent'
 
 function ChangePasswordModal({ open, onClose }) {
   const { changePassword, authError, clearAuthError } = useAuth()
@@ -277,7 +277,7 @@ function ChangePasswordModal({ open, onClose }) {
     <Modal open={open} onClose={handleClose} title="Change password">
       {done ? (
         <div className="flex flex-col items-center text-center py-4 space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-success-100 dark:bg-success-500/20 flex items-center justify-center">
+          <div className="w-12 h-12  bg-success-100 dark:bg-success-500/20 flex items-center justify-center">
             <CheckCircle size={22} className="text-success-600 dark:text-success-400" />
           </div>
           <p className="text-sm font-semibold text-ink">Password updated</p>
@@ -303,7 +303,7 @@ function ChangePasswordModal({ open, onClose }) {
             {mismatch && <p className="text-xs text-danger mt-1">Passwords do not match.</p>}
           </div>
           {authError && (
-            <p className="text-xs text-danger px-3 py-2 rounded-lg bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30">{authError}</p>
+            <p className="text-xs text-danger px-3 py-2  bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30">{authError}</p>
           )}
           <div className="flex gap-2">
             <Button variant="ghost" className="flex-1" onClick={handleClose}>Cancel</Button>
@@ -320,8 +320,8 @@ function ChangePasswordModal({ open, onClose }) {
 function ToggleSwitch({ on, onClick }) {
   return (
     <button onClick={onClick} aria-pressed={on}
-      className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 overflow-hidden ${on ? 'bg-accent' : 'bg-line'}`}>
-      <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${on ? 'translate-x-5' : 'translate-x-0'}`} />
+      className={`relative w-11 h-6  transition-colors duration-200 flex-shrink-0 overflow-hidden ${on ? 'bg-accent' : 'bg-line'}`}>
+      <span className={`absolute top-0.5 left-0.5 w-5 h-5  bg-white shadow-sm transition-transform duration-200 ${on ? 'translate-x-5' : 'translate-x-0'}`} />
     </button>
   )
 }

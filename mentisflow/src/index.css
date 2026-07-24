@@ -22,7 +22,7 @@
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    @apply bg-line rounded-full;
+    @apply bg-line;
   }
   input[type="range"] {
     @apply w-full accent-accent;
@@ -44,7 +44,7 @@
      raised block. --shimmer (theme.css) keeps it right on both themes;
      reduced-motion users get a calm static block instead. */
   .skeleton {
-    @apply relative overflow-hidden rounded-xl bg-raised;
+    @apply relative overflow-hidden bg-raised;
   }
   .skeleton::after {
     content: '';

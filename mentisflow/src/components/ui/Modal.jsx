@@ -32,12 +32,12 @@ export function Modal({ open, onClose, title, children }) {
             exit={{ opacity: 0, y: 40 }}
             transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
             className="relative z-10 w-full sm:max-w-md bg-surface
-                       rounded-t-3xl sm:rounded-3xl shadow-2xl border border-line flex flex-col max-h-[92dvh] sm:max-h-[90vh]"
+                        sm: shadow-2xl border border-line flex flex-col max-h-[92dvh] sm:max-h-[90vh]"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-5 pb-3 flex-shrink-0">
               <h3 className="text-base font-semibold text-ink">{title}</h3>
-              <button onClick={onClose} aria-label="Close" className="focus-ring p-1.5 rounded-lg hover:bg-raised text-faint transition-colors">
+              <button onClick={onClose} aria-label="Close" className="focus-ring p-1.5  hover:bg-raised text-faint transition-colors">
                 <X size={16} />
               </button>
             </div>

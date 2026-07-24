@@ -1,8 +1,9 @@
 /*
  * Mentisflow theme tokens — theme.css
  *
- * A real dark mode: warm charcoal surfaces, off white text and a
- * brighter emerald accent, instead of the old purple wash.
+ * Lavender-paper palette: warm off-white card surfaces on a slightly
+ * cooler page ground, a soft periwinkle accent, and muted pastel tints
+ * (blush, mint, peach, powder blue) reserved for category and data cards.
  *
  * Values are raw RGB triplets so Tailwind's alpha modifier keeps
  * working: rgb(var(--surface) / <alpha-value>).
@@ -13,25 +14,35 @@
 :root {
   color-scheme: light;
 
-  --bg: 255 255 255;             /* white page background   #FFFFFF */
-  --surface: 255 255 255;        /* cards and modals        #FFFFFF */
-  --raised: 245 241 232;         /* hovers, wells           #F5F1E8 */
-  --line: 214 211 205;           /* borders                 #D6D3CD */
+  --bg: 243 243 247;             /* cool light ground        #F3F3F7 */
+  --surface: 252 251 248;        /* warm off-white paper     #FCFBF8 */
+  --raised: 240 239 243;         /* hovers, wells            #F0EFF3 */
+  --line: 224 223 231;           /* hairline borders         #E0DFE7 */
 
-  --ink: 41 37 36;               /* primary text            #292524 */
-  --muted: 87 83 78;             /* secondary text          #57534E */
-  --faint: 168 162 158;          /* placeholders, captions  #A8A29E */
+  --ink: 43 41 51;               /* primary text             #2B2933 */
+  --muted: 104 101 118;          /* secondary text           #686576 */
+  --faint: 161 158 174;          /* placeholders, captions   #A19EAE */
 
-  --accent: 16 185 129;          /* emerald 500             #10B981 */
-  --accent-strong: 5 150 105;    /* hover                   #059669 */
-  --on-accent: 255 255 255;      /* text on accent          #FFFFFF */
-  --accent-soft: 209 250 229;    /* tinted chips, bubbles   #D1FAE5 */
-  --accent-soft-text: 6 95 70;   /* text on soft tint       #065F46 */
+  --accent: 122 122 218;         /* periwinkle               #7A7ADA */
+  --accent-strong: 98 98 196;    /* hover                    #6262C4 */
+  --on-accent: 255 255 255;      /* text on accent           #FFFFFF */
+  --accent-soft: 232 232 248;    /* tinted chips, bubbles    #E8E8F8 */
+  --accent-soft-text: 71 71 143; /* text on soft tint        #47478F */
 
-  --danger: 220 38 38;           /* red 600                 #DC2626 */
+  /* Pastel tints — category and data cards only */
+  --tint-blush: 247 229 231;     /* #F7E5E7 */
+  --tint-blush-text: 143 76 90;  /* #8F4C5A */
+  --tint-mint: 225 240 230;      /* #E1F0E6 */
+  --tint-mint-text: 47 111 78;   /* #2F6F4E */
+  --tint-peach: 250 233 219;     /* #FAE9DB */
+  --tint-peach-text: 154 92 42;  /* #9A5C2A */
+  --tint-powder: 224 236 246;    /* #E0ECF6 */
+  --tint-powder-text: 45 94 138; /* #2D5E8A */
 
-  --warn: 180 83 9;              /* amber 700               #B45309 */
-  --warn-soft: 254 243 199;      /* amber 100               #FEF3C7 */
+  --danger: 214 69 79;           /* muted rose red           #D6454F */
+
+  --warn: 165 106 21;            /* muted amber              #A56A15 */
+  --warn-soft: 250 238 214;      /* pale amber tint          #FAEED6 */
 
   /* Skeleton shimmer highlight — full rgba because it needs its own alpha. */
   --shimmer: rgba(255, 255, 255, 0.6);
@@ -40,25 +51,35 @@
 .dark {
   color-scheme: dark;            /* native inputs, scrollbars, pickers go dark too */
 
-  --bg: 18 17 15;                /* warm near black         #121110 */
-  --surface: 28 27 24;           /* cards and modals        #1C1B18 */
-  --raised: 40 38 34;            /* hovers, wells           #282622 */
-  --line: 62 59 54;              /* borders                 #3E3B36 */
+  --bg: 21 20 26;                /* cool near black          #15141A */
+  --surface: 31 30 38;           /* cards and modals         #1F1E26 */
+  --raised: 42 41 51;            /* hovers, wells            #2A2933 */
+  --line: 62 61 74;              /* borders                  #3E3D4A */
 
-  --ink: 240 237 230;            /* primary text            #F0EDE6 */
-  --muted: 176 171 163;          /* secondary text          #B0ABA3 */
-  --faint: 120 116 109;          /* placeholders, captions  #78746D */
+  --ink: 238 237 243;            /* primary text             #EEEDF3 */
+  --muted: 172 169 184;          /* secondary text           #ACA9B8 */
+  --faint: 118 115 131;          /* placeholders, captions   #767383 */
 
-  --accent: 52 211 153;          /* emerald 400, brighter for contrast #34D399 */
-  --accent-strong: 45 212 167;   /* hover                   #2DD4A7 */
-  --on-accent: 6 37 26;          /* dark green text on bright accent   #06251A */
-  --accent-soft: 16 46 37;       /* deep green tint         #102E25 */
-  --accent-soft-text: 110 231 183; /* emerald 300           #6EE7B7 */
+  --accent: 154 154 235;         /* brighter periwinkle      #9A9AEB */
+  --accent-strong: 175 175 240;  /* hover                    #AFAFF0 */
+  --on-accent: 26 26 46;         /* dark text on bright accent #1A1A2E */
+  --accent-soft: 43 43 66;       /* deep periwinkle tint     #2B2B42 */
+  --accent-soft-text: 185 185 240; /* lavender 300           #B9B9F0 */
 
-  --danger: 248 113 113;         /* red 400                 #F87171 */
+  /* Pastel tints go deep and muted in dark mode */
+  --tint-blush: 61 42 46;        /* #3D2A2E */
+  --tint-blush-text: 226 168 178; /* #E2A8B2 */
+  --tint-mint: 38 56 45;         /* #26382D */
+  --tint-mint-text: 158 214 180; /* #9ED6B4 */
+  --tint-peach: 61 48 36;        /* #3D3024 */
+  --tint-peach-text: 229 181 133; /* #E5B585 */
+  --tint-powder: 36 49 62;       /* #24313E */
+  --tint-powder-text: 151 195 231; /* #97C3E7 */
 
-  --warn: 251 191 36;            /* amber 400               #FBBF24 */
-  --warn-soft: 69 49 8;          /* deep amber tint         #453108 */
+  --danger: 240 122 130;         /* soft red                 #F07A82 */
+
+  --warn: 240 190 92;            /* amber 300-ish            #F0BE5C */
+  --warn-soft: 63 51 24;         /* deep amber tint          #3F3318 */
 
   --shimmer: rgba(255, 255, 255, 0.05);
 }

@@ -26,7 +26,7 @@ const SEVERITY_COLORS = {
   5: 'bg-red-200 text-red-800 dark:bg-red-700/30 dark:text-red-300',
 }
 
-const inputCls = 'w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent'
+const inputCls = 'w-full px-3 py-2.5  border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent'
 
 // ── Goals ─────────────────────────────────────────────────────────────────────
 
@@ -56,7 +56,7 @@ function AddGoalModal({ open, onClose, onAdd }) {
           <div className="flex flex-wrap gap-2">
             {GOAL_CATEGORIES.map(c => (
               <button key={c} onClick={() => setCategory(c)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                className={`px-3 py-1.5  text-xs font-medium border transition-colors ${
                   category === c
                     ? 'border-accent bg-accent-soft text-accent-soft-text'
                     : 'border-line text-faint hover:border-faint'
@@ -95,7 +95,7 @@ function GoalsTab({ plan, addGoal, updateGoal, deleteGoal }) {
 
       {active.length === 0 && (
         <div className="py-10 text-center">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-raised flex items-center justify-center"><Target size={22} className="text-faint" /></div>
+          <div className="w-12 h-12 mx-auto mb-3  bg-raised flex items-center justify-center"><Target size={22} className="text-faint" /></div>
           <p className="text-sm text-faint">No goals yet.</p>
           <p className="text-xs text-faint mt-1">Add a treatment goal to track your progress.</p>
         </div>
@@ -108,13 +108,13 @@ function GoalsTab({ plan, addGoal, updateGoal, deleteGoal }) {
               <div className="flex items-start gap-3">
                 <button
                   onClick={() => updateGoal(g.id, { status: 'completed' })}
-                  className="mt-0.5 w-5 h-5 rounded-full border-2 border-line hover:border-accent flex items-center justify-center flex-shrink-0 transition-colors"
+                  className="mt-0.5 w-5 h-5  border-2 border-line hover:border-accent flex items-center justify-center flex-shrink-0 transition-colors"
                   title="Mark complete"
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-ink leading-snug">{g.text}</p>
                   <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent-soft text-accent-soft-text">{g.category}</span>
+                    <span className="text-[10px] px-1.5 py-0.5  bg-accent-soft text-accent-soft-text">{g.category}</span>
                     {g.targetDate && <span className="text-[10px] text-faint">Target: {g.targetDate}</span>}
                   </div>
                   <div className="mt-3">
@@ -145,7 +145,7 @@ function GoalsTab({ plan, addGoal, updateGoal, deleteGoal }) {
             {completed.map(g => (
               <Card key={g.id} className="p-3 opacity-60">
                 <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-accent flex items-center justify-center flex-shrink-0">
+                  <div className="w-5 h-5  bg-accent flex items-center justify-center flex-shrink-0">
                     <Check size={10} className="text-white" />
                   </div>
                   <p className="text-sm text-ink flex-1 line-through">{g.text}</p>
@@ -225,7 +225,7 @@ function MedicationsTab({ plan, addMedication, toggleMedication, deleteMedicatio
 
       {active.length === 0 && (
         <div className="py-10 text-center">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-raised flex items-center justify-center"><Pill size={22} className="text-faint" /></div>
+          <div className="w-12 h-12 mx-auto mb-3  bg-raised flex items-center justify-center"><Pill size={22} className="text-faint" /></div>
           <p className="text-sm text-faint">No medications tracked yet.</p>
         </div>
       )}
@@ -234,7 +234,7 @@ function MedicationsTab({ plan, addMedication, toggleMedication, deleteMedicatio
         {active.map(m => (
           <Card key={m.id} className="p-4">
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-accent-soft flex items-center justify-center flex-shrink-0">
+              <div className="w-9 h-9  bg-accent-soft flex items-center justify-center flex-shrink-0">
                 <Pill size={16} className="text-accent" />
               </div>
               <div className="flex-1 min-w-0">
@@ -299,7 +299,7 @@ function AddNoteModal({ open, onClose, onAdd }) {
           <div className="flex flex-wrap gap-2">
             {SESSION_TYPES.map(t => (
               <button key={t} onClick={() => set('type', t)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                className={`px-3 py-1.5  text-xs font-medium border transition-colors ${
                   form.type === t
                     ? 'border-accent bg-accent-soft text-accent-soft-text'
                     : 'border-line text-faint hover:border-faint'
@@ -347,7 +347,7 @@ function NotesTab({ plan, addNote, deleteNote }) {
 
       {plan.sessionNotes.length === 0 && (
         <div className="py-10 text-center">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-raised flex items-center justify-center"><FileText size={22} className="text-faint" /></div>
+          <div className="w-12 h-12 mx-auto mb-3  bg-raised flex items-center justify-center"><FileText size={22} className="text-faint" /></div>
           <p className="text-sm text-faint">No session notes yet.</p>
           <p className="text-xs text-faint mt-1">Log reflections after each session to track your journey.</p>
         </div>
@@ -360,7 +360,7 @@ function NotesTab({ plan, addNote, deleteNote }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                   <span className="text-xs font-semibold text-ink">{n.date}</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-raised text-faint">{n.type}</span>
+                  <span className="text-[10px] px-1.5 py-0.5  bg-raised text-faint">{n.type}</span>
                   {n.moodBefore != null && (
                     <span className="text-[10px] text-faint">
                       Mood: {n.moodBefore}/5 → {n.moodAfter}/5
@@ -416,7 +416,7 @@ function AddSymptomModal({ open, onClose, onAdd }) {
           <div className="flex flex-wrap gap-2">
             {SYMPTOM_FREQS.map(f => (
               <button key={f} onClick={() => set('frequency', f)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                className={`px-3 py-1.5  text-xs font-medium border transition-colors ${
                   form.frequency === f
                     ? 'border-accent bg-accent-soft text-accent-soft-text'
                     : 'border-line text-faint hover:border-faint'
@@ -447,7 +447,7 @@ function SymptomsTab({ plan, addSymptom, updateSymptom, deleteSymptom }) {
 
       {plan.symptoms.length === 0 && (
         <div className="py-10 text-center">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-raised flex items-center justify-center"><Activity size={22} className="text-faint" /></div>
+          <div className="w-12 h-12 mx-auto mb-3  bg-raised flex items-center justify-center"><Activity size={22} className="text-faint" /></div>
           <p className="text-sm text-faint">No symptoms tracked yet.</p>
           <p className="text-xs text-faint mt-1">Log symptoms to share with your practitioner.</p>
         </div>
@@ -460,7 +460,7 @@ function SymptomsTab({ plan, addSymptom, updateSymptom, deleteSymptom }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <p className="text-sm font-medium text-ink">{s.name}</p>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${SEVERITY_COLORS[s.severity]}`}>
+                  <span className={`text-[10px] px-1.5 py-0.5  font-medium ${SEVERITY_COLORS[s.severity]}`}>
                     {SEVERITY_LABELS[s.severity]}
                   </span>
                 </div>
@@ -500,7 +500,7 @@ function ScriptsTab({ scripts, loading, onAddToMeds }) {
         <SkeletonCard lines={1} />
       ) : scripts.length === 0 ? (
         <div className="py-10 text-center">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-raised flex items-center justify-center"><Pill size={22} className="text-faint" /></div>
+          <div className="w-12 h-12 mx-auto mb-3  bg-raised flex items-center justify-center"><Pill size={22} className="text-faint" /></div>
           <p className="text-sm text-faint">No prescriptions yet.</p>
           <p className="text-xs text-faint mt-1">Scripts your doctor sends appear here. You manage your own current medications under the Medications tab.</p>
         </div>
@@ -509,7 +509,7 @@ function ScriptsTab({ scripts, loading, onAddToMeds }) {
           {scripts.map(rx => (
             <Card key={rx.id} className="p-4">
               <div className="flex items-center gap-2 mb-2.5">
-                <div className="w-8 h-8 rounded-xl bg-accent-soft flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8  bg-accent-soft flex items-center justify-center flex-shrink-0">
                   <Stethoscope size={15} className="text-accent" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -521,7 +521,7 @@ function ScriptsTab({ scripts, loading, onAddToMeds }) {
                 {(rx.items || []).map((it, i) => {
                   const key = `${rx.id}_${i}`
                   return (
-                    <div key={i} className="flex items-start gap-2 rounded-xl bg-raised px-3 py-2">
+                    <div key={i} className="flex items-start gap-2  bg-raised px-3 py-2">
                       <Pill size={13} className="text-accent flex-shrink-0 mt-0.5" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-ink">{it.name}</p>
@@ -613,9 +613,9 @@ export function TreatmentPlan() {
       <div className="grid grid-cols-5 gap-1.5 mb-5">
         {TABS.map(({ key, label, icon: Icon }) => (
           <button key={key} onClick={() => setTab(key)}
-            className={`p-3 rounded-2xl text-center transition-all ${
+            className={`p-3  text-center transition-all ${
               tab === key
-                ? 'bg-accent text-on-accent shadow-md shadow-accent/20'
+                ? 'bg-accent text-on-accent shadow-card dark:shadow-card-dark'
                 : 'bg-surface border border-line text-faint hover:border-accent/40'
             }`}>
             <Icon size={16} className="mx-auto mb-1" />
@@ -640,7 +640,7 @@ export function TreatmentPlan() {
         </motion.div>
       </AnimatePresence>
 
-      <div className="mt-8 p-4 rounded-2xl border border-dashed border-accent/30 bg-accent-soft/60">
+      <div className="mt-8 p-4  border border-dashed border-accent/30 bg-accent-soft/60">
         <div className="flex items-start gap-2">
           <ClipboardList size={14} className="text-accent flex-shrink-0 mt-0.5" />
           <div>

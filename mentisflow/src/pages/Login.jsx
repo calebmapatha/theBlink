@@ -56,7 +56,7 @@ export function Login({ onBack, initialRole = null }) {
   }
 
   return (
-    <div className="h-[100dvh] bg-gradient-to-b from-teal-50 via-white to-slate-50 overflow-y-auto">
+    <div className="h-[100dvh] bg-gradient-to-b from-primary-50 via-white to-slate-50 overflow-y-auto">
       <div className="flex flex-col items-center max-w-md mx-auto px-6 pt-8 pb-12">
 
         {/* Back to home */}
@@ -79,7 +79,7 @@ export function Login({ onBack, initialRole = null }) {
           transition={{ duration: 0.4 }}
           className="flex flex-col items-center mb-8 w-full"
         >
-          <div className="w-14 h-14 rounded-2xl bg-teal-500 flex items-center justify-center shadow-lg mb-4">
+          <div className="w-14 h-14  bg-primary-500 flex items-center justify-center shadow-lg mb-4">
             <HeartHandshake size={26} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
@@ -105,10 +105,10 @@ export function Login({ onBack, initialRole = null }) {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => pickRole('patient')}
-                  className="bg-white border-2 border-slate-200 hover:border-teal-400 active:border-teal-500 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all text-center group"
+                  className="bg-white border-2 border-slate-200 hover:border-primary-400 active:border-primary-500  p-4 flex flex-col items-center gap-2 transition-all text-center group"
                 >
-                  <div className="w-11 h-11 rounded-xl bg-teal-50 group-hover:bg-teal-100 flex items-center justify-center transition-colors">
-                    <UserRound size={20} className="text-teal-600" />
+                  <div className="w-11 h-11  bg-primary-50 group-hover:bg-primary-100 flex items-center justify-center transition-colors">
+                    <UserRound size={20} className="text-primary-600" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-slate-900">Seeking care</p>
@@ -117,10 +117,10 @@ export function Login({ onBack, initialRole = null }) {
                 </button>
                 <button
                   onClick={() => pickRole('provider')}
-                  className="bg-white border-2 border-slate-200 hover:border-teal-400 active:border-teal-500 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all text-center group"
+                  className="bg-white border-2 border-slate-200 hover:border-primary-400 active:border-primary-500  p-4 flex flex-col items-center gap-2 transition-all text-center group"
                 >
-                  <div className="w-11 h-11 rounded-xl bg-teal-50 group-hover:bg-teal-100 flex items-center justify-center transition-colors">
-                    <Stethoscope size={20} className="text-teal-600" />
+                  <div className="w-11 h-11  bg-primary-50 group-hover:bg-primary-100 flex items-center justify-center transition-colors">
+                    <Stethoscope size={20} className="text-primary-600" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-slate-900">Practitioner</p>
@@ -145,9 +145,9 @@ export function Login({ onBack, initialRole = null }) {
                 >
                   ← Change role
                 </button>
-                <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ${
+                <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1  font-medium ${
                   role === 'provider'
-                    ? 'bg-teal-100 text-teal-700'
+                    ? 'bg-primary-100 text-primary-700'
                     : 'bg-slate-100 text-slate-600'
                 }`}>
                   {role === 'provider' ? <Stethoscope size={12} /> : <UserRound size={12} />}
@@ -155,7 +155,7 @@ export function Login({ onBack, initialRole = null }) {
                 </span>
               </div>
 
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+              <div className="bg-white border border-slate-200  p-5 shadow-sm">
                 {mode === 'forgot' ? (
                   /* ── Forgot password ── */
                   <div>
@@ -172,8 +172,8 @@ export function Login({ onBack, initialRole = null }) {
                     </p>
 
                     {resetSent ? (
-                      <div className="flex items-start gap-2.5 px-3.5 py-3 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 text-sm">
-                        <CheckCircle2 size={16} className="flex-shrink-0 mt-0.5 text-teal-600" />
+                      <div className="flex items-start gap-2.5 px-3.5 py-3  bg-primary-50 border border-primary-200 text-primary-800 text-sm">
+                        <CheckCircle2 size={16} className="flex-shrink-0 mt-0.5 text-primary-600" />
                         <span>
                           Reset link sent to <strong>{email}</strong>. Check your inbox (and spam folder),
                           then sign in with your new password.
@@ -192,7 +192,7 @@ export function Login({ onBack, initialRole = null }) {
                               onChange={e => setEmail(e.target.value)}
                               placeholder="you@example.com"
                               required
-                              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
+                              className="w-full pl-9 pr-4 py-2.5  border border-slate-200 bg-slate-50 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                             />
                           </div>
                         </div>
@@ -203,7 +203,7 @@ export function Login({ onBack, initialRole = null }) {
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: 'auto' }}
                               exit={{ opacity: 0, height: 0 }}
-                              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs"
+                              className="flex items-center gap-2 px-3 py-2  bg-red-50 border border-red-200 text-red-600 text-xs"
                             >
                               <AlertCircle size={13} className="flex-shrink-0" />
                               {authError}
@@ -214,7 +214,7 @@ export function Login({ onBack, initialRole = null }) {
                         <button
                           type="submit"
                           disabled={loading || !email}
-                          className="w-full py-2.5 rounded-xl bg-teal-500 hover:bg-teal-600 active:bg-teal-700 text-white text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="w-full py-2.5  bg-primary-500 hover:bg-primary-600 active:bg-primary-700 text-white text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {loading ? 'Sending…' : 'Send reset link'}
                         </button>
@@ -224,12 +224,12 @@ export function Login({ onBack, initialRole = null }) {
                 ) : (
                   /* ── Sign in / sign up ── */
                   <>
-                    <div className="flex p-1 bg-slate-100 rounded-xl mb-4">
+                    <div className="flex p-1 bg-slate-100  mb-4">
                       {['signin', 'signup'].map(m => (
                         <button
                           key={m}
                           onClick={() => switchMode(m)}
-                          className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+                          className={`flex-1 py-2  text-sm font-medium transition-all ${
                             mode === m
                               ? 'bg-white text-slate-900 shadow-sm'
                               : 'text-slate-400 hover:text-slate-600'
@@ -243,7 +243,7 @@ export function Login({ onBack, initialRole = null }) {
                     <button
                       onClick={handleGoogle}
                       disabled={loading}
-                      className="w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-sm font-medium transition-all mb-4 disabled:opacity-50"
+                      className="w-full flex items-center justify-center gap-3 px-4 py-2.5  border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-sm font-medium transition-all mb-4 disabled:opacity-50"
                     >
                       <GoogleIcon />
                       Continue with Google
@@ -267,7 +267,7 @@ export function Login({ onBack, initialRole = null }) {
                             onChange={e => setEmail(e.target.value)}
                             placeholder="you@example.com"
                             required
-                            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
+                            className="w-full pl-9 pr-4 py-2.5  border border-slate-200 bg-slate-50 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                           />
                         </div>
                       </div>
@@ -282,7 +282,7 @@ export function Login({ onBack, initialRole = null }) {
                             onChange={e => setPassword(e.target.value)}
                             placeholder={mode === 'signup' ? 'At least 6 characters' : '••••••••'}
                             required
-                            className="w-full pl-9 pr-10 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent"
+                            className="w-full pl-9 pr-10 py-2.5  border border-slate-200 bg-slate-50 text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                           />
                           <button
                             type="button"
@@ -300,7 +300,7 @@ export function Login({ onBack, initialRole = null }) {
                           <button
                             type="button"
                             onClick={() => switchMode('forgot')}
-                            className="text-xs font-semibold text-teal-600 hover:text-teal-700 transition-colors"
+                            className="text-xs font-semibold text-primary-600 hover:text-primary-700 transition-colors"
                           >
                             Forgot password?
                           </button>
@@ -313,7 +313,7 @@ export function Login({ onBack, initialRole = null }) {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs"
+                            className="flex items-center gap-2 px-3 py-2  bg-red-50 border border-red-200 text-red-600 text-xs"
                           >
                             <AlertCircle size={13} className="flex-shrink-0" />
                             {authError}
@@ -324,7 +324,7 @@ export function Login({ onBack, initialRole = null }) {
                       <button
                         type="submit"
                         disabled={loading || !email || !password}
-                        className="w-full py-2.5 rounded-xl bg-teal-500 hover:bg-teal-600 active:bg-teal-700 text-white text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-2.5  bg-primary-500 hover:bg-primary-600 active:bg-primary-700 text-white text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {loading ? 'Please wait…' : (mode === 'signin' ? 'Sign in' : 'Create account')}
                       </button>
@@ -334,15 +334,15 @@ export function Login({ onBack, initialRole = null }) {
               </div>
 
               <p className="flex items-center justify-center gap-1.5 text-center text-xs text-slate-400 mt-4">
-                <Shield size={12} className="text-teal-400 flex-shrink-0" />
+                <Shield size={12} className="text-primary-400 flex-shrink-0" />
                 Your data is private and only visible to you and your chosen practitioner.
               </p>
               {mode === 'signup' && (
                 <p className="text-center text-[11px] text-slate-400 mt-2">
                   By creating an account you agree to our{' '}
-                  <a href={`${import.meta.env.BASE_URL}terms`} target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:underline">Terms of Service</a>{' '}
+                  <a href={`${import.meta.env.BASE_URL}terms`} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">Terms of Service</a>{' '}
                   and{' '}
-                  <a href={`${import.meta.env.BASE_URL}privacy`} target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:underline">Privacy Policy</a>.
+                  <a href={`${import.meta.env.BASE_URL}privacy`} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">Privacy Policy</a>.
                 </p>
               )}
             </motion.div>

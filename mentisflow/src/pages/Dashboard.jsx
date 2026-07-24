@@ -131,14 +131,14 @@ export function Dashboard() {
                 <p className="text-sm font-bold text-ink">How are you feeling?</p>
               </div>
               <button onClick={() => navigate('/checkin')} title="Full check-in"
-                className="w-8 h-8 rounded-lg bg-accent hover:bg-accent-strong flex items-center justify-center transition-colors">
+                className="w-8 h-8  bg-accent hover:bg-accent-strong flex items-center justify-center transition-colors">
                 <HeartHandshake size={15} className="text-white" />
               </button>
             </div>
             <div className="flex justify-between gap-1.5">
               {[1, 2, 3, 4, 5].map(m => (
                 <button key={m} onClick={() => saveMood(m)}
-                  className={`flex-1 h-11 rounded-xl text-xl flex items-center justify-center transition-all active:scale-90 ${
+                  className={`flex-1 h-11  text-xl flex items-center justify-center transition-all active:scale-90 ${
                     checkin.todayCheckin?.mood === m
                       ? 'bg-accent-soft ring-2 ring-accent'
                       : 'bg-raised hover:bg-raised'
@@ -161,7 +161,7 @@ export function Dashboard() {
               className="p-4 border-accent/20 bg-accent-soft/50">
               <div className="flex items-center justify-between mb-1.5">
                 <p className="text-xs font-semibold text-accent-soft-text uppercase tracking-wide">Next appointment</p>
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                <span className={`text-[10px] font-semibold px-2 py-0.5  ${
                   nextAppt.status === 'confirmed'
                     ? 'bg-accent text-on-accent'
                     : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
@@ -185,9 +185,9 @@ export function Dashboard() {
           <motion.div variants={itemVariants}>
             <button
               onClick={() => navigate('/connect')}
-              className="relative w-full text-left p-5 rounded-3xl bg-gradient-to-br from-accent to-accent-strong text-white shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/30 transition-shadow overflow-hidden"
+              className="relative w-full text-left p-5  bg-gradient-to-br from-accent to-accent-strong text-white shadow-card dark:shadow-card-dark overflow-hidden"
             >
-              <div className="absolute -top-10 -right-8 w-36 h-36 bg-white/10 rounded-full blur-2xl" aria-hidden="true" />
+              <div className="absolute -top-10 -right-8 w-36 h-36 bg-white/10  blur-2xl" aria-hidden="true" />
               <div className="relative flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1.5">
@@ -199,7 +199,7 @@ export function Dashboard() {
                     Book HPCSA-registered psychiatrists &amp; psychologists and share your wellness data.
                   </p>
                 </div>
-                <span className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0 mt-1">
+                <span className="w-8 h-8  bg-white/15 flex items-center justify-center flex-shrink-0 mt-1">
                   <ChevronRight size={16} />
                 </span>
               </div>
@@ -254,8 +254,8 @@ export function Dashboard() {
                 {completedTaskCount}<span className="text-sm font-normal text-faint">/{totalTaskCount}</span>
               </p>
               <p className="text-xs text-faint mb-3 mt-0.5">completed</p>
-              <div className="h-1.5 rounded-full bg-raised overflow-hidden">
-                <div className="h-full rounded-full bg-accent transition-all duration-500"
+              <div className="h-1.5  bg-raised overflow-hidden">
+                <div className="h-full  bg-accent transition-all duration-500"
                   style={{ width: `${totalTaskCount > 0 ? (completedTaskCount / totalTaskCount) * 100 : 0}%` }} />
               </div>
               {tasks.todayTasks.slice(0, 2).map(t => (
@@ -277,7 +277,7 @@ export function Dashboard() {
                 <Brain size={15} className="text-faint" />
                 <p className="text-xs font-semibold uppercase tracking-wider text-faint">Brain Dump</p>
                 {dump.entries.length > 0 && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-raised text-faint">{dump.entries.length}</span>
+                  <span className="text-[10px] px-1.5 py-0.5  bg-raised text-faint">{dump.entries.length}</span>
                 )}
               </div>
               <ChevronRight size={13} className="text-faint" />
@@ -288,7 +288,7 @@ export function Dashboard() {
                 onChange={e => setDumpText(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleQuickDump()}
                 placeholder="What’s on your mind? (Enter to save)"
-                className="flex-1 px-3 py-2 rounded-xl border border-line bg-raised text-sm text-ink placeholder-faint focus:outline-none focus:ring-2 focus:ring-accent"
+                className="flex-1 px-3 py-2 border border-line bg-raised text-sm text-ink placeholder-faint focus:outline-none focus:ring-2 focus:ring-accent"
               />
               <Button size="sm" onClick={handleQuickDump} disabled={!dumpText.trim()}>
                 <Zap size={13} /> Dump
@@ -314,12 +314,12 @@ export function Dashboard() {
                   {formatSeconds(timer.secondsLeft)}
                 </p>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full font-medium ${
+                  <span className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5  font-medium ${
                     isRunning ? 'bg-success-100 dark:bg-success-500/20 text-success-700 dark:text-success-400'
                     : isPaused ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400'
                     : 'bg-raised text-muted'
                   }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${isRunning ? 'bg-success-500 animate-pulse' : isPaused ? 'bg-amber-500' : 'bg-faint'}`} />
+                    <span className={`w-1.5 h-1.5  ${isRunning ? 'bg-success-500 animate-pulse' : isPaused ? 'bg-amber-500' : 'bg-faint'}`} />
                     {isRunning ? 'Running' : isPaused ? 'Paused' : 'Idle'}
                   </span>
                   {timer.sessionCount > 0 && (
@@ -329,7 +329,7 @@ export function Dashboard() {
               </div>
               {!isRunning && (
                 <button onClick={e => { e.stopPropagation(); timer.start() }}
-                  className="w-12 h-12 rounded-full bg-accent hover:bg-accent-strong active:bg-accent-strong shadow-sm flex items-center justify-center transition-all flex-shrink-0">
+                  className="w-12 h-12  bg-accent hover:bg-accent-strong active:bg-accent-strong shadow-sm flex items-center justify-center transition-all flex-shrink-0">
                   <Play size={18} className="text-white ml-0.5" />
                 </button>
               )}
@@ -338,8 +338,8 @@ export function Dashboard() {
               )}
             </div>
             {(isRunning || isPaused) && (
-              <div className="mt-3 h-1 rounded-full bg-raised overflow-hidden">
-                <div className="h-full rounded-full bg-accent transition-all duration-1000"
+              <div className="mt-3 h-1  bg-raised overflow-hidden">
+                <div className="h-full  bg-accent transition-all duration-1000"
                   style={{ width: `${(1 - timer.secondsLeft / (timer.settings.workDuration * 60)) * 100}%` }} />
               </div>
             )}
@@ -410,8 +410,8 @@ export function Dashboard() {
                   <p className="text-xs text-muted truncate flex-1">{topGoal.text}</p>
                   <span className="text-xs text-accent font-semibold ml-2 flex-shrink-0">{topGoal.progress}%</span>
                 </div>
-                <div className="h-1.5 rounded-full bg-raised overflow-hidden">
-                  <div className="h-full rounded-full bg-accent transition-all duration-500" style={{ width: `${topGoal.progress}%` }} />
+                <div className="h-1.5  bg-raised overflow-hidden">
+                  <div className="h-full  bg-accent transition-all duration-500" style={{ width: `${topGoal.progress}%` }} />
                 </div>
               </div>
             )}
@@ -432,8 +432,8 @@ export function Dashboard() {
                 <ChevronRight size={14} className="text-faint" />
               </div>
             </div>
-            <div className="h-2 rounded-full bg-raised overflow-hidden">
-              <div className="h-full rounded-full bg-gradient-to-r from-accent to-accent-strong transition-all duration-500" style={{ width: `${xpProgress * 100}%` }} />
+            <div className="h-2  bg-raised overflow-hidden">
+              <div className="h-full  bg-gradient-to-r from-accent to-accent-strong transition-all duration-500" style={{ width: `${xpProgress * 100}%` }} />
             </div>
             {rewards.nextLevel && (
               <div className="flex justify-between mt-1.5">

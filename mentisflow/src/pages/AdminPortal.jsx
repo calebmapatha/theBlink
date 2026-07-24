@@ -95,7 +95,7 @@ function ReasonModal({ open, onClose, title, cta, onConfirm }) {
       <div className="space-y-4">
         <textarea value={reason} onChange={e => setReason(e.target.value)} rows={3}
           placeholder="Reason (recorded in the audit log)"
-          className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none" />
+          className="w-full px-3 py-2.5  border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none" />
         <div className="flex gap-2">
           <Button variant="ghost" className="flex-1" onClick={onClose}>Cancel</Button>
           <Button className="flex-1 bg-red-500 hover:bg-red-600" disabled={busy} onClick={submit}>
@@ -286,7 +286,7 @@ export function AdminPortal() {
   return (
     <PageWrapper>
       <div className="mb-5 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-2xl bg-ink-900 dark:bg-ink-100 flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10  bg-ink-900 dark:bg-ink-100 flex items-center justify-center flex-shrink-0">
           <Shield size={18} className="text-white dark:text-ink-900" />
         </div>
         <div>
@@ -299,16 +299,16 @@ export function AdminPortal() {
       <div className="flex gap-1.5 mb-5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
         {TABS.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
+            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2  text-xs font-medium transition-colors ${
               tab === t.key ? 'bg-ink-900 dark:bg-ink-100 text-white dark:text-ink-900'
                             : 'bg-raised text-faint hover:text-ink'
             }`}>
             <t.icon size={13} /> {t.label}
             {t.key === 'doctors' && stats.pendingDocs > 0 && (
-              <span className="min-w-4 h-4 px-1 rounded-full bg-amber-500 text-white text-[9px] font-bold flex items-center justify-center">{stats.pendingDocs}</span>
+              <span className="min-w-4 h-4 px-1  bg-amber-500 text-white text-[9px] font-bold flex items-center justify-center">{stats.pendingDocs}</span>
             )}
             {t.key === 'reports' && stats.openReports > 0 && (
-              <span className="min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">{stats.openReports}</span>
+              <span className="min-w-4 h-4 px-1  bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">{stats.openReports}</span>
             )}
           </button>
         ))}
@@ -348,7 +348,7 @@ export function AdminPortal() {
               <div className="relative mb-4">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-faint" />
                 <input value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="Search name, email or HPCSA…"
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-line bg-surface text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent" />
+                  className="w-full pl-9 pr-3 py-2.5  border border-line bg-surface text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent" />
               </div>
               <div className="space-y-3">
                 {filteredProviders.map(p => {
@@ -360,7 +360,7 @@ export function AdminPortal() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <p className="text-sm font-semibold text-ink">{p.name}</p>
-                            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${st.cls}`}>{st.label}</span>
+                            <span className={`text-[10px] font-medium px-1.5 py-0.5  ${st.cls}`}>{st.label}</span>
                           </div>
                           <p className="text-[11px] text-faint">{p.type} · {p.email}</p>
                           {p.hpcsa && (
@@ -408,7 +408,7 @@ export function AdminPortal() {
                         )}
                         <VerificationDocsButton uid={p.id} />
                         <button onClick={() => setModal({ type: 'delete', provider: p })}
-                          className="ml-auto p-1.5 rounded-lg text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title="Delete account">
+                          className="ml-auto p-1.5  text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title="Delete account">
                           <Trash2 size={14} />
                         </button>
                       </div>
@@ -438,7 +438,7 @@ export function AdminPortal() {
                         </p>
                       </div>
                       <button onClick={() => setModal({ type: 'deletePatient', patient: p })}
-                        className="p-1.5 rounded-lg text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
+                        className="p-1.5  text-faint hover:text-danger hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
                         <Trash2 size={14} />
                       </button>
                     </div>
@@ -458,12 +458,12 @@ export function AdminPortal() {
                   <div className="flex items-center gap-2 mb-1">
                     <Flag size={13} className={r.status === 'open' ? 'text-danger' : 'text-faint'} />
                     <p className="text-sm font-semibold text-ink flex-1">{r.providerName || r.providerUid}</p>
-                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md ${
+                    <span className={`text-[10px] font-medium px-1.5 py-0.5  ${
                       r.status === 'open' ? 'bg-red-50 dark:bg-red-500/10 text-danger' : 'bg-success-50 dark:bg-success-500/10 text-success-600 dark:text-success-400'}`}>
                       {r.status}
                     </span>
                   </div>
-                  <p className="text-xs text-muted bg-raised px-3 py-2 rounded-xl">“{r.reason}”</p>
+                  <p className="text-xs text-muted bg-raised px-3 py-2">“{r.reason}”</p>
                   <p className="text-[10px] text-faint mt-1.5">Reported by {r.reporterEmail || r.reporterUid}</p>
                   {r.resolution && <p className="text-[10px] text-faint mt-0.5">Resolution: {r.resolution}</p>}
                   {r.status === 'open' && (
@@ -543,13 +543,13 @@ function AnnouncementsTab({ admin }) {
         <p className="text-xs font-semibold uppercase tracking-wider text-faint mb-3">New announcement</p>
         <div className="space-y-3">
           <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Title"
-            className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent" />
+            className="w-full px-3 py-2.5  border border-line bg-raised text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent" />
           <textarea value={body} onChange={e => setBody(e.target.value)} rows={3} placeholder="Message shown as a banner in the app"
-            className="w-full px-3 py-2.5 rounded-xl border border-line bg-raised text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent resize-none" />
+            className="w-full px-3 py-2.5  border border-line bg-raised text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent resize-none" />
           <div className="flex gap-2">
             {[['all', 'Everyone'], ['patient', 'Patients'], ['provider', 'Doctors']].map(([k, l]) => (
               <button key={k} onClick={() => setAudience(k)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                className={`px-3 py-1.5  text-xs font-medium transition-colors ${
                   audience === k ? 'bg-accent text-on-accent' : 'bg-raised text-faint'}`}>
                 {l}
               </button>
@@ -571,7 +571,7 @@ function AnnouncementsTab({ admin }) {
                 <p className="text-[10px] text-faint mt-1">To: {a.audience === 'all' ? 'everyone' : `${a.audience}s`}</p>
               </div>
               <button onClick={async () => { await admin.deleteAnnouncement(a.id); load() }}
-                className="p-1.5 rounded-lg text-faint hover:text-danger transition-colors flex-shrink-0"><Trash2 size={13} /></button>
+                className="p-1.5  text-faint hover:text-danger transition-colors flex-shrink-0"><Trash2 size={13} /></button>
             </div>
           </Card>
         ))}
@@ -583,7 +583,7 @@ function AnnouncementsTab({ admin }) {
 function LogsTab({ admin }) {
   const [logs, setLogs] = useState(null)
   useEffect(() => { admin.fetchLogs().then(setLogs) }, [])
-  if (!logs) return <Skeleton className="h-24 rounded-2xl" />
+  if (!logs) return <Skeleton className="h-24" />
   return (
     <div className="space-y-2">
       <p className="text-xs text-faint">Every administrative action is recorded here permanently (append-only).</p>
@@ -617,7 +617,7 @@ function ConfigTab({ admin }) {
       pricing: mergePricing(c?.pricing),
     }))
   }, [])
-  if (!cfg) return <Skeleton className="h-24 rounded-2xl" />
+  if (!cfg) return <Skeleton className="h-24" />
 
   const setPricingField = (path, value) => setCfg(c => {
     const p = structuredClone(c.pricing)
@@ -636,7 +636,7 @@ function ConfigTab({ admin }) {
     setTimeout(() => setSaved(false), 2000)
   }
 
-  const numInputCls = 'w-28 px-3 py-2 rounded-xl border border-line bg-raised text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent'
+  const numInputCls = 'w-28 px-3 py-2  border border-line bg-raised text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent'
 
   return (
     <Card className="p-4 space-y-4">
@@ -648,8 +648,8 @@ function ConfigTab({ admin }) {
           <p className="text-[11px] text-faint">When off, the provider signup page shows a waitlist message.</p>
         </div>
         <button onClick={() => setCfg(c => ({ ...c, signupsOpen: !c.signupsOpen }))} aria-pressed={cfg.signupsOpen}
-          className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 overflow-hidden ${cfg.signupsOpen ? 'bg-accent' : 'bg-line'}`}>
-          <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${cfg.signupsOpen ? 'translate-x-5' : 'translate-x-0'}`} />
+          className={`relative w-11 h-6  transition-colors flex-shrink-0 overflow-hidden ${cfg.signupsOpen ? 'bg-accent' : 'bg-line'}`}>
+          <span className={`absolute top-0.5 left-0.5 w-5 h-5  bg-white shadow-sm transition-transform ${cfg.signupsOpen ? 'translate-x-5' : 'translate-x-0'}`} />
         </button>
       </label>
 

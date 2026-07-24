@@ -12,7 +12,7 @@ export function SkeletonLines({ lines = 3, className = '' }) {
   return (
     <div aria-hidden="true" className={`space-y-2 ${className}`}>
       {Array.from({ length: lines }, (_, i) => (
-        <Skeleton key={i} className={`h-3 rounded-md ${i === lines - 1 ? 'w-2/3' : 'w-full'}`} />
+        <Skeleton key={i} className={`h-3 ${i === lines - 1 ? 'w-2/3' : 'w-full'}`} />
       ))}
     </div>
   )
@@ -21,11 +21,11 @@ export function SkeletonLines({ lines = 3, className = '' }) {
 // A card-shaped placeholder: optional avatar circle, a heading bar, lines.
 export function SkeletonCard({ avatar = false, lines = 2, className = '' }) {
   return (
-    <div aria-hidden="true" className={`rounded-3xl border border-line/60 bg-surface p-5 ${className}`}>
+    <div aria-hidden="true" className={` border border-line/60 bg-surface p-5 ${className}`}>
       <div className="flex items-start gap-3">
-        {avatar && <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />}
+        {avatar && <Skeleton className="w-12 h-12 flex-shrink-0" />}
         <div className="flex-1 min-w-0">
-          <Skeleton className="h-4 w-1/3 rounded-md mb-3" />
+          <Skeleton className="h-4 w-1/3 mb-3" />
           <SkeletonLines lines={lines} />
         </div>
       </div>
@@ -36,9 +36,9 @@ export function SkeletonCard({ avatar = false, lines = 2, className = '' }) {
 // A KPI-tile placeholder: quiet label bar over an oversized figure bar.
 export function SkeletonStat({ className = '' }) {
   return (
-    <div aria-hidden="true" className={`rounded-3xl border border-line/60 bg-surface p-5 ${className}`}>
-      <Skeleton className="h-3 w-1/2 rounded-md" />
-      <Skeleton className="h-8 w-2/3 rounded-lg mt-4" />
+    <div aria-hidden="true" className={` border border-line/60 bg-surface p-5 ${className}`}>
+      <Skeleton className="h-3 w-1/2" />
+      <Skeleton className="h-8 w-2/3 mt-4" />
     </div>
   )
 }

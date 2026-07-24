@@ -58,12 +58,12 @@ export function Onboarding() {
         initial={{ opacity: 0, y: 24, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
-        className="relative w-full max-w-sm rounded-[2rem] bg-surface shadow-2xl overflow-hidden"
+        className="relative w-full max-w-sm  bg-surface shadow-2xl overflow-hidden"
       >
         {/* Decorative header band */}
         <div className="relative h-36 bg-gradient-to-br from-accent to-accent-strong overflow-hidden">
-          <div className="absolute -top-8 -right-6 w-32 h-32 bg-white/10 rounded-full blur-2xl" aria-hidden="true" />
-          <div className="absolute -bottom-10 -left-8 w-36 h-36 bg-white/10 rounded-full blur-2xl" aria-hidden="true" />
+          <div className="absolute -top-8 -right-6 w-32 h-32 bg-white/10  blur-2xl" aria-hidden="true" />
+          <div className="absolute -bottom-10 -left-8 w-36 h-36 bg-white/10  blur-2xl" aria-hidden="true" />
           <AnimatePresence mode="wait">
             <motion.div
               key={step}
@@ -73,7 +73,7 @@ export function Onboarding() {
               transition={{ duration: 0.25 }}
               className="absolute inset-0 flex items-center justify-center"
             >
-              <div className="w-16 h-16 rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center">
+              <div className="w-16 h-16  bg-white/15 border border-white/25 flex items-center justify-center">
                 <Icon size={30} className="text-white" />
               </div>
             </motion.div>
@@ -102,7 +102,7 @@ export function Onboarding() {
               {chips && (
                 <div className="flex flex-wrap justify-center gap-1.5 mt-4">
                   {chips.map(c => (
-                    <span key={c} className="text-xs font-medium px-2.5 py-1 rounded-full bg-accent-soft text-accent-soft-text">
+                    <span key={c} className="text-xs font-medium px-2.5 py-1  bg-accent-soft text-accent-soft-text">
                       {c}
                     </span>
                   ))}
@@ -118,7 +118,7 @@ export function Onboarding() {
                 key={i}
                 onClick={() => setStep(i)}
                 aria-label={`Step ${i + 1}`}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
+                className={`h-1.5  transition-all duration-300 ${
                   i === step ? 'w-6 bg-accent' : 'w-1.5 bg-line'
                 }`}
               />
@@ -129,14 +129,14 @@ export function Onboarding() {
             <div className="space-y-2">
               <button
                 onClick={() => finish('/checkin')}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-accent hover:bg-accent-strong active:scale-[0.98] text-white text-sm font-semibold transition-all"
+                className="w-full flex items-center justify-center gap-2 py-3  bg-accent hover:bg-accent-strong active:scale-[0.98] text-white text-sm font-semibold transition-all"
               >
                 <Sun size={15} />
                 Do my first check-in
               </button>
               <button
                 onClick={() => finish()}
-                className="w-full py-3 rounded-2xl text-sm font-semibold text-muted hover:bg-raised active:scale-[0.98] transition-all"
+                className="w-full py-3  text-sm font-semibold text-muted hover:bg-raised active:scale-[0.98] transition-all"
               >
                 Explore on my own
               </button>
@@ -144,7 +144,7 @@ export function Onboarding() {
           ) : (
             <button
               onClick={() => setStep(s => s + 1)}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-accent hover:bg-accent-strong active:scale-[0.98] text-white text-sm font-semibold transition-all"
+              className="w-full flex items-center justify-center gap-2 py-3  bg-accent hover:bg-accent-strong active:scale-[0.98] text-white text-sm font-semibold transition-all"
             >
               Next
               <ArrowRight size={15} />

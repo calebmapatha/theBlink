@@ -77,8 +77,8 @@ export function HBarList({ items, color = 'bg-accent', valueFmt = (v) => v }) {
               {valueFmt(it.value)}{it.sub ? <span className="text-faint font-normal ml-1">{it.sub}</span> : null}
             </span>
           </div>
-          <div className="h-1.5 rounded-full bg-raised overflow-hidden">
-            <div className={`h-full rounded-full ${color}`} style={{ width: `${(it.value / max) * 100}%` }} />
+          <div className="h-1.5  bg-raised overflow-hidden">
+            <div className={`h-full  ${color}`} style={{ width: `${(it.value / max) * 100}%` }} />
           </div>
         </div>
       ))}
@@ -100,7 +100,7 @@ export function Funnel({ steps }) {
         return (
           <div key={i} className="flex items-center gap-2">
             <div className="flex-1">
-              <div className="h-7 rounded-lg bg-accent flex items-center px-2.5 transition-all"
+              <div className="h-7  bg-accent flex items-center px-2.5 transition-all"
                 style={{ width: `${pct}%`, opacity: 1 - i * 0.22 }}>
                 <span className="text-[10px] font-semibold text-white whitespace-nowrap">{s.value}</span>
               </div>
@@ -122,16 +122,16 @@ export function SplitBar({ a, b, labelA, labelB }) {
   const pctA  = total > 0 ? Math.round((a / total) * 100) : 50
   return (
     <div>
-      <div className="h-2.5 rounded-full overflow-hidden flex bg-raised">
+      <div className="h-2.5  overflow-hidden flex bg-raised">
         {total > 0 && <div className="h-full bg-accent" style={{ width: `${pctA}%` }} />}
         {total > 0 && <div className="h-full bg-warm-400 flex-1" />}
       </div>
       <div className="flex justify-between mt-1.5">
         <span className="text-[10px] text-muted">
-          <span className="inline-block w-2 h-2 rounded-full bg-accent mr-1" />{labelA}: <strong>{a}</strong>{total > 0 ? ` (${pctA}%)` : ''}
+          <span className="inline-block w-2 h-2  bg-accent mr-1" />{labelA}: <strong>{a}</strong>{total > 0 ? ` (${pctA}%)` : ''}
         </span>
         <span className="text-[10px] text-muted">
-          <span className="inline-block w-2 h-2 rounded-full bg-warm-400 mr-1" />{labelB}: <strong>{b}</strong>{total > 0 ? ` (${100 - pctA}%)` : ''}
+          <span className="inline-block w-2 h-2  bg-warm-400 mr-1" />{labelB}: <strong>{b}</strong>{total > 0 ? ` (${100 - pctA}%)` : ''}
         </span>
       </div>
     </div>

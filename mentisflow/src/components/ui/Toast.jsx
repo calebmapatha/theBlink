@@ -2,10 +2,10 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Zap, Check, AlertCircle, Info } from 'lucide-react'
 
 const VARIANTS = {
-  reward:  { cls: 'bg-success-500 text-white shadow-glow-success',                 icon: Zap },
-  success: { cls: 'bg-success-500 text-white shadow-glow-success',                 icon: Check },
-  error:   { cls: 'bg-red-500 text-white shadow-lg shadow-red-500/30',             icon: AlertCircle },
-  info:    { cls: 'bg-ink-900 dark:bg-surface-700 text-white shadow-lg',           icon: Info },
+  reward:  { cls: 'bg-success-600 text-white shadow-card dark:shadow-card-dark',   icon: Zap },
+  success: { cls: 'bg-success-600 text-white shadow-card dark:shadow-card-dark',   icon: Check },
+  error:   { cls: 'bg-danger text-white shadow-card dark:shadow-card-dark',        icon: AlertCircle },
+  info:    { cls: 'bg-ink-900 dark:bg-surface-700 text-white shadow-card dark:shadow-card-dark', icon: Info },
 }
 
 export function Toast({ toast, onDismiss }) {
@@ -22,14 +22,14 @@ export function Toast({ toast, onDismiss }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ duration: 0.25 }}
-            className={`pointer-events-auto flex items-center gap-2.5 pl-4 pr-2 py-3 rounded-xl text-sm font-medium ${v.cls}`}
+            className={`pointer-events-auto flex items-center gap-2.5 pl-4 pr-2 py-3  text-sm font-medium ${v.cls}`}
           >
             <Icon size={15} className="flex-shrink-0" />
             <span>{toast.pts != null ? `+${toast.pts} XP · ${toast.message}` : toast.message}</span>
             {toast.action && (
               <button
                 onClick={() => { toast.action.onClick(); onDismiss?.() }}
-                className="ml-1 px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 active:scale-95 text-xs font-semibold transition-all"
+                className="ml-1 px-2.5 py-1  bg-white/20 hover:bg-white/30 active:scale-95 text-xs font-semibold transition-all"
               >
                 {toast.action.label}
               </button>

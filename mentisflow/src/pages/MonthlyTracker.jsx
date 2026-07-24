@@ -23,22 +23,22 @@ function DayCell({ day, completed, total, isCurrentMonth }) {
   const ratio = getRatio(completed, total)
 
   const bg = future
-    ? 'bg-raised/40'
+    ? 'bg-surface'
     : ratio === 0
     ? 'bg-raised'
     : ratio < 0.5
-    ? 'bg-warm-100 dark:bg-warm-500/20'
+    ? 'bg-tint-peach'
     : ratio < 1
     ? 'bg-accent-soft'
-    : 'bg-success-100 dark:bg-success-500/20'
+    : 'bg-tint-mint'
 
-  const textColor = future ? 'text-faint/40' : 'text-ink'
+  const textColor = future ? 'text-faint/40' : 'text-muted'
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={`relative aspect-square rounded-xl flex flex-col items-center justify-center ${bg} ${isToday(date) ? 'ring-2 ring-accent' : ''}`}
+      className={`relative aspect-square flex flex-col items-center justify-center ${bg} ${isToday(date) ? 'ring-1 ring-inset ring-accent' : ''}`}
     >
       <span className={`text-xs font-semibold ${textColor}`}>{format(date, 'd')}</span>
       {!future && total > 0 && (
@@ -80,39 +80,40 @@ export function MonthlyTracker() {
       <PageHeader title="Monthly Tracker" subtitle="Habit performance over time" />
 
       <div className="flex items-center justify-between mb-4">
-        <button onClick={goBack} className="p-2 rounded-xl hover:bg-raised text-ink transition-colors">
+        <button onClick={goBack} className="p-2  hover:bg-raised text-ink transition-colors">
           <ChevronLeft size={20} />
         </button>
         <h2 className="text-base font-semibold text-ink">
           {MONTH_NAMES[viewMonth]} {viewYear}
         </h2>
-        <button onClick={goForward} className="p-2 rounded-xl hover:bg-raised text-ink transition-colors">
+        <button onClick={goForward} className="p-2  hover:bg-raised text-ink transition-colors">
           <ChevronRight size={20} />
         </button>
       </div>
 
       <div className="flex items-center gap-3 mb-4 flex-wrap">
         {[
-          { color: 'bg-success-100 dark:bg-success-500/20', label: 'All done' },
+          { color: 'bg-tint-mint', label: 'All done' },
           { color: 'bg-accent-soft', label: '50%+' },
-          { color: 'bg-warm-100 dark:bg-warm-500/20', label: 'Some' },
+          { color: 'bg-tint-peach', label: 'Some' },
           { color: 'bg-raised', label: 'None' },
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1.5">
-            <div className={`w-3 h-3 rounded-sm ${color}`} />
+            <div className={`w-3 h-3  ${color}`} />
             <span className="text-xs text-faint">{label}</span>
           </div>
         ))}
       </div>
 
       <Card className="p-4 mb-6">
-        <div className="grid grid-cols-7 gap-1 mb-2">
+        <div className="grid grid-cols-7 mb-2">
           {WEEKDAYS.map(d => (
             <div key={d} className="text-center text-xs font-medium text-faint py-1">{d}</div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-1">
-          {Array.from({ length: startPad }).map((_, i) => <div key={`pad-${i}`} />)}
+        {/* Hairline gridlines: gap-px over the line colour, paper cells on top */}
+        <div className="grid grid-cols-7 gap-px bg-line border border-line">
+          {Array.from({ length: startPad }).map((_, i) => <div key={`pad-${i}`} className="bg-surface" />)}
           {monthData.map((day, i) => (
             <DayCell key={i} day={day} completed={day.completed} total={day.total} isCurrentMonth />
           ))}
@@ -137,9 +138,9 @@ export function MonthlyTracker() {
                   </div>
                   <span className="text-sm font-bold tabular-nums" style={{ color: h.color }}>{h.rate}%</span>
                 </div>
-                <div className="h-1.5 rounded-full bg-raised overflow-hidden">
+                <div className="h-1.5  bg-raised overflow-hidden">
                   <motion.div
-                    className="h-full rounded-full"
+                    className="h-full "
                     style={{ backgroundColor: h.color }}
                     animate={{ width: `${h.rate}%` }}
                     transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
