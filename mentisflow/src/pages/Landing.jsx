@@ -113,7 +113,7 @@ export function Landing({ onSignIn, onGetStarted }) {
   const privacyHref = `${import.meta.env.BASE_URL}privacy`
 
   return (
-    <div className="h-[100dvh] overflow-y-auto scroll-smooth bg-white text-slate-900">
+    <div className="h-[100dvh] overflow-y-auto overscroll-contain scroll-smooth bg-white text-slate-900">
 
       {/* ── Nav ─────────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 bg-white/85 backdrop-blur-md border-b border-slate-100">

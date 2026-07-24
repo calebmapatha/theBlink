@@ -17,7 +17,7 @@ export function Rewards() {
 
       {/* Level card */}
       <Card className="p-6 mb-4 text-center">
-        <div className="w-16 h-16  bg-accent flex items-center justify-center mx-auto mb-3">
+        <div className="w-16 h-16 bg-accent flex items-center justify-center mx-auto mb-3">
           <Trophy size={28} className="text-white" />
         </div>
         <p className="text-xs font-semibold uppercase tracking-wider text-faint mb-1">Level {currentLevel.level}</p>
@@ -32,14 +32,14 @@ export function Rewards() {
             <span className="text-sm font-medium text-ink">Progress to Level {nextLevel.level}</span>
             <span className="text-sm font-semibold text-accent timer-nums">{xpInCurrentLevel} / {xpForNextLevel} XP</span>
           </div>
-          <div className="h-3  bg-raised overflow-hidden">
+          <div className="h-3 bg-raised overflow-hidden">
             <motion.div
-              className="h-full  bg-gradient-to-r from-accent to-purple-500"
+              className="h-full bg-gradient-to-r from-accent to-purple-500"
               animate={{ width: `${Math.min(100, progress)}%` }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
             />
           </div>
-          <p className="text-xs text-faint mt-2">{nextLevel.xpRequired - totalPoints} XP until "{nextLevel.name}"</p>
+          <p className="text-xs text-faint mt-2">{nextLevel.xpRequired - totalPoints} XP until “{nextLevel.name}”</p>
         </Card>
       )}
 
@@ -59,9 +59,9 @@ export function Rewards() {
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.03 }}
-                className="flex items-center gap-3 px-4 py-3  bg-surface border border-line"
+                className="flex items-center gap-3 px-4 py-3 bg-surface border border-line"
               >
-                <div className="w-8 h-8  bg-accent-soft flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-accent-soft flex items-center justify-center flex-shrink-0">
                   <Zap size={14} className="text-accent" />
                 </div>
                 <div className="flex-1 min-w-0">

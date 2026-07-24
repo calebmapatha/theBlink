@@ -111,7 +111,7 @@ export function Sidebar({ isProvider }) {
             <NavLink to="/settings"
               className="flex items-center gap-2.5 px-3 py-2.5  bg-raised border border-line hover:border-accent/40 transition-colors group"
               title="View your profile">
-              <Avatar photoUrl={photoURL} name={name} size="sm" />
+              <Avatar photoUrl={photoURL} name={name} seed={user?.uid} role={isProvider ? 'provider' : 'patient'} size="sm" />
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold text-ink truncate">{name}</p>
                 <p className="text-[10px] text-faint">{isProvider ? 'Practitioner' : 'Patient'} · View profile</p>

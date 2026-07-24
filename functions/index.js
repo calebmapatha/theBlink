@@ -683,3 +683,100 @@ export const purgeOldAppointments = onSchedule('every 24 hours', async () => {
   }
   logger.info(`purgeOldAppointments: deleted ${docs.length} appointments older than 2 years`)
 })
+
+/**
+ * Live calendar feed (webcal/ICS).
+ *
+ * Serves a user's confirmed appointments as an iCalendar file that Google /
+ * Apple / Outlook calendars can subscribe to and auto-refresh — true sync,
+ * no OAuth. Authenticated by a random token the user generates in the app,
+ * stored in the owner-only calendarTokens/{uid} document. Works for both
+ * roles: the feed contains appointments where the uid is either party.
+ *
+ * Feed URL: /calendarFeed?uid=<uid>&token=<token>   (also as webcal://)
+ */
+const ICS_TZID = 'Africa/Johannesburg' // SAST, fixed +02:00, no DST
+
+const icsEscape = (s = '') => String(s)
+  .replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n')
+
+// '2026-07-23' + '14:00' → '20260723T140000' (local SAST wall time)
+const icsLocal = (date, time) => `${date.replace(/-/g, '')}T${time.replace(':', '')}00`
+
+export const calendarFeed = onRequest({ cors: true }, async (req, res) => {
+  if (req.method !== 'GET') { res.status(405).send('Method not allowed'); return }
+  const uid = String(req.query.uid || '')
+  const token = String(req.query.token || '')
+  if (!uid || token.length < 20) { res.status(403).send('Forbidden'); return }
+
+  try {
+    const tokenSnap = await db.doc(`calendarTokens/${uid}`).get()
+    const stored = String(tokenSnap.get('token') || '')
+    // Hash both sides so timingSafeEqual gets equal-length buffers.
+    const a = createHash('sha256').update(stored).digest()
+    const b = createHash('sha256').update(token).digest()
+    if (!stored || !timingSafeEqual(a, b)) { res.status(403).send('Forbidden'); return }
+
+    const [asProvider, asPatient] = await Promise.all([
+      db.collection('appointments').where('providerUid', '==', uid).where('status', '==', 'confirmed').get(),
+      db.collection('appointments').where('patientUid', '==', uid).where('status', '==', 'confirmed').get(),
+    ])
+
+    // Recent past (30 days) plus everything upcoming.
+    const cutoff = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10)
+    const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '')
+    const seen = new Set()
+    const events = []
+    for (const docSnap of [...asProvider.docs, ...asPatient.docs]) {
+      if (seen.has(docSnap.id)) continue
+      seen.add(docSnap.id)
+      const appt = docSnap.data()
+      if (!appt.date || !appt.timeSlot || appt.date < cutoff) continue
+      const providerView = appt.providerUid === uid
+      const other = providerView ? (appt.patientName || 'Patient') : (appt.providerName || 'Practitioner')
+      const [h, m] = appt.timeSlot.split(':').map(Number)
+      const endMin = h * 60 + m + 60
+      const end = `${String(Math.floor(endMin / 60) % 24).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')}`
+      events.push(
+        'BEGIN:VEVENT',
+        `UID:${docSnap.id}@mentisflow`,
+        `DTSTAMP:${stamp}`,
+        `DTSTART;TZID=${ICS_TZID}:${icsLocal(appt.date, appt.timeSlot)}`,
+        `DTEND;TZID=${ICS_TZID}:${icsLocal(appt.date, end)}`,
+        `SUMMARY:${icsEscape(`MentisFlow session with ${other}`)}`,
+        `LOCATION:${icsEscape(appt.meetingLink || 'MentisFlow')}`,
+        `DESCRIPTION:${icsEscape('Booked via MentisFlow.')}`,
+        'END:VEVENT',
+      )
+    }
+
+    const lines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//MentisFlow//Calendar Feed//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'X-WR-CALNAME:MentisFlow',
+      'REFRESH-INTERVAL;VALUE=DURATION:PT1H',
+      'X-PUBLISHED-TTL:PT1H',
+      'BEGIN:VTIMEZONE',
+      `TZID:${ICS_TZID}`,
+      'BEGIN:STANDARD',
+      'DTSTART:19700101T000000',
+      'TZOFFSETFROM:+0200',
+      'TZOFFSETTO:+0200',
+      'TZNAME:SAST',
+      'END:STANDARD',
+      'END:VTIMEZONE',
+      ...events,
+      'END:VCALENDAR',
+    ]
+
+    res.set('Content-Type', 'text/calendar; charset=utf-8')
+    res.set('Cache-Control', 'private, max-age=300')
+    res.send(lines.join('\r\n'))
+  } catch (err) {
+    logger.error('calendarFeed failed', { uid, err: err.message })
+    res.status(500).send('Internal error')
+  }
+})

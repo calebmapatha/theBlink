@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
+import { Skeleton, SkeletonLines, SkeletonCard } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import Avatar from '../components/ui/Avatar'
@@ -69,7 +70,7 @@ function CheckInTicket({ appt, doctor, onClose }) {
           <div className="mx-auto w-fit p-3  bg-white border border-line">
             {qrUrl
               ? <img src={qrUrl} alt="Check-in QR code" className="w-52 h-52" />
-              : <div className="w-52 h-52 flex items-center justify-center"><Loader size={20} className="animate-spin text-accent" /></div>}
+              : <Skeleton className="w-52 h-52" />}
           </div>
 
           <p className="mt-4 text-sm font-semibold text-ink">{doctor?.name}</p>
@@ -248,7 +249,7 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
       <div className="space-y-5 -mt-1">
         {/* Header */}
         <div className="flex items-start gap-4">
-          <Avatar photoUrl={provider.photoURL} name={provider.name} size="lg" />
+          <Avatar photoUrl={provider.photoURL} name={provider.name} seed={provider.id} role="provider" size="lg" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               <p className="font-bold text-ink">{provider.name}</p>
@@ -366,7 +367,7 @@ function ProviderProfileModal({ provider, open, onClose, onBook, onLink, linked,
           {provider.hideFee ? (
             feeRequested ? (
               <span className="text-xs font-medium text-success-600 dark:text-success-400 flex items-center gap-1">
-                <Check size={12} /> Requested — you'll be notified
+                <Check size={12} /> Requested — you’ll be notified
               </span>
             ) : (
               <Button size="sm" variant="soft" onClick={() => onRequestFee?.(provider)}>
@@ -416,7 +417,7 @@ function ProviderCard({ provider, onBook, onLink, linked, onViewProfile }) {
       {/* Tappable profile area */}
       <button className="w-full text-left" onClick={() => onViewProfile?.(provider)}>
         <div className="flex items-start gap-3">
-          <Avatar photoUrl={provider.photoURL} name={provider.name} size="md" />
+          <Avatar photoUrl={provider.photoURL} name={provider.name} seed={provider.id} role="provider" size="md" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               <p className="font-semibold text-ink text-sm">{provider.name}</p>
@@ -556,8 +557,8 @@ function RatingModal({ open, onClose, appointment, providerName, onSubmit }) {
               value={comment}
               onChange={e => setComment(e.target.value)}
               rows={3}
-              placeholder="Anything else you'd like to share…"
-              className="w-full px-3 py-2.5  border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+              placeholder="Anything else you’d like to share…"
+              className="w-full px-3 py-2.5 border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none"
             />
           </div>
 
@@ -788,7 +789,7 @@ function SignDocumentsModal({ appt, open, onClose, user, userProfile, onSigned, 
     <>
     <Modal open={open && !viewingDoc} onClose={onClose} title="Sign documents">
       {docs === null ? (
-        <div className="py-8 text-center"><Loader size={18} className="animate-spin text-accent mx-auto" /></div>
+        <SkeletonLines lines={4} className="py-4" />
       ) : docs.length === 0 ? (
         <div className="space-y-3 text-center py-4">
           <p className="text-sm text-ink">
@@ -905,7 +906,7 @@ export function Connect() {
         providerUid: provider.id,
         providerName: provider.name,
       })
-      showToast("Fee requested — you'll be notified when they share it")
+      showToast("Fee requested — you’ll be notified when they share it")
     } catch {
       showToast('Could not send the request. Please try again.', { variant: 'error' })
     }
@@ -1150,9 +1151,7 @@ export function Connect() {
 
           {loading ? (
             <div className="space-y-3">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="h-44  bg-raised animate-pulse" />
-              ))}
+              {[1, 2, 3].map(i => <SkeletonCard key={i} avatar lines={3} />)}
             </div>
           ) : filtered.length === 0 ? (
             <div className="py-16 text-center">
@@ -1210,12 +1209,12 @@ export function Connect() {
       {tab === 'my-doctor' && (
         <div className="space-y-5">
           {linkLoading ? (
-            <div className="h-28  bg-raised animate-pulse" />
+            <SkeletonCard avatar lines={1} />
           ) : linkedDoctor ? (
             <>
               <Card className="p-4">
                 <div className="flex items-start gap-3">
-                  <Avatar photoUrl={linkedDoctor.photoURL} name={linkedDoctor.name} size="md" />
+                  <Avatar photoUrl={linkedDoctor.photoURL} name={linkedDoctor.name} seed={linkedDoctor.id} role="provider" size="md" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <p className="font-semibold text-ink text-sm">{linkedDoctor.name}</p>
@@ -1366,15 +1365,15 @@ export function Connect() {
                 <div className="flex gap-2">
                   <input value={hpcsaQuery} onChange={e => setHpcsaQuery(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleHpcsaSearch()}
-                    placeholder="HPCSA number or doctor's name"
-                    className="flex-1 px-3 py-2.5  border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
+                    placeholder="HPCSA number or doctor’s name"
+                    className="flex-1 px-3 py-2.5 border border-line bg-raised text-ink text-sm focus:outline-none focus:ring-2 focus:ring-accent" />
                   <Button size="sm" onClick={handleHpcsaSearch}>Search</Button>
                 </div>
                 {searchError && <p className="text-xs text-danger mt-2">{searchError}</p>}
                 {searchResult && (
                   <div className="mt-3 p-3  bg-raised border border-line">
                     <div className="flex items-center gap-3">
-                      <Avatar photoUrl={searchResult.photoURL} name={searchResult.name} size="sm" />
+                      <Avatar photoUrl={searchResult.photoURL} name={searchResult.name} seed={searchResult.id} role="provider" size="sm" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1">
                           <p className="text-sm font-semibold text-ink">{searchResult.name}</p>
@@ -1393,7 +1392,7 @@ export function Connect() {
               <p className="text-xs text-faint mb-3">Or link a doctor from the directory:</p>
               <div className="space-y-3">
                 {loading ? (
-                  [1, 2].map(i => <div key={i} className="h-36  bg-raised animate-pulse" />)
+                  [1, 2].map(i => <SkeletonCard key={i} avatar lines={2} />)
                 ) : providers.slice(0, 5).map(p => (
                   <ProviderCard key={p.id} provider={p} onBook={handleBookClick} onLink={handleLink} linked={false} onViewProfile={setViewingProvider} />
                 ))}

@@ -10,6 +10,7 @@ import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import { useApp } from '../context/AppContext'
 import { useAuth } from '../context/AuthContext'
+import { CalendarSync } from '../components/CalendarSync'
 import { seedDemoProviders } from '../utils/seedProviders'
 import { isAdminUser } from '../utils/admin'
 import { FOCUSBLINK_TOOLS } from '../hooks/useToolPrefs'
@@ -41,7 +42,7 @@ function SettingsRow({ icon: Icon, label, value, onClick, danger }) {
 }
 
 // Photo or silhouette, nothing else — tapping opens the file picker.
-function PhotoAvatar({ photoURL, name, size = 'md', onClick, uploading }) {
+function PhotoAvatar({ photoURL, name, seed, size = 'md', onClick, uploading }) {
   return (
     <button
       onClick={onClick}
@@ -49,8 +50,8 @@ function PhotoAvatar({ photoURL, name, size = 'md', onClick, uploading }) {
       disabled={uploading}
       title="Change photo"
     >
-      <Avatar photoUrl={photoURL} name={name} size={size} />
-      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ">
+      <Avatar photoUrl={photoURL} name={name} seed={seed} size={size} />
+      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
         {uploading
           ? <Loader size={16} className="text-white animate-spin" />
           : <Camera size={16} className="text-white" />
@@ -84,7 +85,7 @@ function ProfileModal({ open, onClose, profile, onSave, authUser, photoURL, onPh
     <Modal open={open} onClose={onClose} title="Edit Profile">
       <div className="space-y-4">
         <div className="flex flex-col items-center gap-2">
-          <PhotoAvatar photoURL={photoURL} name={name} size="xl" onClick={() => fileRef.current.click()} uploading={uploading} />
+          <PhotoAvatar photoURL={photoURL} name={name} seed={authUser?.uid} size="xl" onClick={() => fileRef.current.click()} uploading={uploading} />
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
           <p className="text-xs text-faint">Tap photo to change</p>
           {photoURL && (
@@ -230,7 +231,7 @@ function RemindersSection({ notifications }) {
             <ReminderRow label="Focus reminder" pref={prefs.focusReminder}
               onToggle={() => updatePref('focusReminder', { enabled: !prefs.focusReminder.enabled })}
               onTimeChange={time => updatePref('focusReminder', { time })}
-              onTest={() => notifyNow('MentisFlow: Focus session', "Test: Time to start a focus session. You've got this! 🎯")} />
+              onTest={() => notifyNow('MentisFlow: Focus session', "Test: Time to start a focus session. You’ve got this! 🎯")} />
             {!isStandalone && (
               <div className="px-4 py-2.5 flex items-start gap-2">
                 <Bell size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
@@ -421,7 +422,7 @@ export function Settings() {
 
       <Card className="p-4 mb-6">
         <div className="flex items-center gap-4">
-          <PhotoAvatar photoURL={photoURL} name={displayName} size="md" onClick={() => setProfileOpen(true)} />
+          <PhotoAvatar photoURL={photoURL} name={displayName} seed={user?.uid} size="md" onClick={() => setProfileOpen(true)} />
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-ink truncate">{displayName}</p>
             <p className="text-xs text-faint truncate">{user?.email}</p>
@@ -453,6 +454,10 @@ export function Settings() {
       <ToolsSection tools={tools} />
 
       <RemindersSection notifications={notifications} />
+
+      <Section title="Calendar">
+        <CalendarSync uid={user?.uid} showToast={showToast} />
+      </Section>
 
       <Section title="Account">
         <SettingsRow icon={User} label="Edit profile" onClick={() => setProfileOpen(true)} />

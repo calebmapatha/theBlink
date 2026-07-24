@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Lock, ShieldCheck, FileText, Upload, Download, Trash2, Plus, Loader, Users, StickyNote, ArrowLeft } from 'lucide-react'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
+import { Skeleton, SkeletonCard } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import { useAuth } from '../context/AuthContext'
@@ -279,7 +280,7 @@ export function ProviderVault() {
 
   if (meta === undefined) return (
     <PageWrapper wide>
-      <div className="h-40  bg-raised animate-pulse mt-6" />
+      <SkeletonCard avatar lines={2} className="mt-6" />
     </PageWrapper>
   )
 
@@ -308,7 +309,7 @@ export function ProviderVault() {
       </header>
 
       {loadingDocs ? (
-        <div className="h-40  bg-raised animate-pulse" />
+        <SkeletonCard avatar lines={2} />
       ) : clients.length === 0 ? (
         <Card className="p-12 text-center">
           <div className="w-12 h-12  bg-accent-soft flex items-center justify-center mx-auto mb-3">

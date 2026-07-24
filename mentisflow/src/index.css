@@ -3,38 +3,65 @@
 @tailwind utilities;
 
 @layer base {
- html {
- -webkit-font-smoothing: antialiased;
- -moz-osx-font-smoothing: grayscale;
- }
- * {
- box-sizing: border-box;
- }
- body {
- margin: 0;
- font-family: 'Inter', system-ui, sans-serif;
- }
- #root {
- height: 100vh;
- overflow: hidden;
- }
- ::-webkit-scrollbar { width: 5px; height: 5px; }
- ::-webkit-scrollbar-track { background: transparent; }
- ::-webkit-scrollbar-thumb {
- @apply bg-line ;
- }
- input[type="range"] {
- @apply w-full accent-accent;
- }
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  #root {
+    height: 100vh;
+    height: 100dvh; /* stable on mobile as browser chrome shows/hides */
+    overflow: hidden;
+  }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-line;
+  }
+  input[type="range"] {
+    @apply w-full accent-accent;
+  }
 }
 
 @layer utilities {
- .timer-nums {
- font-variant-numeric: tabular-nums;
- font-feature-settings: "tnum";
- }
- /* Keyboard-only focus ring for icon buttons and other bare controls. */
- .focus-ring {
- @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface;
- }
+  .timer-nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+  /* Editorial small-caps label — the one voice for every eyebrow/kicker.
+     Colour is left to the caller (usually text-faint) so accented eyebrows
+     don't fight specificity. */
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.14em];
+  }
+  /* Shimmer skeleton for content loads — a soft highlight sweeps across a
+     raised block. --shimmer (theme.css) keeps it right on both themes;
+     reduced-motion users get a calm static block instead. */
+  .skeleton {
+    @apply relative overflow-hidden bg-raised;
+  }
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, var(--shimmer), transparent);
+    animation: skeleton-sweep 1.6s ease-in-out infinite;
+  }
+  @keyframes skeleton-sweep {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(100%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton::after { animation: none; }
+  }
+  /* Keyboard-only focus ring for icon buttons and other bare controls. */
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1 focus-visible:ring-offset-surface;
+  }
 }

@@ -43,6 +43,9 @@
 
   --warn: 165 106 21;            /* muted amber              #A56A15 */
   --warn-soft: 250 238 214;      /* pale amber tint          #FAEED6 */
+
+  /* Skeleton shimmer highlight — full rgba because it needs its own alpha. */
+  --shimmer: rgba(255, 255, 255, 0.6);
 }
 
 .dark {
@@ -77,6 +80,8 @@
 
   --warn: 240 190 92;            /* amber 300-ish            #F0BE5C */
   --warn-soft: 63 51 24;         /* deep amber tint          #3F3318 */
+
+  --shimmer: rgba(255, 255, 255, 0.05);
 }
 
 body {

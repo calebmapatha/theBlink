@@ -10,6 +10,7 @@ import { ref, getDownloadURL } from 'firebase/storage'
 import { db, storage } from '../lib/firebase'
 import { PageWrapper } from '../components/layout/PageWrapper'
 import { Card } from '../components/ui/Card'
+import { Skeleton, SkeletonCard } from '../components/ui/Skeleton'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
 import Avatar from '../components/ui/Avatar'
@@ -314,7 +315,7 @@ export function AdminPortal() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="h-24  bg-raised animate-pulse" />)}</div>
+        <div className="space-y-3">{[1, 2, 3].map(i => <SkeletonCard key={i} avatar lines={1} />)}</div>
       ) : (
         <>
           {/* ---------------- OVERVIEW ---------------- */}
@@ -355,7 +356,7 @@ export function AdminPortal() {
                   return (
                     <Card key={p.id} className="p-4">
                       <div className="flex items-start gap-3">
-                        <Avatar photoUrl={p.photoURL} name={p.name} size="sm" />
+                        <Avatar photoUrl={p.photoURL} name={p.name} seed={p.id} role="provider" size="sm" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <p className="text-sm font-semibold text-ink">{p.name}</p>
@@ -429,7 +430,7 @@ export function AdminPortal() {
                 return (
                   <Card key={p.id} className="p-3.5">
                     <div className="flex items-center gap-3">
-                      <Avatar photoUrl={p.photoURL} name={p.id} size="sm" />
+                      <Avatar photoUrl={p.photoURL} name={p.id} seed={p.id} role="provider" size="sm" />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-mono text-muted truncate">{p.id}</p>
                         <p className="text-[10px] text-faint">
@@ -462,7 +463,7 @@ export function AdminPortal() {
                       {r.status}
                     </span>
                   </div>
-                  <p className="text-xs text-muted bg-raised px-3 py-2 ">"{r.reason}"</p>
+                  <p className="text-xs text-muted bg-raised px-3 py-2">“{r.reason}”</p>
                   <p className="text-[10px] text-faint mt-1.5">Reported by {r.reporterEmail || r.reporterUid}</p>
                   {r.resolution && <p className="text-[10px] text-faint mt-0.5">Resolution: {r.resolution}</p>}
                   {r.status === 'open' && (
@@ -582,7 +583,7 @@ function AnnouncementsTab({ admin }) {
 function LogsTab({ admin }) {
   const [logs, setLogs] = useState(null)
   useEffect(() => { admin.fetchLogs().then(setLogs) }, [])
-  if (!logs) return <div className="h-24  bg-raised animate-pulse" />
+  if (!logs) return <Skeleton className="h-24" />
   return (
     <div className="space-y-2">
       <p className="text-xs text-faint">Every administrative action is recorded here permanently (append-only).</p>
@@ -616,7 +617,7 @@ function ConfigTab({ admin }) {
       pricing: mergePricing(c?.pricing),
     }))
   }, [])
-  if (!cfg) return <div className="h-24  bg-raised animate-pulse" />
+  if (!cfg) return <Skeleton className="h-24" />
 
   const setPricingField = (path, value) => setCfg(c => {
     const p = structuredClone(c.pricing)
